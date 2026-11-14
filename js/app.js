@@ -75,7 +75,14 @@ function boot() {
   route();
 
   // Write failures from batched library saves.
-  onChange(ev => { if (ev.type === 'error') reportError(ev.error); });
+  let warnedRead = false;
+  onChange(ev => {
+    if (ev.type === 'error') reportError(ev.error);
+    if (ev.type === 'read-error' && !warnedRead && navigator.onLine) {
+      warnedRead = true;
+      toast(ev.error?.status === 401 ? 'GitHub token rejected — showing the public copy. Check Settings.' : 'Couldn’t reach GitHub — showing the public copy.', { type: 'error' });
+    }
+  });
 
   // <img data-fallback="raw-url">: fresh uploads aren't on Pages until it redeploys.
   document.addEventListener('error', e => {
