@@ -13,8 +13,9 @@
  */
 import { html, raw, fmtMinutes } from '../util.js';
 import { getIndex, getLibrary, entryFor, mediaUrl, rawUrl, onChange } from '../store.js';
-import { setTopbar, on, stars } from '../ui.js';
+import { setTopbar, on, stars, sheet } from '../ui.js';
 import { isConnected } from '../prefs.js';
+import { PROFICIENCY } from '../components/meta-editor.js';
 
 /* ---------- shared display helpers ---------- */
 const svg = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
@@ -75,7 +76,16 @@ const hostOf = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } 
 
 /* ---------- state <-> hash query ---------- */
 const SORTS = { recent: 'Recently added', title: 'Title A–Z', rating: 'Rating', prof: 'Proficiency', time: 'Total time' };
+const RATINGS = {
+  unrated: ['Unrated', r => r == null], '1-4': ['1–4', r => r >= 1 && r <= 4],
+  '5-7': ['5–7', r => r >= 5 && r <= 7], '8-10': ['8–10', r => r >= 8]
+};
+const PROFS = { none: 'Not set', ...Object.fromEntries(PROFICIENCY.map((l, i) => [String(i + 1), `${i + 1} · ${l}`])) };
+const PROF_KEYS = ['none', '1', '2', '3', '4', '5'];   // explicit: integer-like keys would sort first
+const SOURCES = { custom: 'Custom', pdf: 'PDF', youtube: 'YouTube', instagram: 'Instagram', tiktok: 'TikTok', web: 'Web', image: 'Image', text: 'Text' };
+const LIST_KEYS = ['tag', 'rating', 'prof', 'pl', 'src'];
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+const filterCount = s => LIST_KEYS.reduce((n, k) => n + s[k].length, 0) + s.untagged + s.needs;
 
 function queryOf(params) {
   // Read the raw hash: app.js decodes the whole hash before splitting, which mangles "%26".
@@ -85,16 +95,40 @@ function queryOf(params) {
 
 function readState(params) {
   const q = queryOf(params);
+  const list = (k, ok = () => true) =>
+    [...new Set(q.getAll(k).flatMap(v => v.split(',')).map(v => v.trim()).filter(v => v && ok(v)))];
   const sort = q.get('sort');
-  return { q: q.get('q') || '', sort: has(SORTS, sort) ? sort : 'recent' };
+  return {
+    q: q.get('q') || '',
+    tag: list('tag').map(t => t.toLowerCase()),
+    untagged: q.get('untagged') === '1',
+    rating: list('rating', v => has(RATINGS, v)),
+    prof: list('prof', v => has(PROFS, v)),
+    pl: list('pl'),
+    src: list('src', v => has(SOURCES, v)),
+    needs: q.get('needs') === '1',
+    sort: has(SORTS, sort) ? sort : 'recent'
+  };
 }
 
 function toQuery(s) {
   const enc = v => encodeURIComponent(v);
   const parts = [];
   if (s.q.trim()) parts.push('q=' + enc(s.q.trim()));
+  for (const k of LIST_KEYS) if (s[k].length) parts.push(`${k}=${s[k].map(enc).join(',')}`);
+  if (s.untagged) parts.push('untagged=1');
+  if (s.needs) parts.push('needs=1');
   if (s.sort !== 'recent') parts.push('sort=' + s.sort);
   return parts.join('&');
+}
+
+function toggle(s, k, v) {
+  if (k === 'untagged' || k === 'needs') s[k] = !s[k];
+  else if (LIST_KEYS.includes(k)) s[k] = s[k].includes(v) ? s[k].filter(x => x !== v) : [...s[k], v];
+}
+function clearFilters(s) {
+  LIST_KEYS.forEach(k => { s[k] = []; });
+  s.untagged = false; s.needs = false;
 }
 
 /* ---------- derive / match / sort ---------- */
@@ -123,9 +157,47 @@ function toRow(r, lib) {
   };
 }
 
-function matches(x, s) {
-  const terms = fold(s.q).split(/\s+/).filter(Boolean);
-  return terms.every(t => x.hay.includes(t));
+/** plSets: { [playlistId]: Set<slug> } */
+function matches(x, s, plSets) {
+  const { r, e } = x;
+  if (s.q.trim() && !fold(s.q).split(/\s+/).filter(Boolean).every(t => x.hay.includes(t))) return false;
+  if ((s.tag.length || s.untagged) && !((s.untagged && !e.tags.length) || e.tags.some(t => s.tag.includes(t)))) return false;
+  if (s.rating.length && !s.rating.some(k => RATINGS[k][1](e.rating))) return false;
+  if (s.prof.length && !s.prof.some(k => (k === 'none' ? e.proficiency == null : e.proficiency === +k))) return false;
+  if (s.pl.length && !s.pl.some(id => plSets[id]?.has(r.slug))) return false;
+  if (s.src.length && !s.src.includes(r.sourceType || 'custom')) return false;
+  if (s.needs && r.status !== 'custom') return false;
+  return true;
+}
+
+/** Active filters as removable chips: [{ k, v, label }] */
+function activeFilters(s, lib) {
+  const out = [];
+  s.tag.forEach(v => out.push({ k: 'tag', v, label: v }));
+  if (s.untagged) out.push({ k: 'untagged', label: 'Untagged' });
+  s.rating.forEach(v => out.push({ k: 'rating', v, label: v === 'unrated' ? 'Unrated' : `Rated ${RATINGS[v][0]}` }));
+  s.prof.forEach(v => out.push({ k: 'prof', v, label: v === 'none' ? 'Proficiency not set' : `Proficiency ${v}` }));
+  s.pl.forEach(v => out.push({ k: 'pl', v, label: lib.playlists.find(p => p.id === v)?.name || 'Playlist' }));
+  s.src.forEach(v => out.push({ k: 'src', v, label: SOURCES[v] }));
+  if (s.needs) out.push({ k: 'needs', label: 'Needs enrichment' });
+  return out;
+}
+
+/** Facet counts over the current scope (ignores other filters) — feeds chips + the sheet. */
+function facets(rows, plSets) {
+  const f = { tag: new Map(), untagged: 0, rating: {}, prof: {}, src: {}, pl: {}, needs: 0 };
+  for (const id in plSets) f.pl[id] = rows.filter(x => plSets[id].has(x.r.slug)).length;
+  for (const { r, e } of rows) {
+    e.tags.forEach(t => f.tag.set(t, (f.tag.get(t) || 0) + 1));
+    if (!e.tags.length) f.untagged++;
+    for (const k in RATINGS) if (RATINGS[k][1](e.rating)) f.rating[k] = (f.rating[k] || 0) + 1;
+    const pk = e.proficiency == null ? 'none' : String(e.proficiency);
+    f.prof[pk] = (f.prof[pk] || 0) + 1;
+    const sk = r.sourceType || 'custom';
+    f.src[sk] = (f.src[sk] || 0) + 1;
+    if (r.status === 'custom') f.needs++;
+  }
+  return f;
 }
 
 /* ---------- markup ---------- */
@@ -152,6 +224,46 @@ function card({ r, e, t }) {
     </a>
     <button type="button" class="icon-btn rcard-more" data-act="more" aria-label="Rating, tags &amp; playlists for ${r.title}">${raw(ICON.more)}</button>
   </li>`;
+}
+
+/** Horizontal quick row: active filters (removable) first, then one-tap suggestions. */
+function quickChips(s, lib, f) {
+  const active = activeFilters(s, lib);
+  const topTags = [...f.tag].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([t]) => t).filter(t => !s.tag.includes(t)).slice(0, 8);
+  const sugg = [
+    ...topTags.map(t => ({ k: 'tag', v: t, label: t })),
+    f.rating['8-10'] && !s.rating.includes('8-10') && { k: 'rating', v: '8-10', label: 'Rated 8–10' },
+    f.rating.unrated && !s.rating.includes('unrated') && { k: 'rating', v: 'unrated', label: 'Unrated', blank: true },
+    f.untagged && !s.untagged && { k: 'untagged', label: 'Untagged', blank: true },
+    f.needs && !s.needs && { k: 'needs', label: 'Needs enrichment' }
+  ].filter(Boolean);
+  if (!active.length && !sugg.length) return '';
+  return html`${active.map(a => html`<button type="button" class="chip on qchip" data-act="rm" data-k="${a.k}" data-v="${a.v ?? ''}" aria-label="Remove filter: ${a.label}">${a.label}${raw(ICON.x)}</button>`)}${
+    active.length ? html`<button type="button" class="qchip-clear" data-act="clear-filters">Clear all</button>` : ''}${
+    active.length && sugg.length ? html`<span class="qchips-sep" aria-hidden="true"></span>` : ''}${
+    sugg.map(c => html`<button type="button" class="chip qchip${c.blank ? ' is-blank' : ''}" data-act="add" data-k="${c.k}" data-v="${c.v ?? ''}">${c.label}</button>`)}`;
+}
+
+function filterBody(s, lib, f) {
+  const chip = (k, v, label, n, blank) => {
+    const on = k === 'untagged' || k === 'needs' ? s[k] : s[k].includes(v);
+    return html`<button type="button" class="chip fchip${blank ? ' is-blank' : ''}${!n && !on ? ' is-zero' : ''}" data-f="${k}" data-v="${v}" aria-pressed="${on}">${label}<span class="fcount">${n || 0}</span></button>`;
+  };
+  const group = (title, chips, hint) => html`<fieldset class="fgroup">
+    <legend class="label">${title}</legend>${hint ? html`<p class="hint fgroup-hint">${hint}</p>` : ''}
+    <div class="chips">${chips}</div>
+  </fieldset>`;
+  const tags = [...f.tag.keys()].sort((a, b) => a.localeCompare(b));
+  s.tag.forEach(t => { if (!f.tag.has(t)) tags.push(t); });   // selected via URL but unused here
+  return html`
+    ${group('Tags', [...tags.map(t => chip('tag', t, t, f.tag.get(t))), chip('untagged', '', 'Untagged', f.untagged, true)],
+      tags.length ? 'Shows recipes with any selected tag.' : 'No tags yet — add them from a recipe’s ⋯ menu.')}
+    ${group('Rating', Object.entries(RATINGS).map(([k, [l]]) => chip('rating', k, l, f.rating[k], k === 'unrated')))}
+    ${group('Proficiency', PROF_KEYS.map(k => chip('prof', k, PROFS[k], f.prof[k], k === 'none')))}
+    ${lib.playlists.length ? group('Playlist', lib.playlists.map(p => chip('pl', p.id, p.name, f.pl[p.id]))) : ''}
+    ${group('Source', Object.entries(SOURCES).map(([k, l]) => chip('src', k, l, f.src[k])))}
+    ${group('Status', chip('needs', '', 'Needs enrichment', f.needs), 'Custom recipes you typed in that Claude hasn’t polished yet.')}`;
 }
 
 const KIND = { file: ['File', ICON.file], link: ['Link', ICON.link], text: ['Text', ICON.text] };
@@ -190,14 +302,17 @@ export async function render(root, params) {
   const s = readState(params);
   const pathOf = h => (h || '#/').split('?')[0];
   const myPath = pathOf(location.hash);
-  let idx, lib, rows = [], alive = true;
+  let idx, lib, rows = [], plSets = {}, alive = true;
 
   setTopbar({ title: 'Recipes' });
 
   async function load() {
     [idx, lib] = await Promise.all([getIndex(), getLibrary()]);
     rows = idx.recipes.map(r => toRow(r, lib));
+    plSets = Object.fromEntries(lib.playlists.map(p => [p.id, new Set(p.recipes)]));
+    s.pl = s.pl.filter(id => plSets[id]);            // drop filters for deleted playlists
   }
+  const shownRows = () => rows.filter(x => matches(x, s, plSets)).sort(SORT_FNS[s.sort]);
   await load();
   if (pathOf(location.hash) !== myPath) return;   // navigated away while loading
 
@@ -205,12 +320,16 @@ export async function render(root, params) {
     <div class="lib-bar" role="search" data-part="bar">
       <div class="search">
         ${raw(ICON.search)}
-        <input class="input search-input" type="search" value="${s.q}" placeholder="Search recipes, tags…"
+        <input class="input search-input" type="search" value="${s.q}" placeholder="Search recipes"
           aria-label="Search recipes" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search">
         <button type="button" class="search-clear" data-act="clear-q" aria-label="Clear search" ${s.q ? '' : raw('hidden')}>${raw(ICON.x)}</button>
       </div>
+      <button type="button" class="btn filter-btn" data-act="filters" aria-haspopup="dialog">
+        ${raw(ICON.filter)}<span>Filters</span><span class="badge" data-part="nf" hidden></span>
+      </button>
     </div>
     <div data-part="pending"></div>
+    <div class="qchips" data-part="chips" role="group" aria-label="Quick filters"></div>
     <div class="lib-count" data-part="count"></div>
     <ul class="rlist" data-part="list"></ul>
     <div data-part="empty"></div>
@@ -221,15 +340,25 @@ export async function render(root, params) {
   const clearBtn = root.querySelector('.search-clear');
 
   function paint() {
-    const searching = !!s.q.trim();
-    const shown = rows.filter(x => matches(x, s)).sort(SORT_FNS[s.sort]);
+    const nf = filterCount(s);
+    const narrowed = !!s.q.trim() || nf > 0;
+    const shown = shownRows();
     const any = rows.length > 0;
+    const f = facets(rows, plSets);
 
     part('bar').hidden = !any;
-    part('pending').innerHTML = !searching && idx.pending.length ? pendingStrip(idx.pending) : '';
+    const fbtn = root.querySelector('.filter-btn');
+    fbtn.classList.toggle('is-active', nf > 0);
+    fbtn.setAttribute('aria-label', nf ? `Filters, ${nf} active` : 'Filters');
+    part('nf').hidden = !nf;
+    part('nf').textContent = nf || '';
+    part('pending').innerHTML = !narrowed && idx.pending.length ? pendingStrip(idx.pending) : '';
+    const chips = any ? quickChips(s, lib, f) : '';
+    part('chips').hidden = !chips;
+    part('chips').innerHTML = chips;
     part('count').hidden = !any;
     part('count').innerHTML = html`
-      <p class="lib-count-n" aria-live="polite">${searching ? `${shown.length} of ${plural(rows.length, 'recipe')}` : plural(rows.length, 'recipe')}</p>
+      <p class="lib-count-n" aria-live="polite">${narrowed ? `${shown.length} of ${plural(rows.length, 'recipe')}` : plural(rows.length, 'recipe')}</p>
       <label class="sort">
         <span class="sort-label">Sort</span>
         <select class="sort-select" aria-label="Sort recipes">
@@ -241,8 +370,8 @@ export async function render(root, params) {
     part('empty').innerHTML = !any ? emptyLibrary(idx.pending.length > 0)
       : !shown.length ? html`<div class="empty lib-empty">
           <h2>No recipes match</h2>
-          <p>Try a different search.</p>
-          <button type="button" class="btn" data-act="clear-all">Clear search</button>
+          <p>${nf ? 'Try loosening the filters or a different search.' : 'Try a different search.'}</p>
+          <button type="button" class="btn" data-act="clear-all">${nf && s.q.trim() ? 'Clear search & filters' : nf ? 'Clear filters' : 'Clear search'}</button>
         </div>` : '';
     part('foot').innerHTML = any ? connectHint() : '';
   }
@@ -260,12 +389,36 @@ export async function render(root, params) {
   const syncHashSoon = () => { clearTimeout(hashT); hashT = setTimeout(syncHash, 300); };
   const update = ({ soon = false } = {}) => { paint(); soon ? syncHashSoon() : syncHash(); };
 
-  function act(name) {
+  async function openFilters() {
+    const body = document.createElement('div');
+    body.className = 'fsheet';
+    let cta = null;
+    const label = () => { const n = shownRows().length; return n ? `Show ${plural(n, 'recipe')}` : 'No matches'; };
+    const draw = () => {
+      body.innerHTML = filterBody(s, lib, facets(rows, plSets));
+      if (cta) cta.textContent = label();
+    };
+    on(body, 'click', '[data-f]', (e, b) => { toggle(s, b.dataset.f, b.dataset.v); update(); draw(); });
+    draw();
+    await sheet({
+      title: 'Filters', body, className: 'filter-sheet',
+      actions: [
+        { label: 'Clear all', value: () => { clearFilters(s); update(); draw(); return undefined; } },   // stays open
+        { label: label(), value: true, kind: 'primary' }
+      ],
+      onOpen: wrap => { cta = wrap.querySelector('.sheet-actions [data-i="1"]'); }
+    });
+  }
+
+  function act(name, el) {
     if (name === 'clear-q' || name === 'clear-all') {
       s.q = ''; input.value = ''; clearBtn.hidden = true;
+      if (name === 'clear-all') clearFilters(s);
       update();
       if (name === 'clear-q') input.focus();
-    }
+    } else if (name === 'filters') openFilters();
+    else if (name === 'rm' || name === 'add') { toggle(s, el.dataset.k, el.dataset.v); update(); }
+    else if (name === 'clear-filters') { clearFilters(s); update(); }
   }
 
   paint();

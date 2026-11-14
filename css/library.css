@@ -104,6 +104,44 @@
   border: 0; border-radius: 50%; background: none; color: var(--muted); cursor: pointer;
 }
 .search-clear svg { width: 18px; height: 18px; }
+.filter-btn { flex: none; gap: 6px; padding: 0 14px 0 12px; }
+.filter-btn svg { width: 19px; height: 19px; }
+.filter-btn.is-active { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.filter-btn .badge { margin-right: -4px; }
+
+/* ---------- quick-filter chips (horizontal scroll) ---------- */
+.qchips {
+  display: flex; align-items: center; gap: 6px; margin: 2px calc(-1 * var(--gap)) 0; padding: 6px var(--gap);
+  overflow-x: auto; scrollbar-width: none; scroll-padding: 0 var(--gap); -webkit-overflow-scrolling: touch;
+}
+.qchips::-webkit-scrollbar { display: none; }
+.qchip { position: relative; flex: none; min-height: 36px; padding: 0 14px; }
+.qchip::after { content: ""; position: absolute; inset: -4px 0; }   /* 44px hit area */
+.qchip.on { gap: 6px; padding-right: 10px; }
+.qchip.on svg { width: 15px; height: 15px; opacity: .8; }
+.qchip.is-blank, .fchip.is-blank { border-style: dashed; }
+.qchip-clear {
+  flex: none; min-height: var(--tap); padding: 0 8px; border: 0; background: none; cursor: pointer;
+  color: var(--accent); font-size: .85rem; font-weight: 700; white-space: nowrap;
+}
+.qchips-sep { flex: none; width: 1px; height: 22px; margin: 0 4px; background: var(--line); }
+
+/* ---------- filter sheet ---------- */
+.fsheet { display: grid; gap: 20px; }
+.fgroup { min-width: 0; margin: 0; padding: 0; border: 0; }
+.fgroup legend { margin: 0 0 8px; padding: 0; }
+.fgroup-hint { margin: -4px 0 10px; }
+.fgroup .chips { gap: 8px; }
+.fchip { position: relative; min-height: 36px; gap: 7px; padding: 0 12px 0 14px; }
+.fchip::after { content: ""; position: absolute; inset: -4px 0; }
+.fcount { font-weight: 500; font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.fchip[aria-pressed="true"] .fcount { color: inherit; opacity: .65; }
+.fchip.is-zero { color: var(--muted); }
+.filter-sheet .sheet-actions {
+  position: sticky; bottom: calc(-18px - var(--safe-b)); margin: 18px -18px calc(-18px - var(--safe-b));
+  padding: 12px 18px calc(12px + var(--safe-b)); background: var(--surface); border-top: 1px solid var(--line);
+}
+.filter-sheet .sheet-actions .btn-ghost { flex: 0 0 auto; color: var(--ink-2); }
 
 /* ---------- count + sort ---------- */
 .lib-count { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 6px 0 8px; }

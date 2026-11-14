@@ -18,7 +18,7 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 ## WS1 — Library view (`js/views/library.js`, `css/library.css`)
 - [x] Recipe cards grid (image, title, time, rating, proficiency, tags) + pending inbox cards
 - [x] Search box (title/summary/tags)
-- [ ] Filter sheet: tags, rating (incl. Unrated), proficiency (incl. Not set), untagged, playlist, source type
+- [x] Filter sheet: tags, rating (incl. Unrated), proficiency (incl. Not set), untagged, playlist, source type
 - [x] Sort: recent, title, rating, proficiency, time
 - [ ] Playlists: create/rename/delete, add/remove recipes, playlist view (`#/playlist/<id>`)
 - [ ] Inline edit on card long-press or recipe page: tags, rating /10, proficiency /5
