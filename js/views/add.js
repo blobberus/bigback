@@ -10,6 +10,7 @@ import { linkType } from '../components/editor-parse.js';
 import { icon } from '../components/editor-icons.js';
 import { loadDraft, draftKey, draftAge } from '../components/editor-drafts.js';
 import { mountRecipeForm } from '../components/editor-form.js';
+import { mountUploadForm } from '../components/editor-upload.js';
 
 export async function render(root, params = {}) {
   const mode = params.mode || 'choose';
@@ -30,8 +31,8 @@ export async function render(root, params = {}) {
     return mountRecipeForm(root, { recipe });
   }
   if (mode === 'upload') {
-    root.innerHTML = '<div class="empty"><p>Coming soon</p></div>';
-    return;
+    setTopbar({ title: 'Upload', back: '#/add' });
+    return mountUploadForm(root);
   }
   return renderChooser(root);
 }

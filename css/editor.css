@@ -164,3 +164,64 @@
   .ed-row2 { grid-template-columns: 1fr 1fr; }
   .ed-photo-pick.has-img { aspect-ratio: 16 / 9; }
 }
+
+/* ---------- upload form (#/add/upload) ---------- */
+.up-seg { display: flex; width: 100%; margin-bottom: 18px; }
+.up-seg button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--tap); font-size: .9rem; }
+.up-seg svg { width: 17px; height: 17px; }
+.up-panel { margin-bottom: 6px; }
+.up-drop {
+  position: relative; display: grid; justify-items: center; gap: 4px; padding: 26px 18px; cursor: pointer; text-align: center;
+  border-radius: var(--r-lg); border: 1.5px dashed color-mix(in srgb, var(--ink-2) 28%, var(--line)); background: var(--surface);
+  font-size: .875rem; color: var(--muted); transition: border-color .15s, background .15s;
+}
+.up-drop strong { font-size: 1.05rem; color: var(--ink); }
+.up-drop:focus-within { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+.up-drop.is-over { border-color: var(--accent); background: var(--accent-soft); }
+.up-drop-ic { display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: 6px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); }
+.up-drop-ic svg { width: 26px; height: 26px; }
+.up-camera { position: relative; margin-top: 10px; }
+.up-files { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.up-files:empty { display: none; }
+.up-file {
+  display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding: 6px 4px 6px 6px;
+  border-radius: var(--r); border: 1px solid var(--line); background: var(--surface);
+}
+.up-file-ic { display: grid; place-items: center; width: 44px; height: 44px; overflow: hidden; border-radius: 10px; background: var(--surface-2); color: var(--ink-2); }
+.up-file-ic svg { width: 22px; height: 22px; }
+.up-file-ic img { width: 100%; height: 100%; object-fit: cover; }
+.up-file-meta { display: grid; min-width: 0; line-height: 1.3; }
+.up-file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; font-size: .92rem; }
+.up-file-size { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.up-file .icon-btn { color: var(--muted); }
+.up-file.is-big { border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); }
+.up-file.is-big .up-file-size { color: var(--warn); font-weight: 700; }
+.up-file-warn { grid-column: 1 / -1; display: flex; gap: 8px; margin: 0 4px 4px; font-size: .8rem; line-height: 1.4; color: var(--ink-2); }
+.up-file-warn svg { flex: none; width: 16px; height: 16px; margin-top: 1px; color: var(--warn); }
+.up-url-row { display: flex; gap: 8px; }
+.up-url-row .input { flex: 1; min-width: 0; }
+.up-paste { flex: none; padding: 0 14px; }
+.up-type:empty { display: none; }
+.up-type { margin-top: 8px; }
+.up-badge {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 11px 0 8px; border-radius: 999px;
+  background: var(--surface-2); color: var(--ink-2); font-size: .8rem; font-weight: 700;
+}
+.up-badge svg { width: 16px; height: 16px; color: var(--accent); }
+.up-badge-web svg { color: var(--accent-2); }
+.up-caption .hint { margin: 0; }
+.up-caption .up-rec, .up-caption.is-recommended .up-opt { display: none; }
+.up-caption.is-recommended .up-rec { display: inline; color: var(--accent); }
+.up-caption.is-recommended textarea { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.up textarea.up-bigtext { min-height: 260px; }
+.up-common { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+.up .field { margin-bottom: 16px; }
+.up .hint { line-height: 1.4; }
+
+.up-done { display: grid; justify-items: center; gap: 4px; padding: 40px 12px 24px; text-align: center; }
+.up-done-ic { display: grid; place-items: center; width: 68px; height: 68px; margin-bottom: 14px; border-radius: 50%; background: var(--accent-2-soft); color: var(--accent-2); }
+.up-done-ic svg { width: 34px; height: 34px; stroke-width: 2.4; }
+.up-done h1 { margin: 0; }
+.up-done p { max-width: 34ch; color: var(--ink-2); }
+.up-done-acts { display: grid; gap: 10px; width: 100%; max-width: 320px; margin-top: 10px; }
+.up-done-back { display: inline-flex; align-items: center; min-height: var(--tap); margin-top: 6px; font-weight: 600; }

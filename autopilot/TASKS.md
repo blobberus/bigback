@@ -37,7 +37,7 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 - [x] Choice screen: Custom recipe vs Upload file/link
 - [x] Custom form: title, summary, servings, times, ingredients (smart line parse), steps, hero photo
 - [x] Image compression (canvas → JPEG ≤1600px) before upload
-- [ ] Upload: file (PDF/image/any), link (YouTube/Instagram/web), pasted text, hint → inbox commit
+- [x] Upload: file (PDF/image/any), link (YouTube/Instagram/web), pasted text, hint → inbox commit
 - [x] Edit existing recipe (reuses custom form; preserves ids)
 - [ ] Delete recipe / delete pending item (with confirm sheet, not window.confirm)
 
