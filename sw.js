@@ -43,8 +43,10 @@ const IMAGE_EXT = /\.(?:jpe?g|png|webp|gif|avif|heic|svg)$/i;
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(SHELL_CACHE);
-    // One at a time-ish: a single missing file must not abort the whole install.
-    await Promise.all(SHELL.map(p => cache.add(new Request(p, { cache: 'reload' })).catch(() => {})));
+    // fetch + put (not addAll): a single missing file must not abort the whole install.
+    await Promise.all(SHELL.map(p => fetch(new Request(p, { cache: 'reload' }))
+      .then(res => (cacheable(res) ? cache.put(p, res) : null))
+      .catch(() => null)));
     await self.skipWaiting();
   })());
 });
