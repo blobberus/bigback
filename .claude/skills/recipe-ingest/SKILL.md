@@ -68,8 +68,11 @@ inventing a dish isn't.
   can, sprig, slice, stick, bunch, inch; null for counts ("2" + "large eggs").
 - `item` = the ingredient, specific (unsalted butter, low-sodium chicken stock, whole-milk
   ricotta); `note` = prep or caveat ("finely chopped", "divided", "room temperature").
-- Kosher salt: the source's brand if given; note the other ("Diamond Crystal; use half as
-  much Morton"). Metric-only sources: keep grams for baking, add US volume in the note.
+- Salt: use the source's brand if given. Unbranded "kosher salt" → assume Diamond
+  Crystal (the Bon Appétit / Serious Eats default); plain "salt" → table salt (King
+  Arthur's default). Always note the swap: Morton kosher ≈ 0.6× and table salt ≈ 0.5×
+  the Diamond Crystal volume ("2 tsp" → "Diamond Crystal; use 1¼ tsp Morton or 1 tsp
+  table salt"). Metric-only sources: keep grams for baking, add US volume in the note.
 
 **Steps** — ids `s1…sN`; each step is one coherent action group (2–4 sentences, one
 pan/stage), not one sentence per step and not a wall of text.
@@ -83,6 +86,11 @@ pan/stage), not one sentence per step and not a wall of text.
 - `tip`: one sentence of *why* or a homestyle alternative ("No Dutch oven? A heavy pot
   with foil under the lid works."), else null. Don't restate the step.
 - Add implied basics the source skipped (preheat, salt the pasta water, rest meat).
+- Meat, fish and eggs need a doneness cue. If the source gives none, add a pull
+  temperature from `.claude/skills/recipe-refinement/references/adjustments.md` §5. Never
+  set it below the USDA minimum unless the step includes a time-at-temperature hold.
+  Before calling an amount an "obvious error", check it against the same file (salt §2,
+  leavening and ratios §7).
 
 **Fidelity**: keep the author's dish, amounts and method. Clarify vague bits; fix obvious
 errors (ingredient listed but never used, wrong unit, impossible time) and log each fix in
@@ -129,7 +137,7 @@ Serves 8."* → `recipes/moms-baked-ziti.json`:
   "equipment": ["large pot", "12-inch skillet", "9x13-inch baking dish", "aluminum foil"],
   "ingredients": [
     { "id": "i1", "section": "Pasta", "qty": 1, "qtyMax": null, "unit": "lb", "item": "ziti or penne", "note": null },
-    { "id": "i2", "section": "Pasta", "qty": null, "qtyMax": null, "unit": null, "item": "kosher salt", "note": "for the pasta water and to taste" },
+    { "id": "i2", "section": "Pasta", "qty": null, "qtyMax": null, "unit": null, "item": "kosher salt", "note": "Diamond Crystal; for the pasta water and to taste" },
     { "id": "i3", "section": "Sauce", "qty": 1, "qtyMax": null, "unit": "lb", "item": "Italian sausage", "note": "casings removed" },
     { "id": "i4", "section": "Sauce", "qty": 1, "qtyMax": null, "unit": null, "item": "yellow onion", "note": "diced" },
     { "id": "i5", "section": "Sauce", "qty": 3, "qtyMax": null, "unit": "clove", "item": "garlic", "note": "minced" },
@@ -141,7 +149,7 @@ Serves 8."* → `recipes/moms-baked-ziti.json`:
     { "id": "i11", "section": "Assembly", "qty": 1, "qtyMax": null, "unit": "lb", "item": "low-moisture mozzarella", "note": "shredded, divided" }
   ],
   "steps": [
-    { "id": "s1", "section": null, "text": "Heat the oven to 375°F (190°C) with a rack in the middle. Bring a large pot of water to a boil and salt it generously.", "timers": [], "tip": null },
+    { "id": "s1", "section": null, "text": "Heat the oven to 375°F (190°C) with a rack in the middle. Bring 4 quarts of water to a boil in a large pot with 2 tablespoons of the salt.", "timers": [], "tip": "About 0.5% salt seasons the pasta without over-salting a dish that already has sausage and cheese." },
     { "id": "s2", "section": "Pasta", "text": "Cook the ziti until bendable but still firm at the center, 8–10 minutes (about 2 minutes short of the package time). Drain.", "timers": [{ "label": "Pasta", "seconds": 480 }], "tip": "It keeps cooking in the sauce and oven; fully cooked pasta turns soft and bloated." },
     { "id": "s3", "section": "Sauce", "text": "Meanwhile, brown the sausage in the skillet over medium-high heat, breaking it into small pieces, until no pink remains and some bits are deeply browned, 6–8 minutes. Add the onion and cook until soft and translucent, 4–5 minutes, then the garlic until fragrant, about 30 seconds.", "timers": [{ "label": "Brown sausage", "seconds": 360 }, { "label": "Onion", "seconds": 240 }], "tip": "Let the sausage sit undisturbed between stirs — the browned bits are the sauce's depth." },
     { "id": "s4", "section": "Sauce", "text": "Stir in the tomatoes and oregano, scraping up the browned bits. Simmer gently until slightly thickened, about 15 minutes. Taste and salt only if needed — the sausage brings plenty.", "timers": [{ "label": "Simmer", "seconds": 900 }], "tip": null },
