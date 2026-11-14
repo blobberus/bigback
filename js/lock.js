@@ -1,0 +1,153 @@
+/**
+ * lock.js — optional site password: a lock screen in front of the whole app.
+ * It is a gate, not encryption: the recipe files stay readable in the public repo.
+ *
+ *   data/lock.json (user-owned; absent = no password) — see docs/SCHEMA.md:
+ *     { schemaVersion, kdf: 'PBKDF2-SHA256', iterations, salt: base64, check: hex, updatedAt }
+ *     check = SHA-256(PBKDF2(password, salt, iterations)). Slow KDF because the file is public.
+ *   A device is remembered by keeping the derived key (never the password) under `bb.unlock`
+ *   in localStorage (or sessionStorage when "Remember this device" is off). It only counts while
+ *   SHA-256(key) === lock.check, so changing or removing the password re-locks other devices.
+ *
+ *   unlockGate()                       → Promise; resolves once the app may render
+ *   showLockScreen(config)             → Promise; resolves after the right password
+ *   makeLock(password, {iterations})   → { config, key }      checkPassword(config, pw) → key | null
+ *   validLock(c) · isRemembered(config) · remember(key, persist) · forgetDevice() · supported()
+ */
+import { getLock } from './store.js';
+
+export const ITERATIONS = 600000;     // OWASP 2023 guidance for PBKDF2-HMAC-SHA256
+export const MIN_LENGTH = 4;
+const KEY = 'bb.unlock';
+const te = new TextEncoder();
+const HEX64 = /^[0-9a-f]{64}$/;
+
+const toHex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+const fromHex = s => Uint8Array.from(s.match(/../g) || [], h => parseInt(h, 16));
+const toB64 = bytes => btoa(String.fromCharCode(...bytes));
+const fromB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const sha256 = async bytes => toHex(await crypto.subtle.digest('SHA-256', bytes));
+
+/** WebCrypto only exists in secure contexts (https, localhost). */
+export const supported = () => !!globalThis.crypto?.subtle;
+
+async function derive(password, salt, iterations) {
+  const base = await crypto.subtle.importKey('raw', te.encode(String(password).normalize('NFC')), 'PBKDF2', false, ['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations }, base, 256));
+}
+
+export function validLock(c) {
+  if (!c || typeof c !== 'object' || !HEX64.test(c.check || '') || !Number.isInteger(c.iterations) || c.iterations < 1000) return false;
+  try { return fromB64(c.salt).length >= 8; } catch { return false; }
+}
+
+export async function makeLock(password, { iterations = ITERATIONS } = {}) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const key = await derive(password, salt, iterations);
+  const config = {
+    schemaVersion: 1, kdf: 'PBKDF2-SHA256', iterations, salt: toB64(salt),
+    check: await sha256(key), updatedAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z')
+  };
+  return { config, key: toHex(key) };
+}
+
+export async function checkPassword(config, password) {
+  const key = await derive(password, fromB64(config.salt), config.iterations);
+  return (await sha256(key)) === config.check ? toHex(key) : null;
+}
+
+/* ---------- remembered devices ---------- */
+const stored = () => { try { return localStorage.getItem(KEY) || sessionStorage.getItem(KEY); } catch { return null; } };
+export function forgetDevice() { try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); } catch { /* private mode */ } }
+export function remember(key, persist = true) {
+  forgetDevice();
+  try { (persist ? localStorage : sessionStorage).setItem(KEY, key); } catch { /* private mode: ask every time */ }
+}
+export async function isRemembered(config) {
+  const k = stored();
+  return !!k && HEX64.test(k) && validLock(config) && (await sha256(fromHex(k))) === config.check;
+}
+export const rememberedHere = () => { try { return localStorage.getItem(KEY) ? 'device' : sessionStorage.getItem(KEY) ? 'session' : null; } catch { return null; } };
+
+/* ---------- gate ---------- */
+const root = document.documentElement;
+
+export async function unlockGate() {
+  let config = null;
+  try { config = await getLock(); } catch (e) { console.warn('lock: could not read data/lock.json', e); }
+  try {
+    if (!validLock(config)) return;
+    if (supported() && await isRemembered(config)) return;
+    await showLockScreen(config);
+  } finally {
+    root.classList.remove('is-gating');
+  }
+}
+
+// Resolved from this module, so it also works from tests/ pages.
+const LOGO = new URL('../assets/icons/icon-192.png', import.meta.url).href;
+const EYE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+
+export function showLockScreen(config, { host = document.body } = {}) {
+  return new Promise(resolve => {
+    const el = document.createElement('div');
+    el.className = 'lock';
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'true');
+    el.setAttribute('aria-labelledby', 'lock-h');
+    const ok = supported();
+    el.innerHTML = `
+      <form class="lock-card" novalidate>
+        <img class="lock-logo" src="${LOGO}" alt="" width="72" height="72">
+        <h1 id="lock-h">Bigback</h1>
+        <p class="muted lock-lede">Enter the password to open your recipes.</p>
+        <input class="sr-only" type="text" name="username" value="Bigback" autocomplete="username" tabindex="-1" aria-hidden="true">
+        <div class="field">
+          <label for="lock-pw" class="sr-only">Password</label>
+          <div class="lock-secret">
+            <input id="lock-pw" class="input" type="password" name="password" autocomplete="current-password"
+              autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Password" aria-describedby="lock-err"${ok ? '' : ' disabled'}>
+            <button type="button" class="btn btn-ghost lock-reveal" aria-label="Show password" aria-pressed="false" aria-controls="lock-pw">${EYE}</button>
+          </div>
+        </div>
+        <label class="lock-remember"><input type="checkbox" name="remember" checked> Remember this device</label>
+        <p class="lock-err" id="lock-err" role="alert">${ok ? '' : 'This browser can only check the password on the secure (https) site.'}</p>
+        <button type="submit" class="btn btn-primary lock-btn"${ok ? '' : ' disabled'}>Unlock</button>
+      </form>`;
+    host.append(el);
+    root.classList.add('is-locked');
+    root.classList.remove('is-gating');
+
+    const form = el.querySelector('form'), input = el.querySelector('#lock-pw');
+    const err = el.querySelector('.lock-err'), btn = el.querySelector('.lock-btn'), eye = el.querySelector('.lock-reveal');
+    input.focus({ preventScroll: true });
+
+    eye.addEventListener('click', () => {
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      eye.setAttribute('aria-pressed', String(show));
+      eye.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      input.focus({ preventScroll: true });
+    });
+
+    let checking = false;
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (checking || !ok) return;
+      if (!input.value) { err.textContent = 'Enter the password.'; input.focus(); return; }
+      checking = true; btn.disabled = true; btn.textContent = 'Checking…'; err.textContent = '';
+      let key = null;
+      try { key = await checkPassword(config, input.value); } catch (x) { console.warn('lock: check failed', x); }
+      if (key) {
+        remember(key, form.elements.remember.checked);
+        el.remove();
+        root.classList.remove('is-locked');
+        resolve();
+        return;
+      }
+      checking = false; btn.disabled = false; btn.textContent = 'Unlock';
+      err.textContent = 'Wrong password. Try again.';
+      input.select();
+    });
+  });
+}

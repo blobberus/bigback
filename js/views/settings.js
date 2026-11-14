@@ -4,12 +4,16 @@
  *   Appearance: theme Auto/Light/Dark (app.js applies prefs.theme), units US/Metric
  *   GitHub:     token (show/hide) + owner/repo/branch, "Save & test" → GitHub.check(), Disconnect,
  *               step-by-step fine-grained token instructions
+ *   Password:   set / change / remove the site password (data/lock.json via store.saveLock, built by
+ *               lock.js), "Lock this device". Setting it needs GitHub connected.
  *   About:      version, repo link, how updates work, Add to Home Screen, refresh app files
  * Settings is the one view allowed to import github.js (for the connection test).
  */
-import { setTopbar, on, toast, confirmSheet, busy } from '../ui.js';
+import { setTopbar, on, toast, confirmSheet, busy, sheet, reportError } from '../ui.js';
 import { html } from '../util.js';
 import { getPrefs, setPrefs, onPrefs } from '../prefs.js';
+import { getLock, saveLock } from '../store.js';
+import { makeLock, validLock, remember, forgetDevice, rememberedHere, supported as lockSupported, MIN_LENGTH } from '../lock.js';
 import { APP_VERSION } from '../config.js';
 import { GitHub } from '../github.js';
 import { initWakeLock, wakeLockStatus, onWakeLock } from '../wakelock.js';
@@ -74,7 +78,7 @@ function view(p) {
         <p class="st-why">Your recipe vault lives in a GitHub repository. Browsing works without signing in, but
           <strong>saving</strong> — recipes, uploads, notes, photos, ratings and playlists — writes to that repo,
           so this device needs an access token that can write to it.</p>
-        <div class="st-conn" data-state="off" role="status" aria-live="polite">
+        <div class="st-conn" data-conn="gh" data-state="off" role="status" aria-live="polite">
           <span class="st-conn-dot" aria-hidden="true"></span>
           <div class="st-text"><strong class="st-conn-title"></strong><small class="st-conn-sub"></small></div>
         </div>
@@ -115,6 +119,23 @@ function view(p) {
       </div>
     </section>
 
+    <section class="st-sec" aria-labelledby="st-h-lock">
+      <h2 class="section-title" id="st-h-lock">Password</h2>
+      <div class="panel st-panel">
+        <div class="st-conn" data-conn="lock" data-state="busy" role="status" aria-live="polite">
+          <span class="st-conn-dot" aria-hidden="true"></span>
+          <div class="st-text"><strong class="st-conn-title">Checking…</strong><small class="st-conn-sub"></small></div>
+        </div>
+        <div class="st-actions">
+          <button type="button" class="btn btn-primary" data-act="lock-set" hidden>Set password</button>
+          <button type="button" class="btn" data-act="lock-forget" hidden>Lock this device</button>
+          <button type="button" class="btn st-danger" data-act="lock-remove" hidden>Remove password</button>
+        </div>
+        <p class="hint st-lock-note">This adds a lock screen to the app on every device. It isn't encryption: the recipe files in the
+          public GitHub repo can still be read there.</p>
+      </div>
+    </section>
+
     <section class="st-sec" aria-labelledby="st-h-about">
       <h2 class="section-title" id="st-h-about">About</h2>
       <div class="panel st-panel">
@@ -152,6 +173,40 @@ const ERR = {
   404: v => [`Can't see ${v.owner}/${v.repo} (404)`, `Check the owner and repository names, and that the token's repository access includes ${v.repo}.`]
 };
 
+/** Set/change password sheet → the new password, or null if cancelled. */
+function passwordSheet(change) {
+  const field = (id, label, extra = '') => html`<div class="field"><label for="${id}">${label}</label>
+    <input id="${id}" class="input" type="password" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false"${extra}></div>`;
+  const body = html`<div class="st-pwform">
+    <input class="sr-only" type="text" name="username" value="Bigback" autocomplete="username" tabindex="-1" aria-hidden="true">
+    ${field('st-pw1', change ? 'New password' : 'Password', ' autofocus')}
+    ${field('st-pw2', 'Type it again')}
+    <p class="st-pw-err" role="alert"></p>
+    <p class="hint">Saved to your repo as a salted hash, never as the password itself. This device stays unlocked;
+      every other device asks for it once, then remembers it. If you forget it, set a new one from a device that's
+      still unlocked, or delete <code>data/lock.json</code> in the repo on GitHub.</p>
+  </div>`;
+  const valid = w => {
+    const a = w.querySelector('#st-pw1'), b = w.querySelector('#st-pw2'), err = w.querySelector('.st-pw-err');
+    if (a.value.length < MIN_LENGTH) { err.textContent = `Use at least ${MIN_LENGTH} characters.`; a.focus(); return undefined; }
+    if (a.value !== b.value) { err.textContent = "The two passwords don't match."; b.focus(); return undefined; }
+    return a.value;
+  };
+  return sheet({
+    title: change ? 'Change password' : 'Set a password', body,
+    actions: [{ label: 'Cancel', value: null }, { label: 'Save', kind: 'primary', value: valid }],
+    onOpen: (w, close) => {
+      w.querySelector('#st-pw1').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); w.querySelector('#st-pw2').focus(); } });
+      w.querySelector('#st-pw2').addEventListener('keydown', e => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const v = valid(w);
+        if (v !== undefined) close(v);
+      });
+    }
+  });
+}
+
 /** → { ok: true|false|null(unreachable), state, title, sub } */
 async function verify(vals) {
   try {
@@ -174,11 +229,68 @@ export async function render(root) {
   const $ = s => root.querySelector(s);
   let alive = true, checkSeq = 0;
 
-  const conn = $('.st-conn');
-  function setConn(state, title, sub = '') {
-    conn.dataset.state = state;
-    $('.st-conn-title').textContent = title;
-    $('.st-conn-sub').textContent = sub;
+  const conn = $('.st-conn[data-conn="gh"]');
+  function setConn(state, title, sub = '', box = conn) {
+    box.dataset.state = state;
+    box.querySelector('.st-conn-title').textContent = title;
+    box.querySelector('.st-conn-sub').textContent = sub;
+  }
+
+  let lockOn = false, lockSeq = 0;
+  async function paintLock({ force = false } = {}) {
+    const my = ++lockSeq;
+    let cfg = null;
+    try { cfg = await getLock({ force }); } catch { /* treat as no password */ }
+    if (!alive || my !== lockSeq) return;
+    lockOn = validLock(cfg);
+    const connected = !!getPrefs().token, here = rememberedHere();
+    let sub = !lockOn ? 'Anyone with the link can open Bigback.'
+      : here === 'session' ? "Every device asks for it once. This one isn't remembered, so it asks again after you close Bigback."
+      : 'Every device asks for it once, then remembers it.';
+    if (!connected) sub += ` Connect GitHub above to ${lockOn ? 'change or remove it' : 'set one'}.`;
+    setConn(lockOn ? 'ok' : 'off', lockOn ? 'Password is on' : 'No password', sub, $('.st-conn[data-conn="lock"]'));
+    const set = $('[data-act="lock-set"]');
+    set.hidden = false;
+    set.textContent = lockOn ? 'Change password' : 'Set password';
+    set.classList.toggle('btn-primary', !lockOn);
+    set.disabled = !connected;
+    $('[data-act="lock-remove"]').hidden = !lockOn;
+    $('[data-act="lock-remove"]').disabled = !connected;
+    $('[data-act="lock-forget"]').hidden = !lockOn;
+  }
+
+  async function onLock(act, el) {
+    if (act === 'lock-forget') {
+      forgetDevice();
+      location.reload();
+      return;
+    }
+    if (act === 'lock-remove') {
+      const ok = await confirmSheet('Anyone with the link will be able to open Bigback again, on every device.',
+        { title: 'Remove the password?', ok: 'Remove', danger: true });
+      if (!ok || !alive) return;
+      try {
+        await busy(el, saveLock(null));
+        forgetDevice();
+        toast('Password removed', { type: 'ok' });
+      } catch (e) { reportError(e); }
+      if (alive) paintLock();
+      return;
+    }
+    // lock-set
+    if (!lockSupported()) { toast('Open the https site to set a password.', { type: 'error' }); return; }
+    const change = lockOn;
+    const pw = await passwordSheet(change);
+    if (!pw || !alive) return;
+    try {
+      await busy(el, (async () => {
+        const { config, key } = await makeLock(pw);
+        await saveLock(config);
+        remember(key, true);
+      })());
+      toast(change ? 'Password changed. Other devices will ask for the new one.' : 'Password set. This device is remembered.', { type: 'ok' });
+    } catch (e) { reportError(e); }
+    if (alive) paintLock();
   }
   const notConnected = () => setConn('off', 'Not connected', 'Browsing works. Add a token below to save changes from this device.');
 
@@ -272,6 +384,7 @@ export async function render(root) {
 
   async function onAct(e, el) {
     const act = el.dataset.act;
+    if (act.startsWith('lock-')) return onLock(act, el);
     if (act === 'reveal') {
       const input = $('#st-token'), show = input.type === 'password';
       input.type = show ? 'text' : 'password';
@@ -304,7 +417,7 @@ export async function render(root) {
     }
   }
 
-  paintWake(); paintNotify(); paintRepo();
+  paintWake(); paintNotify(); paintRepo(); paintLock({ force: true });
   if (navigator.serviceWorker?.controller && 'caches' in window) $('.st-refresh').hidden = false;
 
   const p = getPrefs();
@@ -319,7 +432,7 @@ export async function render(root) {
     on(root, 'click', '[data-act]', onAct),
     on(root, 'submit', 'form[data-form="gh"]', onSave),
     onWakeLock(paintWake),
-    onPrefs(() => { paintWake(); paintSegs(); })
+    onPrefs(() => { paintWake(); paintSegs(); paintLock(); })
   ];
   return () => { alive = false; offs.forEach(off => off()); };
 }

@@ -3,6 +3,7 @@
 
     python scripts/validate.py
 """
+import base64
 import json
 import re
 import sys
@@ -121,6 +122,23 @@ def main():
             for s in pl.get("recipes") or []:
                 if s not in recipes:
                     warn(f"playlist {pl.get('name')}", f"unknown recipe '{s}'")
+
+    lock_path = ROOT / "data" / "lock.json"
+    if lock_path.exists():
+        lk = load(lock_path)
+        w = "data/lock.json"
+        if not isinstance(lk, dict):
+            err(w, "must be an object (delete the file to turn the password off)")
+        else:
+            if not re.fullmatch(r"[0-9a-f]{64}", lk.get("check") or ""):
+                err(w, "check must be 64 lowercase hex chars")
+            if not isinstance(lk.get("iterations"), int) or lk["iterations"] < 100000:
+                err(w, "iterations must be an integer >= 100000")
+            try:
+                if len(base64.b64decode(lk.get("salt") or "", validate=True)) < 8:
+                    err(w, "salt must be >= 8 bytes")
+            except ValueError:
+                err(w, "salt must be base64")
 
     for p in sorted((ROOT / "journal").glob("*.json")):
         where = p.relative_to(ROOT).as_posix()

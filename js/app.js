@@ -13,6 +13,7 @@
 import { getPrefs, onPrefs } from './prefs.js';
 import { onChange } from './store.js';
 import { $, $$, reportError, toast } from './ui.js';
+import { unlockGate } from './lock.js';
 
 const ROUTES = [
   [/^$/, 'library', () => ({})],
@@ -89,9 +90,17 @@ function applyTheme({ theme }) {
   });
 }
 
-function boot() {
+async function boot() {
   applyTheme(getPrefs());
   onPrefs(applyTheme);
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+
+  // Site password (data/lock.json): nothing renders until it's unlocked or this device is remembered.
+  document.documentElement.classList.add('is-gating');
+  await unlockGate();
+
   window.addEventListener('hashchange', route);
   route();
 
@@ -122,10 +131,6 @@ function boot() {
   // Kitchen tools are global — mounted once, survive navigation.
   for (const [file, fn] of [['./timers.js', 'mount'], ['./stopwatch.js', 'mount'], ['./wakelock.js', 'initWakeLock']]) {
     import(file).then(m => m[fn]?.()).catch(e => console.error(file, e));
-  }
-
-  if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 }
 

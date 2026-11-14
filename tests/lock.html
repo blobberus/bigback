@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>lock.js tests · Bigback</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <style>
+    body { padding-bottom: 24px; }
+    .t-sum { font-weight: 700; margin: 0 0 12px; }
+    .t-sum.bad { color: var(--danger); } .t-sum.good { color: var(--ok); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    td { padding: 6px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+    td:first-child { width: 2.5em; font-weight: 800; }
+    tr.pass td:first-child { color: var(--ok); } tr.fail td:first-child { color: var(--danger); }
+  </style>
+</head>
+<body>
+<!-- Run: python scripts/smoke.py tests/lock.html -->
+<main id="view"><p class="muted">Running…</p></main>
+<!-- WebCrypto needs real time: this holds smoke.py's DOM dump until the release below. -->
+<img hidden alt="" src="/__smoke/hold">
+<script type="module">
+import { makeLock, checkPassword, validLock, remember, forgetDevice, isRemembered, rememberedHere, showLockScreen, ITERATIONS } from '../js/lock.js';
+
+const results = [];
+function ok(name, cond, detail = '') {
+  results.push({ name, ok: !!cond, detail });
+  if (!cond) console.error(`Test failed: ${name} ${detail}`);
+}
+const FAST = { iterations: 2000 };
+const when = (node, test) => new Promise(res => {
+  if (test()) return res();
+  const mo = new MutationObserver(() => { if (test()) { mo.disconnect(); res(); } });
+  mo.observe(node, { subtree: true, childList: true, characterData: true, attributes: true });
+});
+
+try {
+  /* ---------- config + password check ---------- */
+  const { config, key } = await makeLock('basil & thyme', FAST);
+  ok('makeLock builds a valid config', validLock(config), JSON.stringify(config));
+  ok('config stores no password text', !JSON.stringify(config).includes('basil'));
+  ok('key is 64 hex chars and differs from the public check', /^[0-9a-f]{64}$/.test(key) && key !== config.check);
+  ok('right password → same key', (await checkPassword(config, 'basil & thyme')) === key);
+  ok('wrong password → null', (await checkPassword(config, 'basil & thyme ')) === null);
+  ok('case-sensitive', (await checkPassword(config, 'Basil & thyme')) === null);
+  const nfc = await makeLock('crème', FAST);
+  ok('unicode: composed and decomposed é match', (await checkPassword(nfc.config, 'crème')) === nfc.key);
+  const again = await makeLock('basil & thyme', FAST);
+  ok('same password, new salt → different check', again.config.salt !== config.salt && again.config.check !== config.check);
+
+  /* ---------- validLock ---------- */
+  ok('validLock rejects junk', [null, undefined, {}, 'x', { salt: 'AAAAAAAAAAA=', check: 'abc', iterations: 5000 },
+    { ...config, iterations: 10 }, { ...config, salt: '***' }, { ...config, check: config.check.toUpperCase() }].every(c => !validLock(c)));
+  ok('default iterations are OWASP-strength', ITERATIONS >= 600000);
+
+  /* ---------- remembered devices ---------- */
+  forgetDevice();
+  ok('nothing remembered → locked', !(await isRemembered(config)) && rememberedHere() === null);
+  remember(key, true);
+  ok('remember(persist) → localStorage, unlocked', (await isRemembered(config)) && rememberedHere() === 'device');
+  ok('password changed elsewhere → re-locked', !(await isRemembered(again.config)));
+  remember(key, false);
+  ok('remember(session) → sessionStorage only', (await isRemembered(config)) && rememberedHere() === 'session' && !localStorage.getItem('bb.unlock'));
+  localStorage.setItem('bb.unlock', config.check);
+  ok('the public check value does not unlock', !(await isRemembered(config)));
+  forgetDevice();
+  ok('forgetDevice clears both stores', rememberedHere() === null);
+
+  /* ---------- lock screen UI ---------- */
+  const html = document.documentElement;
+  let resolved = false;
+  const done = showLockScreen(config).then(() => { resolved = true; });
+  const el = document.querySelector('.lock');
+  ok('lock screen renders and hides the app', el && html.classList.contains('is-locked') && getComputedStyle(document.querySelector('#view')).display === 'none');
+  ok('password field is focused', document.activeElement?.id === 'lock-pw');
+  const input = el.querySelector('#lock-pw'), form = el.querySelector('form'), err = el.querySelector('.lock-err');
+  form.requestSubmit();
+  ok('empty submit asks for the password', /Enter the password/.test(err.textContent) && !resolved);
+  input.value = 'parsley';
+  form.requestSubmit();
+  await when(err, () => /Wrong/.test(err.textContent));
+  ok('wrong password shows an error and stays locked', /Wrong password/.test(err.textContent) && !resolved && document.contains(el));
+  el.querySelector('.lock-reveal').click();
+  ok('show button reveals the password', input.type === 'text' && el.querySelector('.lock-reveal').getAttribute('aria-pressed') === 'true');
+  input.value = 'basil & thyme';
+  form.elements.remember.checked = true;
+  form.requestSubmit();
+  await done;
+  ok('right password unlocks and removes the screen', resolved && !document.contains(el) && !html.classList.contains('is-locked'));
+  ok('…and remembers this device', (await isRemembered(config)) && rememberedHere() === 'device');
+  forgetDevice();
+
+  /* ---------- real cost ---------- */
+  const t0 = performance.now();
+  const real = await makeLock('timing check');
+  const ms = Math.round(performance.now() - t0);
+  ok(`full-strength derive takes ${ms} ms here (phones ~2–4× slower)`, validLock(real.config) && real.config.iterations === ITERATIONS);
+} catch (e) {
+  ok('suite threw', false, String(e?.stack || e));
+}
+
+const failed = results.filter(r => !r.ok).length;
+document.querySelector('#view').innerHTML = `
+  <p class="t-sum ${failed ? 'bad' : 'good'}">${results.length - failed}/${results.length} passed</p>
+  <table>${results.map(r => `<tr class="${r.ok ? 'pass' : 'fail'}"><td>${r.ok ? '✓' : '✗'}</td><td>${r.name.replace(/</g, '&lt;')}${r.detail && !r.ok ? `<br><small>${r.detail.replace(/</g, '&lt;')}</small>` : ''}</td></tr>`).join('')}</table>`;
+fetch('/__smoke/release').catch(() => {});
+</script>
+</body>
+</html>

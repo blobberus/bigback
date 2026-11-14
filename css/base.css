@@ -231,3 +231,26 @@ textarea.input { min-height: 96px; resize: vertical; line-height: 1.45; }
 .toast-ok { background: var(--ok); color: var(--on-fill); }
 
 @media (min-width: 900px) { :root { --gap: 20px; } h1 { font-size: 2.1rem; } }
+
+/* ---------- lock screen (lock.js) ----------
+   is-gating: deciding whether to lock (blank for a moment). is-locked: only the lock card shows. */
+html.is-gating body > *, html.is-locked body > :not(.lock) { display: none !important; }
+.lock {
+  position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; overflow-y: auto;
+  padding: calc(24px + var(--safe-t)) calc(20px + var(--safe-r)) calc(24px + var(--safe-b)) calc(20px + var(--safe-l));
+  background: var(--bg);
+}
+.lock-card { width: min(100%, 360px); display: grid; gap: 12px; text-align: center; }
+.lock-logo { width: 72px; height: 72px; margin: 0 auto; border-radius: 18px; box-shadow: var(--shadow); }
+.lock-card h1 { margin: 0; }
+.lock-lede { margin: 0 0 6px; }
+.lock-card .field { margin: 0; text-align: left; }
+.lock-secret { display: flex; gap: 6px; }
+.lock-secret .input { flex: 1; min-width: 0; }
+.lock-reveal { flex: none; width: var(--tap); padding: 0; }
+.lock-reveal svg { width: 22px; height: 22px; margin: auto; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.lock-reveal[aria-pressed="true"] { color: var(--accent); }
+.lock-remember { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: var(--tap); color: var(--ink-2); }
+.lock-remember input { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); }
+.lock-err { min-height: 1.5em; margin: 0; color: var(--danger); font-weight: 600; font-size: .9rem; }
+.lock-btn { width: 100%; }

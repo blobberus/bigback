@@ -10,6 +10,7 @@
  *   getJournal(slug)             → { slug, entries:[] }
  *   getPending(id)               → inbox item | null
  *   mediaUrl(path) / rawUrl(path)  image src + fallback (use <img data-fallback>)
+ *   getLock({force})             → data/lock.json config | null (site password; see lock.js)
  *
  * WRITES (need a token → throw NotConnectedError otherwise). Each is one atomic commit.
  *   Library (optimistic + batched ~1.2s into one commit):
@@ -22,6 +23,7 @@
  *   Inbox:    uploadToInbox({ kind, title, url, text, hint, files }) → id    deletePending(id)
  *   Journal:  addNote(slug, { scope, stepId, stepText, text })  addPhoto(slug, file, { text, scope, stepId, stepText })
  *             deleteEntry(slug, entryId)
+ *   Password: saveLock(config | null)   set/replace data/lock.json, or delete it (no password)
  *
  * EVENTS   onChange(fn) — fn({ type, paths }) after any read refresh or write.
  */
@@ -37,6 +39,7 @@ export class NotConnectedError extends Error {
 const P = {
   index: 'recipes/index.json',
   library: 'data/library.json',
+  lock: 'data/lock.json',
   recipe: s => `recipes/${s}.json`,
   journal: s => `journal/${s}.json`,
   inboxItem: id => `inbox/${id}/item.json`
@@ -96,6 +99,7 @@ export const getJournal = async (slug, opts) => {
 };
 export const getPending = (id, opts) => load(P.inboxItem(id), null, opts);
 export async function getLibrary(opts) { return normLib(await load(P.library, EMPTY_LIB, opts)); }
+export const getLock = opts => load(P.lock, null, opts);
 
 function normLib(lib) {
   lib ||= clone(EMPTY_LIB);
@@ -135,6 +139,15 @@ async function write(message, builder) {
     else if (f.obj !== undefined) { mem.set(f.path, f.obj); snap(f.path, f.obj); }
   }
   emit({ type: 'write', message, paths: files.map(f => f.path) });
+}
+
+/* ---------- site password (lock.js builds the config) ---------- */
+export async function saveLock(config) {
+  await write(config ? 'Set site password' : 'Remove site password', async ({ read, json }) => {
+    if (config) return [json(P.lock, config)];
+    return (await read(P.lock)) != null ? [{ path: P.lock, delete: true }] : [];
+  });
+  if (!config) { mem.set(P.lock, null); snap(P.lock, null); }
 }
 
 /* ---------- index helpers (mirror scripts/build_index.py) ---------- */
