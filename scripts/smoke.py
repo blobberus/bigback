@@ -6,6 +6,8 @@ headless Edge/Chrome, prints page-originated console errors and the rendered #vi
     python scripts/smoke.py r/crispy-skillet-chicken-thighs add/custom
     python scripts/smoke.py --dom settings        # also print full #view HTML
 Routes are given without the leading "#/" (Git Bash mangles "#/..." into a path).
+Paths ending in .html (e.g. tests/editor-parse.html) load as standalone pages; a test
+page should render its results inside <main id="view"> and log failures via console.error.
 
 Exit 1 if any route logs an uncaught error or renders the router's error page.
 """
@@ -65,7 +67,10 @@ def main():
         if a.startswith("--"):
             continue
         a = re.sub(r"^[A-Za-z]:/Program Files/Git/", "", a)   # undo MSYS path conversion
-        args.append(a if a.startswith("#") else "#/" + a.lstrip("/"))
+        if a.endswith(".html") or ".html#" in a or ".html?" in a:
+            args.append(a.lstrip("/"))         # standalone page, e.g. tests/parse.html
+        else:
+            args.append(a if a.startswith("#") else "#/" + a.lstrip("/"))
     show_dom = "--dom" in sys.argv
     exe = browser()
     if not exe:

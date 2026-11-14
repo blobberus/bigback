@@ -106,6 +106,7 @@ should have a timer entry (the UI also auto-detects durations in text as a fallb
   "files": ["inbox/<id>/recipe.pdf"],
   "text": null,                 // pasted caption/transcript/recipe text
   "hint": null,                 // user's note to the builder ("use the 2nd version")
+  "blocked": null,              // set by the builder when it can't extract a recipe: "reason / what's needed"
   "createdAt": "…"
 }
 ```
