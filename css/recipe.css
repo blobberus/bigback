@@ -320,7 +320,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 body[data-view="cook"]:not(.ck-plain) .topbar { display: none; }
 body[data-view="cook"]:not(.ck-plain) #view { padding-top: 0; padding-bottom: 0; }
 
-.ck { display: flex; flex-direction: column; min-height: 100dvh; padding-bottom: calc(100px + var(--safe-b)); }
+.ck { display: flex; flex-direction: column; min-height: 100dvh; padding-bottom: calc(100px + var(--safe-b) + var(--tools-h, 56px)); }
 
 .ck-top {
   position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
