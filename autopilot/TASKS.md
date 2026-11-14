@@ -24,14 +24,14 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 - [ ] Inline edit on card long-press or recipe page: tags, rating /10, proficiency /5
 
 ## WS2 — Recipe view (`js/views/recipe.js`, `css/recipe.css`)
-- [ ] Header: hero image, title, summary, times, servings, source link
-- [ ] Collapsible "Flavor profile & deliverables" (profile paragraph)
-- [ ] Ingredients with checkboxes + serving scaler (qty/qtyMax, fraction display)
-- [ ] Steps with tap-to-complete, step timers as buttons (timers[] + auto-detected durations)
-- [ ] Per-step note composer + general recipe notes; submit → journal commit; show history with status
-- [ ] Photo journal: upload photo + note, gallery grid, lightbox showing note
-- [ ] Tags / rating / proficiency editor on the recipe page; "Cooked it" counter
-- [ ] Cook mode: large text, one step at a time, swipe/next/prev
+- [x] Header: hero image, title, summary, times, servings, source link
+- [x] Collapsible "Flavor profile & deliverables" (profile paragraph)
+- [x] Ingredients with checkboxes + serving scaler (qty/qtyMax, fraction display)
+- [x] Steps with tap-to-complete, step timers as buttons (timers[] + auto-detected durations)
+- [x] Per-step note composer + general recipe notes; submit → journal commit; show history with status
+- [x] Photo journal: upload photo + note, gallery grid, lightbox showing note
+- [x] Tags / rating / proficiency editor on the recipe page; "Cooked it" counter
+- [x] Cook mode: large text, one step at a time, swipe/next/prev
 
 ## WS3 — Add & edit (`js/views/add.js`, `css/editor.css`)
 - [ ] Choice screen: Custom recipe vs Upload file/link
