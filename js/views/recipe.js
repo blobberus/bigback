@@ -7,7 +7,7 @@
  * and half-typed notes live in sessionStorage (components/recipe-state.js), shared with cook mode.
  */
 import {
-  getRecipe, getLibrary, entryFor, getJournal, onChange, markCooked, unmarkCooked, addNote, deleteEntry,
+  getRecipe, getLibrary, entryFor, getJournal, onChange, markCooked, unmarkCooked, addNote,
   mediaUrl, rawUrl, NotConnectedError
 } from '../store.js';
 import { setTopbar, on, toast, reportError, confirmSheet, busy } from '../ui.js';
@@ -19,7 +19,7 @@ import { ingredientsHtml, bindIngredients } from '../components/recipe-ingredien
 import { groupBySection, stepTextHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
 import {
   fmtDate, cookedLine, noteListHtml, composerHtml, connectHint, photoGridHtml, photoThumbsHtml,
-  openPhotoUploader, openLightbox
+  openPhotoUploader, openLightbox, confirmDeleteNote
 } from '../components/recipe-journal.js';
 import { isConnected } from '../prefs.js';
 
@@ -316,9 +316,8 @@ export async function render(root, { slug }) {
         break;
       }
       case 'note-delete': {
-        const ok = await confirmSheet('Remove this note from the journal?', { title: 'Delete note?', ok: 'Delete', danger: true });
-        if (!ok) return;
-        try { await deleteEntry(slug, el.dataset.id); toast('Note deleted'); } catch (err) { reportError(err); }
+        const entry = (data.journal?.entries || []).find(x => x.id === el.dataset.id);
+        if (entry) await confirmDeleteNote({ slug, entry });
         break;
       }
       case 'photo-add':

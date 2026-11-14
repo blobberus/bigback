@@ -372,8 +372,10 @@ export async function addPhoto(slug, file, opts = {}) {
   return e;
 }
 
+// Removes exactly one entry (and its photo); every other entry is written back untouched.
 export async function deleteEntry(slug, entryId) {
   requireClient();
+  if (!entryId) throw new Error('No journal entry to delete.');
   const j = await getJournal(slug);
   const photo = j.entries.find(e => e.id === entryId)?.photo;
   await writeJournal(slug, `Delete journal entry on ${name(slug)}`, jj => { jj.entries = jj.entries.filter(e => e.id !== entryId); },

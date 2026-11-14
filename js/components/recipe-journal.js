@@ -3,7 +3,9 @@
  *   fmtDate(iso) → "Nov 14" (year added when not this year)    clip(text, n) → one-line excerpt
  *   cookedLine(entry) → "Cooked 3× · last Nov 14" | "Not cooked yet"
  *   statusPill(entry) → html     open: "Waiting for update" · applied: "Applied" · kept: "Kept as note"
- *   noteListHtml(notes, { steps, showStep }) → html   newest first, with status + resolution
+ *   noteListHtml(notes, { steps, showStep }) → html   newest first, with status + resolution;
+ *       every note (open, applied or kept) has a delete trigger [data-act="note-delete"][data-id]
+ *   confirmDeleteNote({ slug, entry }) → Promise<boolean>   status-aware confirmSheet → store.deleteEntry
  *   composerHtml(key, { draft, placeholder, cancel, label }) → html   <form data-composer-form=key>
  *   connectHint(what) → html     "Connect GitHub in Settings to save notes" (only when !isConnected())
  *   photoGridHtml(photos) / photoThumbsHtml(photos) → html   triggers: [data-act="photo-open"][data-id]
@@ -14,7 +16,7 @@
 import { html, raw } from '../util.js';
 import { sheet, confirmSheet, toast, reportError, busy } from '../ui.js';
 import { isConnected } from '../prefs.js';
-import { addPhoto, deleteEntry, mediaUrl, rawUrl } from '../store.js';
+import { addPhoto, deleteEntry, mediaUrl, rawUrl, NotConnectedError } from '../store.js';
 import { icon } from './recipe-icons.js';
 
 export function fmtDate(iso) {
@@ -67,10 +69,29 @@ export function noteListHtml(notes, { steps = [], showStep = false } = {}) {
       <div class="rx-note-meta">
         ${statusPill(n)}
         <span class="rx-note-date">${fmtDate(n.createdAt)}</span>
-        ${(n.status || 'open') === 'open' ? html`<button type="button" class="rx-link-btn rx-note-del" data-act="note-delete" data-id="${n.id}" aria-label="Delete note">${icon('trash')}</button>` : ''}
+        <button type="button" class="rx-link-btn rx-note-del" data-act="note-delete" data-id="${n.id}" aria-label="Delete note">${icon('trash')}</button>
       </div>
       ${n.resolution ? html`<p class="rx-note-res">${n.resolution}</p>` : ''}
     </li>`)}</ul>`;
+}
+
+const DELETE_MSG = {
+  open: 'Claude hasn’t read this note yet — once it’s deleted it won’t be applied.',
+  applied: 'Claude already folded this note into the recipe. Deleting it removes the note from the journal; the recipe change stays.',
+  kept: 'This removes the note from the journal for good.'
+};
+export async function confirmDeleteNote({ slug, entry }) {
+  if (!isConnected()) { reportError(new NotConnectedError()); return false; }
+  const msg = DELETE_MSG[entry.status] || DELETE_MSG.open;
+  if (!await confirmSheet(msg, { title: 'Delete note?', ok: 'Delete', danger: true })) return false;
+  try {
+    await deleteEntry(slug, entry.id);
+    toast('Note deleted');
+    return true;
+  } catch (err) {
+    reportError(err);
+    return false;
+  }
 }
 
 export function connectHint(what = 'notes') {
