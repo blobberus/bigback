@@ -1,0 +1,2 @@
+All ledger items in autopilot/TASKS.md (WS0–WS7) are complete; 105 commits on 2026-11-14 (target 50).
+The hourly BigbackAutopilot task stops when this file exists. Delete it to resume autopilot work.
