@@ -82,7 +82,7 @@ body { padding-bottom: calc(var(--tools-b) + var(--tools-h, 56px) + 16px); }
 .tt-act:active { transform: scale(.96); background: var(--surface-3); }
 .tt-act svg { width: 20px; height: 20px; }
 .tt-act[data-act="pause"], .tt-act[data-act="resume"] { background: var(--accent-soft); color: var(--accent); }
-.tt-cancel.is-armed { background: var(--danger); color: var(--bg); }
+.tt-cancel.is-armed { background: var(--danger); color: var(--on-fill); }
 
 /* ---------- alarm sheet (ui.js sheet with className "tt-alarm") ---------- */
 .sheet.tt-alarm { text-align: center; }

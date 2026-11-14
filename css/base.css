@@ -1,12 +1,18 @@
 /* base.css — tokens, reset, layout shell, shared components.
    Feature CSS lives in library.css / recipe.css / editor.css / tools.css and must only
-   use these tokens. Z-scale: topbar 20 · nav 30 · tools 40 · sheet 60 · toast 70. */
+   use these tokens. Z-scale: topbar 20 · nav 30 · tools 40 · sheet 60 · toast 70.
+
+   Contrast (WCAG 2.1, both themes): --ink / --ink-2 / --muted / --accent / --danger / --warn / --ok
+   are ≥ 4.5:1 as text on --bg, --surface and --surface-2 (keep --surface-3 for fills, not text).
+   --on-fill is the text/icon colour on solid --accent/--danger/--ok/--warn fills (≥ 4.5:1).
+   --line is decorative (dividers, card edges); --line-strong (≥ 3:1 on --bg/--surface) marks the
+   edge of controls that have no other visible boundary: inputs, switch tracks, empty meters. */
 
 :root {
   --bg: #f6f1e9; --surface: #fffdf9; --surface-2: #efe7db; --surface-3: #e6dccd;
-  --ink: #241f1a; --ink-2: #594f45; --muted: #8a7e71; --line: #e2d7c8;
-  --accent: #b4441e; --accent-ink: #fff; --accent-soft: #f5e1d4; --accent-2: #4f6b2e; --accent-2-soft: #e3ead5;
-  --warn: #a86b12; --danger: #a8321e; --ok: #4f6b2e;
+  --ink: #241f1a; --ink-2: #594f45; --muted: #6f6356; --line: #e2d7c8; --line-strong: #8f8376;
+  --accent: #a83e1a; --accent-ink: #fff; --accent-soft: #f5e1d4; --accent-2: #4f6b2e; --accent-2-soft: #e3ead5;
+  --warn: #8c5a0e; --danger: #a8321e; --ok: #4f6b2e; --on-fill: #fff;
   --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -22,18 +28,18 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #1a1714; --surface: #24201c; --surface-2: #2d2823; --surface-3: #39332c;
-    --ink: #f2ebe1; --ink-2: #cdc1b2; --muted: #9b8f81; --line: #3a332c;
+    --ink: #f2ebe1; --ink-2: #cdc1b2; --muted: #a69a8c; --line: #3a332c; --line-strong: #807466;
     --accent: #e07a4f; --accent-ink: #1a1714; --accent-soft: #3e2a20; --accent-2: #a7c07a; --accent-2-soft: #2c3322;
-    --warn: #e0a84a; --danger: #ec7a64; --ok: #a7c07a;
+    --warn: #e0a84a; --danger: #ec7a64; --ok: #a7c07a; --on-fill: #1a1714;
     --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 6px 20px rgb(0 0 0 / .25); --shadow-lg: 0 10px 40px rgb(0 0 0 / .5);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #1a1714; --surface: #24201c; --surface-2: #2d2823; --surface-3: #39332c;
-  --ink: #f2ebe1; --ink-2: #cdc1b2; --muted: #9b8f81; --line: #3a332c;
+  --ink: #f2ebe1; --ink-2: #cdc1b2; --muted: #a69a8c; --line: #3a332c; --line-strong: #807466;
   --accent: #e07a4f; --accent-ink: #1a1714; --accent-soft: #3e2a20; --accent-2: #a7c07a; --accent-2-soft: #2c3322;
-  --warn: #e0a84a; --danger: #ec7a64; --ok: #a7c07a;
+  --warn: #e0a84a; --danger: #ec7a64; --ok: #a7c07a; --on-fill: #1a1714;
   --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 6px 20px rgb(0 0 0 / .25); --shadow-lg: 0 10px 40px rgb(0 0 0 / .5);
   color-scheme: dark;
 }
@@ -90,7 +96,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; 
 body[data-view="cook"] .bottomnav { display: none; }
 body[data-view="cook"] { padding-bottom: var(--safe-b); }
 
-.offline-banner { display: none; text-align: center; font-size: .8rem; padding: 4px; background: var(--warn); color: #fff; }
+.offline-banner { display: none; text-align: center; font-size: .8rem; padding: 4px; background: var(--warn); color: var(--on-fill); }
 body.is-offline .offline-banner { display: block; }
 
 /* ---------- buttons & inputs ---------- */
@@ -104,7 +110,7 @@ body.is-offline .offline-banner { display: block; }
 .btn:disabled { opacity: .55; cursor: default; }
 .btn svg { width: 18px; height: 18px; }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.btn-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn-danger { background: var(--danger); border-color: var(--danger); color: var(--on-fill); }
 .btn-ghost { background: transparent; border-color: transparent; }
 .btn-soft { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
 .btn-sm { min-height: 34px; padding: 0 12px; font-size: .875rem; }
@@ -122,8 +128,9 @@ body.is-offline .offline-banner { display: block; }
 .field > label, .label { font-size: .8rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); }
 .input {
   width: 100%; min-height: var(--tap); padding: 10px 12px; border-radius: var(--r-sm);
-  border: 1px solid var(--line); background: var(--surface); font-size: 16px; /* ≥16px stops iOS zoom */
+  border: 1px solid var(--line-strong); background: var(--surface); font-size: 16px; /* ≥16px stops iOS zoom */
 }
+.input::placeholder { color: var(--muted); opacity: 1; }
 textarea.input { min-height: 96px; resize: vertical; line-height: 1.45; }
 .input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
 .hint { font-size: .8rem; color: var(--muted); }
@@ -136,10 +143,10 @@ textarea.input { min-height: 96px; resize: vertical; line-height: 1.45; }
 /* switch: <label class="switch"><input type="checkbox"><span></span> Label</label> */
 .switch { display: flex; align-items: center; gap: 12px; min-height: var(--tap); cursor: pointer; }
 .switch input { position: absolute; opacity: 0; }
-.switch span { position: relative; flex: none; width: 50px; height: 30px; border-radius: 999px; background: var(--surface-3); transition: background .2s; }
-.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / .3); transition: transform .2s; }
+.switch span { position: relative; flex: none; width: 50px; height: 30px; border-radius: 999px; background: var(--line-strong); transition: background .2s; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / .3); transition: transform .2s, background .2s; }
 .switch input:checked + span { background: var(--accent-2); }
-.switch input:checked + span::after { transform: translateX(20px); }
+.switch input:checked + span::after { transform: translateX(20px); background: var(--on-fill); }
 .switch input:focus-visible + span { outline: 2.5px solid var(--accent); outline-offset: 2px; }
 
 /* ---------- chips, badges, meters ---------- */
@@ -152,7 +159,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: 1.45; }
 .chip[aria-pressed="true"], .chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .chip-tag { min-height: 24px; padding: 0 9px; font-size: .75rem; background: var(--surface-2); border-color: transparent; cursor: default; }
 .badge { display: inline-flex; align-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-size: .7rem; font-weight: 800; }
-.meter { letter-spacing: 1px; color: var(--accent); font-size: .8em; } .meter-off { color: var(--line); }
+.meter { letter-spacing: 1px; color: var(--accent); font-size: .8em; } .meter-off { color: var(--line-strong); }
 
 /* ---------- surfaces ---------- */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
@@ -187,7 +194,7 @@ textarea.input { min-height: 96px; resize: vertical; line-height: 1.45; }
 #toasts { position: fixed; left: 0; right: 0; bottom: calc(var(--nav-h) + var(--safe-b) + 16px); z-index: 70; display: grid; justify-items: center; gap: 8px; pointer-events: none; padding: 0 16px; }
 .toast { max-width: 480px; padding: 12px 16px; border-radius: 12px; background: var(--ink); color: var(--bg); font-weight: 600; font-size: .9rem; box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(10px); transition: opacity .2s, transform .2s; pointer-events: auto; }
 .toast.show { opacity: 1; transform: none; }
-.toast-error { background: var(--danger); color: #fff; }
-.toast-ok { background: var(--ok); color: #fff; }
+.toast-error { background: var(--danger); color: var(--on-fill); }
+.toast-ok { background: var(--ok); color: var(--on-fill); }
 
 @media (min-width: 900px) { :root { --gap: 20px; } h1 { font-size: 2.1rem; } }
