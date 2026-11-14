@@ -52,7 +52,7 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 ## WS5 — Agent brain (`.claude/`, `scripts/`)
 - [ ] Research-backed skill `.claude/skills/recipe-refinement/` (feedback → precise recipe edits)
 - [ ] Skill `.claude/skills/recipe-ingest/` (raw PDF/video/link/text → schema recipe + profile)
-- [ ] Router `.claude/router/update-site.md` + slash command `.claude/commands/update-site.md`
+- [x] Router `.claude/router/update-site.md` + slash command `.claude/commands/update-site.md`
 - [ ] `scripts/pending.py` compact worklist output; `scripts/finalize_inbox.py` helper (git mv + library entry)
 
 ## WS6 — Integration & polish (after WS1–5 merge)
