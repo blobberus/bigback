@@ -40,10 +40,29 @@ def browser():
     return shutil.which("msedge") or shutil.which("chrome") or shutil.which("chromium")
 
 
+# Real-time test pages. Headless normally runs on virtual time, which starves real-time async
+# work such as WebCrypto. A page that contains <img hidden src="/__smoke/hold"> runs in real
+# time instead: the pending image delays the load event (and so --dump-dom) until the page
+# fetches /__smoke/release, or 30 s pass. Outside smoke.py both URLs just 404.
+RELEASE = threading.Event()
+HOLD = "/__smoke/hold"
+
+
 def serve():
     class Quiet(http.server.SimpleHTTPRequestHandler):
         def log_message(self, *a):
             pass
+
+        def do_GET(self):
+            if self.path.startswith("/__smoke/"):
+                if self.path.startswith(HOLD):
+                    RELEASE.wait(30)
+                else:
+                    RELEASE.set()
+                self.send_response(204)
+                self.end_headers()
+                return
+            super().do_GET()
 
     handler = functools.partial(Quiet, directory=str(ROOT))
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
@@ -51,10 +70,11 @@ def serve():
     return srv
 
 
-def run(exe, url, profile):
+def run(exe, url, profile, realtime=False):
+    clock = [] if realtime else ["--virtual-time-budget=5000"]
     cmd = [exe, "--headless=new", "--disable-gpu", "--no-first-run", "--disable-extensions",
            f"--user-data-dir={profile}", "--enable-logging=stderr", "--v=0",
-           "--virtual-time-budget=5000", "--window-size=390,844", "--dump-dom", url]
+           *clock, "--window-size=390,844", "--dump-dom", url]
     p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
     return p.stdout, p.stderr
 
@@ -81,7 +101,10 @@ def main():
     failed = False
     with tempfile.TemporaryDirectory() as profile:
         for route in args or DEFAULT_ROUTES:
-            dom, log = run(exe, base + route, profile)
+            page = ROOT / re.split(r"[#?]", route)[0] if ".html" in route else None
+            realtime = bool(page and page.is_file() and HOLD in page.read_text(encoding="utf-8"))
+            RELEASE.clear()
+            dom, log = run(exe, base + route, profile, realtime)
             errs = []
             for line in log.splitlines():
                 if "CONSOLE" not in line or "127.0.0.1" not in line:

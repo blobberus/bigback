@@ -140,7 +140,7 @@
     document.body.append(box);
     const cleanup = await (await import('../js/views/settings.js')).render(box, { query: new URLSearchParams() });
     const $s = s => box.querySelector(s);
-    check('settings renders all sections', ['Kitchen', 'Appearance', 'GitHub sync', 'About'].every(t => box.textContent.includes(t)));
+    check('settings renders all sections', ['Kitchen', 'Appearance', 'GitHub sync', 'Password', 'About'].every(t => box.textContent.includes(t)));
     check('wake status text shown', $s('#st-wake').textContent.length > 3);
     $s('[data-theme="dark"]').click();
     check('theme segment sets prefs', P.getPrefs().theme === 'dark' && $s('[data-theme="dark"]').getAttribute('aria-pressed') === 'true');
@@ -150,7 +150,7 @@
     check('sound switch sets prefs', P.getPrefs().sound === snd.checked);
     snd.click();
     $s('[data-act="reveal"]').click();
-    check('token show/hide', $s('#st-token').type === 'text' && $s('[data-act="reveal"]').getAttribute('aria-pressed') === 'true');
+    check('token show/hide', $s('#st-token').type === 'text' && $s('[data-act="reveal"]').getAttribute('aria-label') === 'Hide token');
     $s('#st-token').value = '';
     $s('#st-branch').value = 'main';
     $s('form[data-form="gh"]').requestSubmit();
