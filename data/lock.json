@@ -4,5 +4,10 @@
   "iterations": 600000,
   "salt": "uGTsmlnbAqnLfDPpl8MuCA==",
   "check": "1c5bcbb55f91750d093a431bee095d8d5044a3aba54a0dd835ecfd5bb66752ba",
-  "updatedAt": "2026-11-14T20:28:11Z"
+  "updatedAt": "2026-11-14T21:55:39Z",
+  "vault": {
+    "alg": "AES-GCM",
+    "iv": "zQz4FMBo7PLGzAL6",
+    "data": "uarOs6sZCpFwcyETqSGmA2axTuropbXkfH7fWqSkVdw5FUZh98n5SSftv+7hUY7YQ/0xEziDH8m5dugJWFpntntVV/wKr4oCH+A9xSVq5UCCs8DU3+k3KPgxqSiGJqSMMhAF1/+DbR+CJRPcgA=="
+  }
 }
