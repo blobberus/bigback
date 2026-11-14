@@ -1,1 +1,69 @@
-/* library.css — feature styles. Use tokens from base.css only. */
+/* library.css — library list, playlists, filter sheet, meta editor. Tokens from base.css only. */
+
+/* ---------- shared bits ---------- */
+.connect-hint {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 0;
+  padding: 10px 14px; border-radius: var(--r-sm); background: var(--surface-2);
+  color: var(--ink-2); font-size: .85rem; line-height: 1.35;
+}
+.connect-hint a { font-weight: 700; }
+
+/* metaSummary(entry): compact read-only chips */
+.meta-sum { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: .85rem; }
+.ms-item { font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.ms-rating { color: var(--ink); }
+.ms-blank { font-weight: 500; color: var(--muted); }
+.ms-more { font-weight: 600; color: var(--muted); font-size: .75rem; }
+.ms-prof .meter { font-size: .8rem; }
+
+/* ---------- meta editor sheet ---------- */
+.meta-ed { display: grid; gap: 22px; padding-bottom: 2px; }
+.me-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 32px; margin-bottom: 8px; }
+.me-head .label { margin: 0; font-family: var(--font-body); }
+.me-val { display: inline-flex; align-items: center; gap: 2px; font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; color: var(--ink); }
+.me-blank { font-family: var(--font-body); font-size: .9rem; font-weight: 500; color: var(--muted); }
+.me-clear {
+  min-height: var(--tap); padding: 0 4px 0 12px; border: 0; background: none; cursor: pointer;
+  font: inherit; font-family: var(--font-body); font-size: .85rem; font-weight: 600; color: var(--accent);
+}
+
+.me-scale { display: grid; gap: 6px; }
+.me-scale-5, .me-scale-10 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (min-width: 520px) { .me-scale-10 { grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 5px; } }
+.me-pill {
+  min-height: var(--tap); padding: 0; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--ink-2); font-size: 1rem; font-weight: 700;
+  font-variant-numeric: tabular-nums; cursor: pointer; transition: background .12s, color .12s, border-color .12s, transform .08s;
+}
+.me-pill:active { transform: scale(.94); }
+.me-pill.is-fill { background: color-mix(in srgb, var(--accent-soft) 75%, var(--surface)); border-color: transparent; color: var(--accent); }
+.me-pill[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.me-anchors { display: flex; justify-content: space-between; margin-top: 6px; font-size: .75rem; color: var(--muted); }
+
+.tag-box {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: var(--tap); padding: 5px 6px;
+  border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); cursor: text;
+}
+.tag-box:focus-within { outline: 2px solid var(--accent); border-color: transparent; }
+.tag-list { display: contents; }
+.tag-chip {
+  display: inline-flex; align-items: center; min-height: 32px; padding: 0 0 0 12px; border-radius: 999px;
+  background: var(--surface-2); color: var(--ink); font-size: .875rem; font-weight: 600;
+}
+.tag-chip button {
+  position: relative; display: grid; place-items: center; width: 32px; height: 32px; padding: 0;
+  border: 0; border-radius: 50%; background: none; color: var(--muted); cursor: pointer;
+}
+.tag-chip button::after { content: ""; position: absolute; inset: -6px -4px; }
+.tag-chip svg { width: 16px; height: 16px; }
+.tag-entry {
+  flex: 1 1 8ch; min-width: 8ch; min-height: 32px; padding: 0 6px; border: 0; outline: 0;
+  background: transparent; font-size: 16px;
+}
+.me-sugg { margin-top: 10px; }
+.me-sugg .chip, .me-pls .chip { min-height: 36px; }
+.me-sugg .chip svg, .me-pls .chip svg { width: 15px; height: 15px; margin-left: -3px; }
+.me-sugg-new { border-style: dashed; color: var(--ink); }
+.me-pl-new { border-style: dashed; }
+.me-newpl { display: flex; gap: 8px; margin-top: 10px; }
+.me-newpl .input { flex: 1; }
