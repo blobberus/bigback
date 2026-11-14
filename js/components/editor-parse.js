@@ -11,7 +11,9 @@
  *   formatIngredients(list)     → textarea text incl. section header lines
  *   parseSteps(text)            → [{ section, text, tip, timers:[{ label, seconds }] }]
  *                                 one step per paragraph (blank line), or per line if no blank lines;
- *                                 "Tip: …" right after a step → its tip
+ *                                 "Tip: …" right after a step → its tip; a "…:" line is a section header,
+ *                                 unless it reads as an instruction ("Make the dressing:") and is alone in
+ *                                 its paragraph (blank line after) — then it stays a step
  *   formatSteps(steps)          → textarea text (paragraphs, "Section:" headers, "Tip:" lines)
  *   detectTimers(text, n)       → [{ label, seconds }]   via util.parseDurations; ranges → low value
  *   timerLabel(text, index, n)  → "Simmer", "Rest chicken", … or "Step n"
@@ -305,19 +307,30 @@ export function formatIngredients(list = []) {
 /* ---------- steps ---------- */
 const STEP_NUM_RE = /^(?:step\s*)?\d{1,2}\s*[.):]\s+|^step\s+\d{1,2}\s*[-–—]?\s+/i;
 const TIP_RE = /^tips?\s*[:\-–—]\s*(.+)$/i;
+const LEAD_VERBS = new Set(('add combine make prepare place put transfer season toss pour assemble serve chop slice dice cut ' +
+  'arrange spread top garnish remove divide shape roll fold layer line grease sprinkle scatter squeeze rub coat dredge dip ' +
+  'stuff fill wrap pat finish start trim peel mince grate zest juice measure sift gather').split(' '));
+const LEAD_OBJECTS = new Set('it them this these that those everything together'.split(' '));
+/** "Make the dressing:", "Whisk together:" read as an instruction; "Pan sauce:", "Brown butter:" as a label. */
+function isInstruction(line) {
+  const w = stripBullet(line).replace(/\s*:$/, '').toLowerCase().split(/\s+/);
+  return w.length > 1 && (VERBS.has(w[0]) || LEAD_VERBS.has(w[0])) && (DETS.has(w[1]) || LEAD_OBJECTS.has(w[1]));
+}
 
-/** Textarea → steps (no ids). */
+/** Textarea → steps (no ids). An instruction-like "…:" line alone in its paragraph stays a step. */
 export function parseSteps(text) {
   const src = String(text ?? '').replace(/\r\n?/g, '\n');
   const paragraphs = /\n[ \t]*\n/.test(src.trim());
+  const lines = src.split('\n');
   const steps = [];
   let section = null, cur = null;
   const flush = () => { if (cur?.text) steps.push(cur); cur = null; };
-  for (const raw of src.split('\n')) {
-    const t = raw.trim();
+  for (let i = 0; i < lines.length; i++) {
+    const t = lines[i].trim();
     if (!t) { if (paragraphs) flush(); continue; }
     const h = headerOf(t, 48);
-    if (h !== undefined) { flush(); section = h; continue; }
+    const loneStep = paragraphs && !cur && !lines[i + 1]?.trim() && isInstruction(t);
+    if (h !== undefined && !loneStep) { flush(); section = h; continue; }
     const tip = t.match(TIP_RE);
     if (tip) {
       const target = cur || steps[steps.length - 1];
@@ -338,9 +351,15 @@ export function formatSteps(steps = []) {
   let section = null;
   for (const s of steps || []) {
     const sec = s.section || null;
-    if (sec !== section) { blocks.push(sec ? `${sec}:` : '---'); section = sec; }
+    let head = '';
+    if (sec !== section) {
+      // an instruction-like name ("Make the glaze") sits right on its first step, else it would re-parse as a step
+      if (sec && isInstruction(sec)) head = `${sec}:\n`;
+      else blocks.push(sec ? `${sec}:` : '---');
+      section = sec;
+    }
     const text = String(s.text || '').replace(/\s*\n\s*/g, ' ').trim();
-    blocks.push(s.tip ? `${text}\nTip: ${String(s.tip).replace(/\s*\n\s*/g, ' ').trim()}` : text);
+    blocks.push(head + (s.tip ? `${text}\nTip: ${String(s.tip).replace(/\s*\n\s*/g, ' ').trim()}` : text));
   }
   return blocks.join('\n\n');
 }

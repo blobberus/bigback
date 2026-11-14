@@ -35,7 +35,7 @@ export const toStr = v => (v && v[RAW] ? v.s : String(v ?? ''));
 
 export function slugify(s) {
   return String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '')
-    .replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'recipe';
+    .replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+/, '').slice(0, 60).replace(/-+$/, '') || 'recipe';
 }
 
 /** uid('n') → "n-20261114-ab12" ; uid() → "20261114-101500-ab12" */
@@ -72,9 +72,10 @@ export function fmtClock(ms, { tenths = false } = {}) {
 
 const UNIT_SECONDS = { s: 1, sec: 1, secs: 1, second: 1, seconds: 1, m: 60, min: 60, mins: 60, minute: 60, minutes: 60, h: 3600, hr: 3600, hrs: 3600, hour: 3600, hours: 3600 };
 const FRACTIONS = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3 };
-const NUM = String.raw`(\d+(?:[.,]\d+)?(?:\s*[½¼¾⅓⅔])?|[½¼¾⅓⅔]|an?|one|two|three|four|five|six|ten|fifteen|twenty|thirty|forty|forty-five)`;
+const NUM = String.raw`(\d+(?:[.,]\d+)?(?:\s*[½¼¾⅓⅔])?|[½¼¾⅓⅔]|an?|one|two|three|four|five|six|ten|fifteen|twenty|thirty|forty-five|forty)`;
 const WORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, ten: 10, fifteen: 15, twenty: 20, thirty: 30, forty: 40, 'forty-five': 45 };
-const DUR_RE = new RegExp(String.raw`\b${NUM}(?:\s*(?:-|–|to)\s*${NUM})?\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\b(?:\s*(?:and\s*)?${NUM}\s*(minutes?|mins?|m|seconds?|secs?)\b)?`, 'gi');
+// (?<!\w) rather than \b: \b never matches before a bare "½" (two non-word chars in a row)
+const DUR_RE = new RegExp(String.raw`(?<!\w)${NUM}(?:\s*(?:-|–|to)\s*${NUM})?\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\b(?:\s*(?:and\s*)?${NUM}\s*(minutes?|mins?|m|seconds?|secs?)\b)?`, 'gi');
 
 function toNum(t) {
   if (t == null) return NaN;
