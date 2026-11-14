@@ -87,7 +87,6 @@ export async function render(root, { slug }) {
     io?.disconnect();
     const t = root.querySelector('.rx-title');
     if (!t || !('IntersectionObserver' in window)) { document.body.classList.add(PAST_TITLE); return; }
-    document.body.classList.remove(PAST_TITLE);
     io = new IntersectionObserver(([en]) => {
       document.body.classList.toggle(PAST_TITLE, !en.isIntersecting && en.boundingClientRect.top < 80);
     }, { rootMargin: '-60px 0px 0px 0px' });
@@ -251,8 +250,10 @@ export async function render(root, { slug }) {
 
   function changelog(r) {
     const log = (r.changelog || []).filter(Boolean);
+    // Newest first; entries on the same day keep "last written first".
+    const sorted = log.map((c, k) => [c, k]).sort((a, b) => String(b[0].date || '').localeCompare(String(a[0].date || '')) || b[1] - a[1]).map(([c]) => c);
     const body = log.length
-      ? html`<ol class="rx-log">${[...log].reverse().map(c => html`
+      ? html`<ol class="rx-log">${sorted.map(c => html`
           <li><time datetime="${c.date || ''}">${fmtDate(c.date) || c.date || ''}</time><p>${c.summary}</p></li>`)}</ol>`
       : html`<p class="muted small">No changes yet. When Claude folds in your notes, each change is logged here.</p>`;
     return details('changelog', html`Changelog <span class="rx-count-pill">${log.length}</span>`, body);

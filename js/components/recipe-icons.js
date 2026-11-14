@@ -1,6 +1,6 @@
 /**
  * components/recipe-icons.js — inline stroke icons for the recipe page and cook mode.
- *   icon(name, cls?) → html raw  (<svg class="ic …" aria-hidden="true">)
+ *   icon(name, cls?) → html raw  (<svg class="rx-ic …" aria-hidden="true">)
  * Names: timer check plus minus edit flame camera note external file chevL chevR close
  *        list trash reset pan info spark
  */
@@ -29,4 +29,4 @@ const P = {
 };
 
 export const icon = (name, cls = '') =>
-  raw(`<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true">${P[name] || ''}</svg>`);
+  raw(`<svg class="rx-ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true">${P[name] || ''}</svg>`);

@@ -1,6 +1,6 @@
 /* recipe.css — recipe page (.rx-*) and cook mode (.ck-*). Tokens from base.css only. */
 
-.ic { width: 20px; height: 20px; flex: none; }
+.rx-ic { width: 20px; height: 20px; flex: none; }
 
 /* The recipe name joins the top bar only once the big title has scrolled away. */
 body[data-view="recipe"] #topbar-title { transition: opacity .2s; }
@@ -21,7 +21,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
     radial-gradient(90% 120% at 100% 100%, var(--accent-2-soft), transparent 60%),
     var(--surface-2);
 }
-.rx-hero-ph .ic { width: 58px; height: 58px; stroke-width: 1.2; opacity: .6; }
+.rx-hero-ph .rx-ic { width: 58px; height: 58px; stroke-width: 1.2; opacity: .6; }
 @media (min-width: 700px) {
   .rx-hero { margin: 0; border-radius: var(--r-lg); }
   .rx-hero-ph { height: 160px; }
@@ -50,17 +50,17 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 }
 .rx-source-bits { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: center; }
 .rx-source a { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; font-weight: 600; }
-.rx-source .ic { width: 15px; height: 15px; }
+.rx-source .rx-ic { width: 15px; height: 15px; }
 .rx-dot { color: var(--muted); }
 
 .rx-notice {
   display: flex; gap: 10px; align-items: flex-start; margin: 16px 0 0; padding: 12px 14px;
   border-radius: var(--r); background: var(--accent-2-soft); color: var(--ink); font-size: .92rem; line-height: 1.45;
 }
-.rx-notice .ic { color: var(--accent-2); margin-top: 1px; }
+.rx-notice .rx-ic { color: var(--accent-2); margin-top: 1px; }
 
 .rx-cook-btn { margin-top: 20px; min-height: 54px; font-size: 1.05rem; }
-.rx-cook-btn .ic { width: 22px; height: 22px; }
+.rx-cook-btn .rx-ic { width: 22px; height: 22px; }
 
 /* ---------- your meta ---------- */
 .rx-you { margin-top: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
@@ -69,7 +69,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 .rx-you-meta { flex: 1; min-width: 0; }
 .rx-you-cooked { flex: 1; min-width: 0; font-size: .95rem; color: var(--ink-2); }
 .rx-you-btn { flex: none; padding: 0 14px; font-size: .9rem; }
-.rx-you-btn .ic { width: 17px; height: 17px; }
+.rx-you-btn .rx-ic { width: 17px; height: 17px; }
 
 /* ---------- collapsibles ---------- */
 .rx-details { margin-top: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
@@ -114,7 +114,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
   display: inline-flex; align-items: center; gap: 5px; min-height: var(--tap); padding: 0 8px; border: 0;
   border-radius: var(--r-sm); background: none; color: var(--accent); font-weight: 700; font-size: .88rem; cursor: pointer;
 }
-.rx-link-btn .ic { width: 16px; height: 16px; }
+.rx-link-btn .rx-ic { width: 16px; height: 16px; }
 
 /* ---------- scaler + ingredients ---------- */
 .rx-scaler {
@@ -152,7 +152,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
   border-radius: 50%; border: 2px solid color-mix(in srgb, var(--muted) 55%, transparent);
   background: var(--surface); color: transparent; transition: background .15s, border-color .15s, color .15s;
 }
-.rx-check .ic { width: 15px; height: 15px; stroke-width: 3.2; }
+.rx-check .rx-ic { width: 15px; height: 15px; stroke-width: 3.2; }
 .rx-ing.is-checked .rx-check { background: var(--accent-2); border-color: var(--accent-2); color: var(--surface); }
 .rx-ing-input:focus-visible + .rx-check { outline: 2.5px solid var(--accent); outline-offset: 2px; }
 .rx-ing-text { display: grid; gap: 2px; min-width: 0; font-size: 1.05rem; line-height: 1.4; transition: color .15s; }
@@ -193,7 +193,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
   border-radius: 7px; background: var(--accent-soft); color: var(--accent); font: inherit; font-weight: 650;
   line-height: inherit; cursor: pointer; white-space: nowrap;
 }
-.rx-dur .ic { width: 15px; height: 15px; align-self: center; }
+.rx-dur .rx-ic { width: 15px; height: 15px; align-self: center; }
 .rx-dur .rx-timer-time { margin-left: 2px; padding-left: 7px; border-left: 1px solid currentColor; font-variant-numeric: tabular-nums; }
 .rx-dur.is-running { background: var(--accent); color: var(--accent-ink); }
 
@@ -204,14 +204,14 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
   font-weight: 700; font-size: .95rem; cursor: pointer; transition: background .15s, color .15s, transform .08s;
 }
 .rx-timer:active { transform: scale(.97); }
-.rx-timer .ic { width: 19px; height: 19px; }
+.rx-timer .rx-ic { width: 19px; height: 19px; }
 .rx-timer-label { color: var(--ink); }
 .rx-timer-sep { opacity: .45; }
 .rx-timer-time { font-variant-numeric: tabular-nums; }
 .rx-timer.is-running { background: var(--accent); color: var(--accent-ink); }
 .rx-timer.is-running .rx-timer-label { color: inherit; }
-.rx-timer.is-running .ic, .rx-dur.is-running .ic { animation: rx-pulse 1.2s ease-in-out infinite; }
-.rx-timer.is-paused .ic, .rx-dur.is-paused .ic { animation: none; opacity: .6; }
+.rx-timer.is-running .rx-ic, .rx-dur.is-running .rx-ic { animation: rx-pulse 1.2s ease-in-out infinite; }
+.rx-timer.is-paused .rx-ic, .rx-dur.is-paused .rx-ic { animation: none; opacity: .6; }
 .rx-timer.is-done, .rx-dur.is-done { background: var(--accent-2-soft); color: var(--ok); }
 @keyframes rx-pulse { 50% { opacity: .35; } }
 
@@ -236,7 +236,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
   padding: 0 8px; border: 0; border-radius: var(--r-sm); background: none; color: var(--muted);
   font-size: .88rem; font-weight: 600; cursor: pointer;
 }
-.rx-addnote .ic { width: 17px; height: 17px; }
+.rx-addnote .rx-ic { width: 17px; height: 17px; }
 .rx-addnote:hover, .rx-addnote:focus-visible { color: var(--accent); }
 
 /* ---------- notes ---------- */
@@ -245,7 +245,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 .rx-composer textarea { min-height: 92px; }
 .rx-composer-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .rx-hint { display: flex; gap: 8px; align-items: flex-start; margin: 0; font-size: .86rem; color: var(--muted); }
-.rx-hint .ic { width: 17px; height: 17px; margin-top: 1px; }
+.rx-hint .rx-ic { width: 17px; height: 17px; margin-top: 1px; }
 .rx-hint a { font-weight: 700; }
 .rx-section > .rx-hint { margin-bottom: 12px; }
 
@@ -264,7 +264,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
   display: inline-flex; align-items: center; gap: 4px; min-height: 24px; padding: 0 9px; border-radius: 999px;
   font-size: .74rem; font-weight: 750; white-space: nowrap;
 }
-.rx-pill .ic { width: 13px; height: 13px; stroke-width: 3; }
+.rx-pill .rx-ic { width: 13px; height: 13px; stroke-width: 3; }
 .rx-pill-open { background: color-mix(in srgb, var(--warn) 15%, transparent); color: var(--warn); }
 .rx-pill-applied { background: var(--accent-2-soft); color: var(--ok); }
 .rx-pill-kept { background: var(--surface-2); color: var(--ink-2); }
@@ -283,7 +283,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
   position: absolute; right: 6px; bottom: 6px; display: grid; place-items: center; width: 26px; height: 26px;
   border-radius: 50%; background: color-mix(in srgb, var(--surface) 88%, transparent); color: var(--ink);
 }
-.rx-photo-note .ic { width: 15px; height: 15px; }
+.rx-photo-note .rx-ic { width: 15px; height: 15px; }
 .rx-empty-line {
   margin: 0; padding: 22px 16px; text-align: center; border: 1.5px dashed var(--line);
   border-radius: var(--r); color: var(--muted); font-size: .93rem;
@@ -352,10 +352,10 @@ body[data-view="cook"]:not(.ck-plain) #view { padding-top: 0; padding-bottom: 0;
   line-height: 1.42; letter-spacing: -.005em; text-wrap: pretty;
 }
 .ck .rx-dur { padding: 0 10px 0 8px; border-radius: 10px; }
-.ck .rx-dur .ic { width: .8em; height: .8em; }
+.ck .rx-dur .rx-ic { width: .8em; height: .8em; }
 .ck .rx-timers { gap: 10px; margin-top: 28px; }
 .ck .rx-timer { min-height: 62px; padding: 0 24px 0 18px; gap: 10px; font-size: 1.15rem; }
-.ck .rx-timer .ic { width: 24px; height: 24px; }
+.ck .rx-timer .rx-ic { width: 24px; height: 24px; }
 .ck-tip { margin-top: 24px; font-size: 1.02rem; padding: 12px 16px; }
 .ck-note { align-self: flex-start; margin: 18px 0 0 -8px; }
 .ck-upnext {
@@ -382,7 +382,7 @@ body[data-view="cook"]:not(.ck-plain) #view { padding-top: 0; padding-bottom: 0;
   border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
 }
 .ck-nav .btn { min-height: 64px; border-radius: 20px; font-size: 1.12rem; gap: 10px; }
-.ck-nav .btn .ic { width: 24px; height: 24px; }
+.ck-nav .btn .rx-ic { width: 24px; height: 24px; }
 .ck-prev:disabled { opacity: .4; }
 .ck-finish { background: var(--ink); border-color: var(--ink); color: var(--bg); }
 
