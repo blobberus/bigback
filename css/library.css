@@ -125,6 +125,10 @@
   color: var(--accent); font-size: .85rem; font-weight: 700; white-space: nowrap;
 }
 .qchips-sep { flex: none; width: 1px; height: 22px; margin: 0 4px; background: var(--line); }
+/* Wider screens: wrap instead of scrolling sideways (mouse users can't swipe). */
+@media (min-width: 600px) {
+  .qchips { flex-wrap: wrap; row-gap: 8px; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; overflow: visible; }
+}
 
 /* ---------- filter sheet ---------- */
 .fsheet { display: grid; gap: 20px; }

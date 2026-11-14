@@ -400,7 +400,16 @@ export async function render(root, params) {
     <div data-part="plhead"></div>
     <div data-part="pending"></div>
     <div class="qchips" data-part="chips" role="group" aria-label="Quick filters"></div>
-    <div class="lib-count" data-part="count"></div>
+    <div class="lib-count" data-part="count">
+      <p class="lib-count-n" aria-live="polite"></p>
+      <label class="sort">
+        <span class="sort-label">Sort</span>
+        <select class="sort-select" aria-label="Sort recipes">
+          ${Object.entries(SORTS).map(([k, l]) => html`<option value="${k}">${l}</option>`)}
+        </select>
+        ${raw(ICON.chevron)}
+      </label>
+    </div>
     <ul class="rlist" data-part="list"></ul>
     <div data-part="empty"></div>
     <div class="lib-foot" data-part="foot"></div>
@@ -408,14 +417,34 @@ export async function render(root, params) {
   const part = n => root.querySelector(`[data-part="${n}"]`);
   const input = root.querySelector('.search-input');
   const clearBtn = root.querySelector('.search-clear');
+  const countEl = root.querySelector('.lib-count-n');
+  const sortEl = root.querySelector('.sort-select');
+  // Only touch the DOM when a part's markup changed (no image reloads), and carry keyboard
+  // focus over to the equivalent element when it is re-rendered.
+  const last = {};
+  const focusKey = a => {
+    const card = a.closest('.rcard'), q = v => CSS.escape(v);
+    if (card) return `.rcard[data-slug="${q(card.dataset.slug)}"] ${a.dataset.act ? `[data-act="${q(a.dataset.act)}"]` : '.rcard-link'}`;
+    if (a.dataset.k) return `[data-k="${q(a.dataset.k)}"][data-v="${q(a.dataset.v || '')}"]`;   // chip moved add ↔ rm
+    return a.dataset.act ? `[data-act="${q(a.dataset.act)}"]` : null;
+  };
+  const put = (n, markup) => {
+    const str = String(markup ?? '');
+    if (last[n] === str) return str;
+    const el = part(n), a = document.activeElement;
+    const key = a && a !== document.body && el.contains(a) ? focusKey(a) : null;
+    el.innerHTML = str; last[n] = str;
+    if (key) el.querySelector(key)?.focus({ preventScroll: true });
+    return str;
+  };
 
   function paint() {
     if (leaving) return;
     topbar();
     if (plId && !pl) {                                   // deleted (maybe on another device)
       ['bar', 'chips', 'count', 'plhead'].forEach(n => { part(n).hidden = true; });
-      ['list', 'pending', 'foot'].forEach(n => { part(n).innerHTML = ''; });
-      part('empty').innerHTML = missingPlaylist();
+      ['list', 'pending', 'foot'].forEach(n => put(n, ''));
+      put('empty', missingPlaylist());
       return;
     }
     const nf = filterCount(s);
@@ -425,35 +454,26 @@ export async function render(root, params) {
     const f = facets(rows, plSets);
 
     part('plhead').hidden = !pl;
-    part('plhead').innerHTML = pl ? playlistHead(rows.length) : '';
+    put('plhead', pl ? playlistHead(rows.length) : '');
     part('bar').hidden = !any;
     const fbtn = root.querySelector('.filter-btn');
     fbtn.classList.toggle('is-active', nf > 0);
     fbtn.setAttribute('aria-label', nf ? `Filters, ${nf} active` : 'Filters');
     part('nf').hidden = !nf;
     part('nf').textContent = nf || '';
-    part('pending').innerHTML = !plId && !narrowed && idx.pending.length ? pendingStrip(idx.pending) : '';
-    const chips = any ? quickChips(s, lib, f) : '';
-    part('chips').hidden = !chips;
-    part('chips').innerHTML = chips;
+    put('pending', !plId && !narrowed && idx.pending.length ? pendingStrip(idx.pending) : '');
+    part('chips').hidden = !put('chips', any ? quickChips(s, lib, f) : '');
     part('count').hidden = !any;
-    part('count').innerHTML = html`
-      <p class="lib-count-n" aria-live="polite">${narrowed ? `${shown.length} of ${plural(rows.length, 'recipe')}` : plural(rows.length, 'recipe')}</p>
-      <label class="sort">
-        <span class="sort-label">Sort</span>
-        <select class="sort-select" aria-label="Sort recipes">
-          ${Object.entries(SORTS).map(([k, l]) => html`<option value="${k}" ${k === s.sort ? raw('selected') : ''}>${l}</option>`)}
-        </select>
-        ${raw(ICON.chevron)}
-      </label>`;
-    part('list').innerHTML = html`${shown.map(x => card(x, pl))}`;
-    part('empty').innerHTML = !any ? (pl ? emptyPlaylist(pl) : emptyLibrary(idx.pending.length > 0))
+    countEl.textContent = narrowed ? `${shown.length} of ${plural(rows.length, 'recipe')}` : plural(rows.length, 'recipe');
+    if (sortEl.value !== s.sort) sortEl.value = s.sort;
+    put('list', html`${shown.map(x => card(x, pl))}`);
+    put('empty', !any ? (pl ? emptyPlaylist(pl) : emptyLibrary(idx.pending.length > 0))
       : !shown.length ? html`<div class="empty lib-empty">
           <h2>No recipes match</h2>
           <p>${nf ? 'Try loosening the filters or a different search.' : 'Try a different search.'}</p>
           <button type="button" class="btn" data-act="clear-all">${nf && s.q.trim() ? 'Clear search & filters' : nf ? 'Clear filters' : 'Clear search'}</button>
-        </div>` : '';
-    part('foot').innerHTML = any ? connectHint() : '';
+        </div>` : '');
+    put('foot', any ? connectHint() : '');
   }
 
   /* hash sync — replaceState never fires hashchange, so no re-route loop */
@@ -571,7 +591,12 @@ export async function render(root, params) {
   let press = null;
   function openMeta(li) {
     if (!li) return;
-    editMeta(li.dataset.slug, { title: li.dataset.title }).finally(() => { press = null; });
+    const slug = li.dataset.slug;
+    editMeta(slug, { title: li.dataset.title }).finally(() => {
+      press = null;
+      // The card was likely re-rendered while editing; put focus back on its ⋯ button.
+      if (alive) root.querySelector(`.rcard[data-slug="${CSS.escape(slug)}"] .rcard-more`)?.focus({ preventScroll: true });
+    });
   }
   const cancelPress = () => { if (press && !press.fired) { clearTimeout(press.timer); press = null; } };
   function onPointerDown(e) {
