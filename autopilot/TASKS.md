@@ -44,7 +44,7 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 ## WS4 — Kitchen tools & PWA (`js/timers.js`, `js/stopwatch.js`, `js/wakelock.js`, `js/views/settings.js`, `css/tools.css`, `sw.js`)
 - [x] Countdown timer manager: multiple timers, persist across reload (endAt), tray UI
 - [x] Alarm: WebAudio beeps + vibrate + Notification; dismiss/snooze +1 min
-- [ ] Global collapsible stopwatch (button reachable from every screen): start/pause/lap/reset, persists
+- [x] Global collapsible stopwatch (button reachable from every screen): start/pause/lap/reset, persists
 - [ ] Wake lock setting (Screen Wake Lock API, re-acquire on visibilitychange, status indicator)
 - [ ] Settings view: GitHub token + repo, wake lock, theme, units pref, test connection
 - [ ] PWA: manifest, icons, service worker (app-shell cache, network-first data)

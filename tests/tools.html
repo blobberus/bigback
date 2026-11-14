@@ -84,6 +84,47 @@
     await wait(300);
     check('alarm sheet closed', !document.querySelector('.sheet.tt-alarm'));
 
+    /* ---- stopwatch ---- */
+    const S = await import('../js/stopwatch.js');
+    S.mount();
+    const fab = document.querySelector('#tools .sw-fab');
+    check('stopwatch button mounted', !!fab && fab.getAttribute('aria-expanded') === 'false');
+    S.toggleStopwatch();
+    const panel = document.getElementById('sw-panel');
+    check('toggle opens panel', !panel.hidden && fab.getAttribute('aria-expanded') === 'true' && document.getElementById('tools').classList.contains('sw-open'));
+    document.querySelector('[data-sw="startpause"]').click();
+    let sw = stored('bb.stopwatch');
+    check('start persists running + startedAt', sw?.running === true && typeof sw.startedAt === 'number');
+    await wait(350);
+    document.querySelector('[data-sw="lap"]').click();
+    sw = stored('bb.stopwatch');
+    check('lap recorded', sw.laps.length === 1 && sw.laps[0] >= 300, `lap=${sw.laps[0]}`);
+    check('lap list rendered', document.querySelectorAll('.sw-laps li').length === 1);
+    await wait(150);
+    document.querySelector('[data-sw="startpause"]').click();
+    sw = stored('bb.stopwatch');
+    check('pause keeps accumulated', sw.running === false && sw.accumulated >= 450 && sw.startedAt === null, `acc=${sw.accumulated}`);
+    check('display shows tenths', /^\d+:\d\d\.\d$/.test(document.querySelector('.sw-display').textContent));
+    const S2 = await import('../js/stopwatch.js?reload=1');
+    check('stopwatch module reload is clean', typeof S2.toggleStopwatch === 'function');
+    S.toggleStopwatch();
+    await wait(250);
+    check('toggle collapses panel', panel.hidden && fab.getAttribute('aria-expanded') === 'false');
+    check('collapsed paused button shows time', getComputedStyle(document.querySelector('.sw-fab-time')).display !== 'none');
+    document.querySelector('[data-sw="reset"]').click();
+    sw = stored('bb.stopwatch');
+    check('reset clears state', sw.running === false && sw.accumulated === 0 && sw.laps.length === 0);
+    check('--tools-h published', /px$/.test(document.documentElement.style.getPropertyValue('--tools-h')));
+
+    /* ---- wake lock ---- */
+    const W = await import('../js/wakelock.js');
+    W.initWakeLock(); W.initWakeLock();          // idempotent
+    check('wake lock status valid', ['active', 'off', 'unsupported', 'error'].includes(W.wakeLockStatus()), W.wakeLockStatus());
+    check('wake lock off by default', W.wakeLockStatus() !== 'active');
+    const off2 = W.onWakeLock(() => {});
+    check('onWakeLock returns unsubscribe', typeof off2 === 'function');
+    off2();
+
     out.insertAdjacentHTML('beforeend', `<li><strong>${fails ? fails + ' check(s) did not pass' : 'All checks passed'}</strong></li>`);
   </script>
 </body>
