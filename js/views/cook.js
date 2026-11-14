@@ -4,14 +4,16 @@
  * detected in the text), Back/Next in the thumb zone, swipe left/right and ←/→ keys.
  * "Ingredients" opens a sheet with the scaled list (checked state shared with the recipe
  * page). The last step offers "mark as cooked" and a note shortcut. The current step is
- * remembered per slug in sessionStorage (components/recipe-state.js).
+ * remembered per slug in sessionStorage (components/recipe-state.js), and so are half-typed
+ * notes: closing the note sheet keeps the draft (per step, or 'recipe'), shared with the
+ * recipe page's composers; a successful save clears it.
  */
 import { getRecipe, getLibrary, entryFor, onChange, markCooked, addNote, NotConnectedError } from '../store.js';
-import { setTopbar, on, sheet, toast, reportError, promptSheet, confirmSheet } from '../ui.js';
+import { setTopbar, on, sheet, toast, reportError, confirmSheet, busy } from '../ui.js';
 import { html, clamp } from '../util.js';
 import { isConnected } from '../prefs.js';
 import { icon } from '../components/recipe-icons.js';
-import { rxState, rxPatch, toggleId } from '../components/recipe-state.js';
+import { rxState, rxPatch, setDraft, toggleId } from '../components/recipe-state.js';
 import { ingredientsHtml, bindIngredients } from '../components/recipe-ingredients.js';
 import { stepTextHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
 import { cookedLine, clip } from '../components/recipe-journal.js';
@@ -120,20 +122,60 @@ export async function render(root, { slug }) {
     off?.();
   }
 
-  async function writeNote(step) {
+  function writeNote(step) {
     if (!isConnected()) return reportError(new NotConnectedError());
-    const n = step ? steps.indexOf(step) + 1 : 0;
-    const text = await promptSheet(step ? `Note on step ${n}` : 'Note on this recipe', {
-      multiline: true, ok: 'Save note',
-      placeholder: step ? 'What would you change in this step?' : 'How did it go? Anything to change next time?'
+    const key = step ? step.id : 'recipe';
+    const title = step ? `Note on step ${steps.indexOf(step) + 1}` : 'Note on this recipe';
+    const draft = rxState(slug).drafts[key] || '';
+    const body = html`
+      <form class="ck-note-form">
+        <label class="sr-only" for="ck-note-text">${title}</label>
+        <textarea id="ck-note-text" class="input" rows="4" autofocus
+          placeholder="${step ? 'What would you change in this step?' : 'How did it go? Anything to change next time?'}">${draft}</textarea>
+        ${draft ? html`<p class="ck-note-hint">${icon('note')}<span>Picked up your unsaved draft.</span></p>` : ''}
+        <div class="sheet-actions">
+          <button type="button" class="btn btn-ghost" data-note="close">Close</button>
+          <button type="submit" class="btn btn-primary">Save note</button>
+        </div>
+      </form>`;
+    let closed = false;
+    const done = sheet({
+      title, body, className: 'ck-note-sheet',
+      onOpen(wrap, close) {
+        const form = wrap.querySelector('form');
+        const ta = form.querySelector('textarea');
+        const btn = form.querySelector('[type="submit"]');
+        ta.setSelectionRange(ta.value.length, ta.value.length);
+        // Every keystroke is kept, so a swipe/tap-away/Close never loses the note.
+        ta.addEventListener('input', () => setDraft(slug, key, ta.value.trim() ? ta.value : ''));
+        ta.addEventListener('keydown', e => {
+          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); form.requestSubmit(); }
+        });
+        wrap.querySelector('[data-note="close"]').addEventListener('click', () => close(null));
+        form.addEventListener('submit', async e => {
+          e.preventDefault();
+          if (btn.disabled) return;
+          const text = ta.value.trim();
+          if (!text) { ta.focus(); toast('Write a note first'); return; }
+          ta.readOnly = true;
+          try {
+            await busy(btn, addNote(slug, step ? { stepId: step.id, stepText: step.text, text } : { text }));
+            rxPatch(slug, s => {
+              const drafts = { ...s.drafts }, open = { ...s.open };
+              delete drafts[key]; delete open[key];
+              return { ...s, drafts, open };
+            });
+            toast('Note saved — Claude picks it up on the next “update the site”', { type: 'ok' });
+            if (!closed) close(true);   // it may have been dismissed while saving
+          } catch (err) {
+            ta.readOnly = false;
+            reportError(err);
+          }
+        });
+      }
     });
-    if (!text) return;
-    try {
-      await addNote(slug, step ? { stepId: step.id, stepText: step.text, text } : { text });
-      toast('Note saved — Claude picks it up on the next “update the site”', { type: 'ok' });
-    } catch (err) {
-      reportError(err);
-    }
+    done.then(() => { closed = true; });
+    return done;
   }
 
   async function logCooked() {
