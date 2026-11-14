@@ -99,6 +99,8 @@
     S.toggleStopwatch();
     const panel = document.getElementById('sw-panel');
     check('toggle opens panel', !panel.hidden && fab.getAttribute('aria-expanded') === 'true' && document.getElementById('tools').classList.contains('sw-open'));
+    const ms = parseFloat(getComputedStyle(panel).transitionDuration.split(',').reduce((a, b) => (parseFloat(b) > parseFloat(a) ? b : a))) * 1000;
+    check('opens in the same frame, animation ≤ 120 ms', panel.classList.contains('is-open') && ms <= 120, `is-open=${panel.classList.contains('is-open')} ${ms}ms`);
     document.querySelector('[data-sw="startpause"]').click();
     let sw = stored('bb.stopwatch');
     check('start persists running + startedAt', sw?.running === true && typeof sw.startedAt === 'number');

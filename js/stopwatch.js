@@ -131,7 +131,8 @@ function setOpen(v, focus) {
     els.panel.hidden = false;
     root.toggleAttribute('data-open', true);
     host.classList.add('sw-open');
-    requestAnimationFrame(() => requestAnimationFrame(() => els.panel.classList.add('is-open')));
+    void els.panel.offsetWidth;                  // commit the hidden state, then animate in this frame
+    els.panel.classList.add('is-open');
     if (focus) els.main.focus({ preventScroll: true });
   } else {
     els.panel.classList.remove('is-open');
@@ -141,7 +142,7 @@ function setOpen(v, focus) {
       host.classList.remove('sw-open');
       if (focus) els.fab.focus({ preventScroll: true });
     };
-    if (reduceMotion()) done(); else closeT = setTimeout(done, 180);
+    if (reduceMotion()) done(); else closeT = setTimeout(done, 100);
   }
   paint(true); loop();
 }

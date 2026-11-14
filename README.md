@@ -25,10 +25,10 @@ A phone-first personal recipe vault. Live at **https://blobberus.github.io/bigba
 4. Settings → **Keep screen awake** if you want the screen on while cooking.
 5. Optional: Settings → **Password → Set password**. Every device then shows a lock screen once
    and remembers itself after the right password. Forgot it? Delete `data/lock.json` in the repo.
-6. Optional: Settings → Password → **Keep my GitHub token with the password**. Phones can wipe
-   site storage (iPhone keeps a Home Screen app's storage separate from Safari, and private tabs
-   forget everything), which loses the token. With this on, entering the password brings it back.
-   The encrypted copy is public, so use a long password.
+6. With a password set, the token is kept with it automatically (Settings → Password → **Keep my
+   GitHub token with the password**, on by default). Phones can wipe site storage (iPhone keeps a
+   Home Screen app's storage separate from Safari, and private tabs forget everything); entering
+   the password brings the token back. The encrypted copy is public, so use a long password.
 
 New versions install themselves: the app checks when it opens or comes back to the foreground and
 reloads once onto the new code.

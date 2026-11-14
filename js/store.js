@@ -23,7 +23,7 @@
  *   Inbox:    uploadToInbox({ kind, title, url, text, hint, files }) → id    deletePending(id)
  *   Journal:  addNote(slug, { scope, stepId, stepText, text })  addPhoto(slug, file, { text, scope, stepId, stepText })
  *             deleteEntry(slug, entryId)
- *   Password: saveLock(config | null)   set/replace data/lock.json, or delete it (no password)
+ *   Password: saveLock(config | null, { message })   set/replace data/lock.json, or delete it (no password)
  *
  * EVENTS   onChange(fn) — fn({ type, paths }) after any read refresh or write.
  */
@@ -142,8 +142,8 @@ async function write(message, builder) {
 }
 
 /* ---------- site password (lock.js builds the config) ---------- */
-export async function saveLock(config) {
-  await write(config ? 'Set site password' : 'Remove site password', async ({ read, json }) => {
+export async function saveLock(config, { message } = {}) {
+  await write(message || (config ? 'Set site password' : 'Remove site password'), async ({ read, json }) => {
     if (config) return [json(P.lock, config)];
     return (await read(P.lock)) != null ? [{ path: P.lock, delete: true }] : [];
   });

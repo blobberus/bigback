@@ -9,20 +9,22 @@
  *   in localStorage (or sessionStorage when "Remember this device" is off). It only counts while
  *   SHA-256(key) === lock.check, so changing or removing the password re-locks other devices.
  *
- *   Token vault (optional, config.vault): the GitHub token AES-GCM-encrypted with a key derived
- *   from the password, so a device or Home Screen app whose storage was wiped gets its token
- *   back by unlocking: no new token, no re-pasting. Public like the rest of the file, so its
- *   safety is the password's strength (600k PBKDF2 rounds per guess).
+ *   Token vault (config.vault): the GitHub token AES-GCM-encrypted with a key derived from the
+ *   password, so a device or Home Screen app whose storage was wiped gets its token back by
+ *   unlocking: no new token, no re-pasting. On by default: the first device that has both the
+ *   token and the password saves it (autoVault). `vault: false` = turned off in Settings.
+ *   Public like the rest of the file, so its safety is the password (600k PBKDF2 rounds/guess).
  *
  *   unlockGate()                       → Promise; resolves once the app may render (and restores
  *                                        the token from the vault when this device has none)
  *   showLockScreen(config)             → Promise<key>; resolves after the right password
  *   sealToken(key, token) → vault      openVault(config, key) → token | null
  *   storedKey() → this device's derived key | null      restoreToken(config, key) → bool
+ *   autoVault(config, key) → bool      saves the vault when it's missing and this device has a token
  *   makeLock(password, {iterations})   → { config, key }      checkPassword(config, pw) → key | null
  *   validLock(c) · isRemembered(config) · remember(key, persist) · forgetDevice() · supported()
  */
-import { getLock } from './store.js';
+import { getLock, saveLock } from './store.js';
 import { getPrefs, setPrefs } from './prefs.js';
 
 export const ITERATIONS = 600000;     // OWASP 2023 guidance for PBKDF2-HMAC-SHA256
@@ -98,6 +100,25 @@ export async function openVault(config, keyHex) {
     return new TextDecoder().decode(pt);
   } catch { return null; }
 }
+export const isoNow = () => new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+
+/** Vault missing (never saved, not turned off) and this device has the token → save it.
+ *  At most one save per page load, even if boot and Settings both ask. */
+let saving = null, saved = false;
+export function autoVault(config, keyHex, { save = saveLock } = {}) {
+  if (saved) return Promise.resolve(false);
+  if (saving) return saving;
+  const token = getPrefs().token;
+  if (!token || !keyHex || !supported() || !validLock(config) || config.vault !== undefined) return Promise.resolve(false);
+  saving = (async () => {
+    const vault = await sealToken(keyHex, token);
+    await save({ ...config, vault, updatedAt: isoNow() }, { message: 'Keep the GitHub token with the site password' });
+    saved = true;
+    return true;
+  })().finally(() => { saving = null; });
+  return saving;
+}
+
 /** No token on this device, but the vault has one → put it back. */
 export async function restoreToken(config, keyHex) {
   if (getPrefs().token || !config?.vault) return false;
@@ -117,6 +138,8 @@ export async function unlockGate() {
     if (!validLock(config)) return;
     const key = supported() && await isRemembered(config) ? storedKey() : await showLockScreen(config);
     await restoreToken(config, key).catch(e => console.warn('lock: token vault', e));
+    // In the background: the first device with token + password saves the copy for the others.
+    autoVault(config, key).catch(e => console.warn('lock: could not save the token copy', e));
   } finally {
     root.classList.remove('is-gating');
   }

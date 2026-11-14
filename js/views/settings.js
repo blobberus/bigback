@@ -13,7 +13,7 @@ import { setTopbar, on, toast, confirmSheet, busy, sheet, reportError } from '..
 import { html } from '../util.js';
 import { getPrefs, setPrefs, onPrefs } from '../prefs.js';
 import { getLock, saveLock } from '../store.js';
-import { makeLock, validLock, remember, forgetDevice, rememberedHere, supported as lockSupported, MIN_LENGTH, sealToken, storedKey } from '../lock.js';
+import { makeLock, validLock, remember, forgetDevice, rememberedHere, supported as lockSupported, MIN_LENGTH, sealToken, storedKey, isoNow, autoVault } from '../lock.js';
 import { APP_VERSION } from '../config.js';
 import { GitHub } from '../github.js';
 import { initWakeLock, wakeLockStatus, onWakeLock } from '../wakelock.js';
@@ -269,10 +269,15 @@ export async function render(root) {
     box.checked = vaultOn;
     box.disabled = !canVault;
     $('#st-vault-sub').textContent = vaultOn
-      ? "On. A device or Home Screen app that lost its token gets it back when you enter the password, so there's no need to make or paste a new one. A stronger password keeps the token safer."
-      : canVault
-        ? 'Saves an encrypted copy of this token in the repo. Entering the password on any device then restores it. Use a long password: the copy is public, so its safety is the password.'
-        : 'Connect GitHub on a device that knows the password to turn this on.';
+      ? "On. In Safari or the Home Screen app, on any device, entering the password brings the token back if it was lost, so there's no need to make or paste a new one. The encrypted copy is public, so a long password keeps it safe."
+      : cfg?.vault === false
+        ? 'Off. A device that loses its token needs it pasted again.'
+        : canVault
+          ? 'Saving an encrypted copy of this token with your password…'
+          : 'Saved automatically by the first device that has the token and the password.';
+    if (lockOn && cfg.vault === undefined && canVault) {
+      autoVault(cfg, storedKey()).then(ok => { if (ok && alive) paintLock({ force: true }); }).catch(reportError);
+    }
   }
 
   /** Re-encrypt (or drop) the vault for the current token. Commits data/lock.json. */
@@ -280,10 +285,11 @@ export async function render(root) {
     const cfg = await getLock({ force: true });
     if (!validLock(cfg)) return;
     const { vault, ...rest } = cfg;
-    const next = { ...rest, updatedAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z') };
+    const next = { ...rest, updatedAt: isoNow() };
     if (on) next.vault = await sealToken(storedKey(), token);
-    else if (!vault) return;
-    await saveLock(next);
+    else if (vault === false) return;
+    else next.vault = false;                        // explicit off: devices won't re-save it
+    await saveLock(next, { message: on ? 'Keep the GitHub token with the site password' : 'Stop keeping the GitHub token with the site password' });
   }
 
   async function onLock(act, el) {
@@ -312,8 +318,9 @@ export async function render(root) {
     try {
       await busy(el, (async () => {
         const { config, key } = await makeLock(pw);
-        // Changing the password keeps the token copy, re-encrypted for the new password.
-        if (change && lockCfg?.vault && getPrefs().token) config.vault = await sealToken(key, getPrefs().token);
+        // The token copy comes along (re-encrypted for the new password) unless it was turned off.
+        if (change && lockCfg?.vault === false) config.vault = false;
+        else if (getPrefs().token) config.vault = await sealToken(key, getPrefs().token);
         await saveLock(config);
         remember(key, true);
       })());
@@ -389,7 +396,7 @@ export async function render(root) {
       setConn(r.state, r.title, r.sub);
       toast(r.state === 'ok' ? 'GitHub connected' : 'Saved — but this token is read-only', { type: r.state === 'ok' ? 'ok' : 'info' });
       $('.st-howto').open = false;
-      if (r.state === 'ok' && lockCfg?.vault && storedKey()) {
+      if (r.state === 'ok' && lockCfg && lockCfg.vault !== false && storedKey()) {
         writeVault(true, vals.token).then(() => alive && paintLock({ force: true })).catch(reportError);
       }
     } else {
@@ -423,7 +430,7 @@ export async function render(root) {
       el.textContent = show ? 'Hide' : 'Show';
       el.setAttribute('aria-label', show ? 'Hide token' : 'Show token');
     } else if (act === 'disconnect') {
-      const vaulted = !!lockCfg?.vault;
+      const vaulted = !!lockCfg?.vault;   // an object = a saved copy exists
       const ok = await confirmSheet(`Saving recipes, notes and photos will be off on this device until you add a token again. Browsing keeps working.${
         vaulted ? ' This also deletes the copy kept with your password, so other devices that lose their token will need it pasted again.' : ''}`,
         { title: 'Disconnect GitHub?', ok: 'Disconnect', danger: true });

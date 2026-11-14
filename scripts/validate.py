@@ -140,14 +140,14 @@ def main():
             except ValueError:
                 err(w, "salt must be base64")
             v = lk.get("vault")
-            if v is not None:
+            if v is not None and v is not False:
                 try:
                     ok = isinstance(v, dict) and len(base64.b64decode(v.get("iv") or "", validate=True)) == 12 \
                         and len(base64.b64decode(v.get("data") or "", validate=True)) > 16
                 except ValueError:
                     ok = False
                 if not ok:
-                    err(w, "vault must be {alg, iv: base64 12 bytes, data: base64} (or absent)")
+                    err(w, "vault must be {alg, iv: base64 12 bytes, data: base64}, false, or absent")
 
     for p in sorted((ROOT / "journal").glob("*.json")):
         where = p.relative_to(ROOT).as_posix()

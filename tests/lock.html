@@ -22,7 +22,7 @@
 <img hidden alt="" src="/__smoke/hold">
 <script type="module">
 import { makeLock, checkPassword, validLock, remember, forgetDevice, isRemembered, rememberedHere, showLockScreen, ITERATIONS,
-  sealToken, openVault, restoreToken, storedKey } from '../js/lock.js';
+  sealToken, openVault, restoreToken, storedKey, autoVault } from '../js/lock.js';
 import { getPrefs, setPrefs } from '../js/prefs.js';
 
 const results = [];
@@ -109,6 +109,21 @@ try {
   ok('never overwrites a token the device already has', !(await restoreToken(withVault, key)) && getPrefs().token === 'github_pat_newer');
   setPrefs({ token: '' });
   ok('no vault → nothing restored', !(await restoreToken(config, key)) && getPrefs().token === '');
+
+  /* ---------- token copy is on by default ---------- */
+  const saves = [];
+  const save = async (c, o) => { saves.push([c, o]); };
+  ok('auto: no token on this device → nothing saved', !(await autoVault(config, key, { save })) && !saves.length);
+  setPrefs({ token: TOKEN });
+  ok('auto: turned off (vault: false) → respected', !(await autoVault({ ...config, vault: false }, key, { save })) && !saves.length);
+  ok('auto: already saved → left alone', !(await autoVault(withVault, key, { save })) && !saves.length);
+  ok('auto: no key (password not entered here) → nothing', !(await autoVault(config, null, { save })) && !saves.length);
+  const both = [autoVault(config, key, { save }), autoVault(config, key, { save })];
+  ok('auto: missing → saved once, even when asked twice at once', (await both[0]) && (await both[1]) && saves.length === 1);
+  const [savedCfg, opts] = saves[0] || [];
+  ok('auto: the saved copy opens with the password and keeps the lock', savedCfg && (await openVault(savedCfg, key)) === TOKEN
+    && savedCfg.check === config.check && /token/i.test(opts?.message || ''));
+  ok('auto: at most one save per page load', !(await autoVault(config, key, { save })) && saves.length === 1);
   setPrefs({ token: saved });
 
   /* ---------- real cost ---------- */
