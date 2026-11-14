@@ -1,1 +1,84 @@
-/* tools.css — feature styles. Use tokens from base.css only. */
+/* tools.css — kitchen tools (timer tray, alarm, stopwatch) + settings view.
+   Tokens from base.css only. #tools is z 40 (above nav 30, below sheets 60 / toasts 70).
+
+   Layout: #tools is one fixed grid pinned above the bottom nav (lower in cook mode, where
+   the nav is hidden). Timer pills stack bottom-left, the stopwatch button sits bottom-right;
+   when the stopwatch panel opens it takes the full row and the pills move above it, so the
+   two never overlap. stopwatch.js publishes the stack height as --tools-h, which lifts the
+   toasts above the tools and pads the page so nothing hides behind them.
+   A view with its own bottom bar can raise the tools by overriding --tools-b on body. */
+
+:root { --tools-b: calc(var(--nav-h) + var(--safe-b) + 12px); --tools-x: 12px; }
+body[data-view="cook"] { --tools-b: calc(var(--safe-b) + 12px); }
+
+#tools {
+  position: fixed; z-index: 40; bottom: var(--tools-b);
+  left: calc(var(--tools-x) + env(safe-area-inset-left, 0px));
+  right: calc(var(--tools-x) + env(safe-area-inset-right, 0px));
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "tray sw";
+  align-items: end; gap: 8px 10px; pointer-events: none;
+}
+#tools.sw-open { grid-template-columns: minmax(0, 1fr); grid-template-areas: "tray" "sw"; }
+#tools:empty { display: none; }
+@media (min-width: 700px) {
+  #tools { left: auto; width: min(420px, calc(100% - 2 * var(--tools-x))); }
+}
+
+#toasts { bottom: calc(var(--tools-b) + var(--tools-h, 56px) + 10px); }
+body { padding-bottom: calc(var(--tools-b) + var(--tools-h, 56px) + 16px); }
+
+/* ---------- timer tray ---------- */
+.tt-tray {
+  grid-area: tray; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  max-height: min(44dvh, 340px); overflow-y: auto; overscroll-behavior: contain;
+  padding: 6px; margin: -6px; pointer-events: none; scrollbar-width: none;
+}
+.tt-tray::-webkit-scrollbar { display: none; }
+.tt-pill {
+  pointer-events: auto; max-width: 100%; flex: none;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 26px;
+  box-shadow: var(--shadow);
+}
+.tt-pill.is-new { animation: tt-in .28s cubic-bezier(.2, .8, .2, 1); }
+@keyframes tt-in { from { opacity: 0; transform: translateY(10px) scale(.96); } }
+
+.tt-main {
+  display: flex; align-items: center; gap: 9px; max-width: 100%; min-height: 48px;
+  padding: 0 16px 0 11px; border: 0; border-radius: inherit; background: transparent; color: inherit;
+  cursor: pointer; text-align: left;
+}
+.tt-ring { flex: none; width: 24px; height: 24px; }
+.tt-ring circle { stroke-width: 3; }
+.tt-ring-track { stroke: var(--surface-3); }
+.tt-ring-fill { stroke: var(--accent); transform: rotate(-90deg); transform-origin: 12px 12px; transition: stroke-dashoffset 1s linear; }
+.tt-ring-pause { stroke: var(--ink-2); stroke-width: 2.2; }
+.tt-ico { display: grid; place-items: center; flex: none; width: 24px; height: 24px; }
+.tt-ico svg { width: 20px; height: 20px; }
+.tt-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 12em; font-size: .9rem; font-weight: 600; color: var(--ink-2); }
+.tt-left { flex: none; font-size: 1.05rem; font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+
+.tt-pill.is-soon .tt-left { color: var(--accent); }
+.tt-pill.is-paused { background: var(--surface-2); box-shadow: none; }
+.tt-pill.is-paused .tt-left { color: var(--muted); }
+.tt-pill.is-paused .tt-ring-fill { stroke: var(--muted); }
+.tt-pill.is-done { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); animation: tt-pulse 1.6s ease-in-out infinite; }
+.tt-pill.is-done .tt-label { color: inherit; }
+@keyframes tt-pulse { 50% { box-shadow: 0 0 0 7px var(--accent-soft), var(--shadow); } }
+
+.tt-pill[data-open] { width: min(100%, 340px); border-radius: var(--r); box-shadow: var(--shadow-lg); }
+.tt-pill[data-open] .tt-main { width: 100%; }
+.tt-pill[data-open] .tt-label { flex: 1; max-width: none; color: var(--ink); }
+.tt-ctrls {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px;
+  padding: 8px; border-top: 1px solid var(--line);
+}
+.tt-act {
+  display: grid; justify-items: center; align-content: center; gap: 3px; min-height: 54px; padding: 4px 2px;
+  border: 0; border-radius: var(--r-sm); background: var(--surface-2); color: var(--ink);
+  font-size: .74rem; font-weight: 700; text-decoration: none; cursor: pointer; user-select: none;
+  transition: background .15s, transform .08s;
+}
+.tt-act:active { transform: scale(.96); background: var(--surface-3); }
+.tt-act svg { width: 20px; height: 20px; }
+.tt-act[data-act="pause"], .tt-act[data-act="resume"] { background: var(--accent-soft); color: var(--accent); }
+.tt-cancel.is-armed { background: var(--danger); color: var(--bg); }
