@@ -23,10 +23,13 @@ A phone-first personal recipe vault. Live at **https://blobberus.github.io/bigba
    The token is stored only on that device (localStorage).
 3. **Add it to your Home Screen.** On iOS: Share → Add to Home Screen. On Android: ⋮ → Install app.
 4. Settings → **Keep screen awake** if you want the screen on while cooking.
+5. Optional: Settings → **Password → Set password**. Every device then shows a lock screen once
+   and remembers itself after the right password. Forgot it? Delete `data/lock.json` in the repo.
 
 Without a token the site is read-only.
 
 > The repo is **public**, so recipes, notes and photos are visible to anyone with the link.
+> The site password only locks the app; the files stay readable on GitHub.
 > If you want them private, make the repo private. GitHub Pages on private repos needs a
 > paid plan; the alternative is to run it locally.
 

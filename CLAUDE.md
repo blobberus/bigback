@@ -33,9 +33,10 @@ in localStorage). Agents turn raw uploads + user feedback into polished recipes.
 - `media/<slug>/` — recipe images; `media/<slug>/journal/` — user photos
 - `journal/<slug>.json` — user notes (step/general) + photo notes; `status: open|applied|kept`
 - `data/library.json` — user-owned: tags, rating /10, proficiency /5, playlists
+- `data/lock.json` — user-owned site password (salted PBKDF2 hash; absent = no password). Never touch.
 
 Ownership rule: the model edits recipe content; it never changes the user's tags,
-rating, proficiency or playlists (exception: adding blank entries for new recipes).
+rating, proficiency or playlists (exception: adding blank entries for new recipes), or `data/lock.json`.
 
 ## Conventions
 - No build step, no npm. Vanilla ES modules, hash router, mobile-first CSS.
@@ -46,6 +47,8 @@ rating, proficiency or playlists (exception: adding blank entries for new recipe
 - Verify before committing: `python scripts/validate.py` (data + sw.js precache list) and
   `python scripts/smoke.py [routes…]` (headless Edge; routes without "#/", e.g. `r/<slug>`;
   `tests/*.html` pages also work). New JS/CSS files must be added to `SHELL` in `sw.js`.
+  Test pages that need real time (WebCrypto) include `<img hidden src="/__smoke/hold">` and
+  fetch `/__smoke/release` when done; see `scripts/smoke.py`.
 
 ## Session continuity
 Status of the build lives in `autopilot/TASKS.md`. An hourly Windows scheduled task

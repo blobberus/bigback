@@ -16,6 +16,7 @@ Push to main ──▶ .github/workflows/pages.yml (validate, rebuild index, dep
 | File | Role | Owner |
 |---|---|---|
 | `app.js` | boot, hash router, global listeners, mounts tools | core |
+| `lock.js` | site password: `unlockGate()` before first render, lock screen, PBKDF2 config (data/lock.json) | core |
 | `config.js`, `prefs.js` | repo defaults; device-local prefs (token, wakeLock, theme) | core |
 | `util.js` | `html` template (auto-escape), durations, fractions, image compression | core |
 | `ui.js` | `toast`, `sheet`, `confirmSheet`, `promptSheet`, `setTopbar`, `on` (delegation) | core |
@@ -30,7 +31,7 @@ Push to main ──▶ .github/workflows/pages.yml (validate, rebuild index, dep
 | `views/cook.js` | step-by-step cook mode | WS2 |
 | `views/add.js` | chooser, custom form, upload form, edit | WS3 |
 | `views/pending.js` | inbox item detail / delete | WS3 |
-| `views/settings.js` | token, repo, wake lock, theme | WS4 |
+| `views/settings.js` | token, repo, wake lock, theme, site password | WS4 |
 
 View contract: `export async function render(root, params) → cleanup?`. Use
 `setTopbar()`, render with `root.innerHTML = html\`…\``, bind with `on(root, …)`.

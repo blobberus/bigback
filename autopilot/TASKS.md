@@ -71,6 +71,9 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 - [x] Library: "Playlist order" sort when viewing a playlist (js/views/library.js)
 - [x] Shared test page `tests/util.html` for util.js parseDurations / fmtQty / scaleQty / slugify (~25 assertions)
 
+## WS8 — User requests
+- [x] Site password: lock screen on every device, set/change/remove in Settings, remember this device (js/lock.js, data/lock.json, tests/lock.html)
+
 ## Polish backlog (only if all above done and commit target not met)
 - Shopping list from selected recipes; unit toggle (US/metric); print view;
   "recently cooked" shelf; export/import library JSON; keyboard shortcuts on desktop.

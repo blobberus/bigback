@@ -74,6 +74,22 @@ should have a timer entry (the UI also auto-detects durations in text as a fallb
 }
 ```
 
+## Site password — `data/lock.json` (user-owned; absent = no password)
+Written only by Settings → Password (`store.saveLock`, config built by `js/lock.js`). Never
+edit it by hand except to delete it, which turns the password off (the recovery path if it's forgotten).
+```jsonc
+{
+  "schemaVersion": 1,
+  "kdf": "PBKDF2-SHA256",
+  "iterations": 600000,         // PBKDF2-HMAC-SHA256 rounds; slow on purpose, the file is public
+  "salt": "base64, 16 random bytes",
+  "check": "hex SHA-256 of the 32-byte derived key",
+  "updatedAt": "2026-11-14T10:00:00Z"
+}
+```
+A lock screen, not encryption: it gates the app, and the data files stay public. Devices remember
+the derived key (`bb.unlock` in localStorage), which stays valid only while it matches `check`.
+
 ## Journal — `journal/<slug>.json` (user-owned; model updates `status` only)
 ```jsonc
 {
