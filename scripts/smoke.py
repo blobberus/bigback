@@ -3,8 +3,9 @@
 headless Edge/Chrome, prints page-originated console errors and the rendered #view.
 
     python scripts/smoke.py                       # default routes
-    python scripts/smoke.py "#/r/crispy-skillet-chicken-thighs" "#/add/custom"
-    python scripts/smoke.py --dom "#/settings"    # also print full #view HTML
+    python scripts/smoke.py r/crispy-skillet-chicken-thighs add/custom
+    python scripts/smoke.py --dom settings        # also print full #view HTML
+Routes are given without the leading "#/" (Git Bash mangles "#/..." into a path).
 
 Exit 1 if any route logs an uncaught error or renders the router's error page.
 """
@@ -59,7 +60,12 @@ def run(exe, url, profile):
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    args = []
+    for a in sys.argv[1:]:
+        if a.startswith("--"):
+            continue
+        a = re.sub(r"^[A-Za-z]:/Program Files/Git/", "", a)   # undo MSYS path conversion
+        args.append(a if a.startswith("#") else "#/" + a.lstrip("/"))
     show_dom = "--dom" in sys.argv
     exe = browser()
     if not exe:
