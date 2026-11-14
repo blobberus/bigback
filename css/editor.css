@@ -1,1 +1,42 @@
-/* editor.css — feature styles. Use tokens from base.css only. */
+/* editor.css — add chooser, recipe form (custom + edit), upload form, inbox item (WS3).
+   Tokens from base.css only. Prefixes: .add-* chooser · .ed-* recipe form · .up-* upload · .pd-* pending. */
+
+/* ---------- chooser (#/add) ---------- */
+.add-head { margin: 10px 2px 20px; }
+.add-head h1 { font-size: 2rem; margin-bottom: 6px; }
+.add-head p { margin: 0; color: var(--ink-2); max-width: 34ch; }
+.add-cards { display: grid; gap: 12px; }
+.add-card {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px;
+  min-height: 116px; padding: 18px 14px 18px 16px; border-radius: var(--r-lg);
+  background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow);
+  color: var(--ink); text-decoration: none; transition: transform .1s, border-color .15s;
+}
+.add-card:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+.add-card:active { transform: scale(.985); }
+.add-ic { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 17px; background: var(--accent-soft); color: var(--accent); }
+.add-ic svg { width: 27px; height: 27px; }
+.add-card-alt .add-ic { background: var(--accent-2-soft); color: var(--accent-2); }
+.add-body { min-width: 0; }
+.add-title { display: block; font-family: var(--font-display); font-size: 1.28rem; font-weight: 600; line-height: 1.2; margin-bottom: 4px; }
+.add-desc { display: block; font-size: .9rem; line-height: 1.4; color: var(--ink-2); }
+.add-draft { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: .78rem; font-weight: 700; color: var(--accent); }
+.add-draft svg { flex: none; width: 15px; height: 15px; }
+.add-draft span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.add-chev { width: 20px; height: 20px; color: var(--muted); }
+.add-note { display: flex; gap: 10px; align-items: flex-start; margin: 18px 4px 0; font-size: .875rem; line-height: 1.45; color: var(--ink-2); }
+.add-note svg { flex: none; width: 18px; height: 18px; margin-top: 1px; color: var(--accent); }
+.add-inbox { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); overflow: hidden; }
+.add-inbox li + li { border-top: 1px solid var(--line); }
+.add-inbox a { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 10px 8px 14px; color: var(--ink); text-decoration: none; }
+.add-inbox a:active { background: var(--surface-2); }
+.add-inbox-ic { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--surface-2); color: var(--ink-2); }
+.add-inbox-ic svg { width: 18px; height: 18px; }
+.add-inbox-t { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.add-inbox-d { flex: none; font-size: .8rem; color: var(--muted); }
+
+@media (min-width: 640px) {
+  .add-cards { grid-template-columns: 1fr 1fr; }
+  .add-card { grid-template-columns: 1fr; align-content: start; min-height: 210px; padding: 22px; }
+  .add-card .add-chev { display: none; }
+}
