@@ -133,6 +133,11 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 .rx-scaler-val.is-scaled strong { color: var(--accent); }
 .rx-quick { background: transparent; padding: 0; }
 .rx-quick button { min-height: var(--tap); min-width: 46px; padding: 0 8px; font-size: .9rem; }
+@media (max-width: 380px) {
+  .rx-scaler { gap: 4px; }
+  .rx-scaler-val { min-width: 80px; padding: 0 2px; }
+  .rx-quick button { min-width: 42px; padding: 0 4px; }
+}
 
 .rx-ings { list-style: none; margin: 0; padding: 0; }
 .rx-ings li + li { border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }

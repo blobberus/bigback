@@ -1,6 +1,6 @@
 /**
  * components/recipe-journal.js — notes + photo journal pieces for the recipe page and cook mode.
- *   fmtDate(iso) → "Nov 14" (year added when not this year)
+ *   fmtDate(iso) → "Nov 14" (year added when not this year)    clip(text, n) → one-line excerpt
  *   cookedLine(entry) → "Cooked 3× · last Nov 14" | "Not cooked yet"
  *   statusPill(entry) → html     open: "Waiting for update" · applied: "Applied" · kept: "Kept as note"
  *   noteListHtml(notes, { steps, showStep }) → html   newest first, with status + resolution
@@ -44,7 +44,11 @@ export function statusPill(entry) {
   return html`<span class="rx-pill rx-pill-${cls}">${entry?.status === 'applied' ? icon('check') : ''}${label}</span>`;
 }
 
-const clip = (s, n) => { s = String(s || '').replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s; };
+/** Shorten to n chars on one line: "Flip and cook until…" (no "more.…" double punctuation). */
+export function clip(s, n) {
+  s = String(s || '').replace(/\s+/g, ' ').trim();
+  return s.length > n ? s.slice(0, n - 1).replace(/[\s.,;:!?–—-]+$/, '') + '…' : s;
+}
 
 export function stepRef(entry, steps = []) {
   if (!entry?.stepId) return '';

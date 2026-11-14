@@ -63,6 +63,7 @@ export async function render(root, { slug }) {
         ${icon('pan', 'rx-missing-ic')}
         <h2>We couldn't find that recipe</h2>
         <p>It may have been renamed or deleted. If you just uploaded it, it appears after the next “update the site”.</p>
+        ${isConnected() ? html`<p class="muted small">Nothing loading at all? Check your GitHub token in <a href="#/settings">Settings</a>.</p>` : ''}
         <a class="btn btn-primary" href="#/">Back to recipes</a>
       </div>`;
   }
@@ -114,7 +115,7 @@ export async function render(root, { slug }) {
         </header>
         ${r.status === 'custom' ? html`
           <p class="rx-notice">${icon('spark')}<span>Typed by you — Claude will add a flavor profile and timers next time you say “update the site”.</span></p>` : ''}
-        <a class="btn btn-primary btn-block rx-cook-btn" href="#/r/${slug}/cook">${icon('flame')} Start cook mode</a>
+        ${cookButton(r)}
         ${youCard(entry)}
         ${r.profile ? details('profile', html`Flavor profile &amp; deliverables`, html`<p>${r.profile}</p>`) : ''}
         ${(r.equipment || []).length ? html`
@@ -150,6 +151,12 @@ export async function render(root, { slug }) {
         </section>
         ${changelog(r)}
       </article>`;
+  }
+
+  function cookButton(r) {
+    const at = (r.steps || []).findIndex(s => s.id === rxState(slug).step);
+    const label = at > 0 ? `Resume cooking · step ${at + 1}` : 'Start cook mode';
+    return html`<a class="btn btn-primary btn-block rx-cook-btn" href="#/r/${slug}/cook">${icon('flame')} ${label}</a>`;
   }
 
   function hero(r) {
@@ -272,7 +279,7 @@ export async function render(root, { slug }) {
         break;
       }
       case 'steps-reset':
-        rxPatch(slug, { done: [] });
+        rxPatch(slug, { done: [], step: null });
         await paint();
         break;
       case 'note-open': {

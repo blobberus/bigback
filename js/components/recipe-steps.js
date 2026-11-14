@@ -8,7 +8,7 @@
  *   bindTimers(root, slug) → off (off.refresh())   tap → startTimer; live remaining time on
  *                                                 running timers of this recipe (onTimers + 1s tick)
  * Every trigger carries data-timer data-step data-label data-seconds; running timers are
- * matched back to triggers by (slug, stepId, label, seconds).
+ * matched back to triggers by (slug, stepId, label), preferring the same seconds.
  */
 import { html, parseDurations, fmtClock, fmtMinutes } from '../util.js';
 import { on, toast } from '../ui.js';
@@ -77,8 +77,8 @@ export function timerButtonsHtml(step) {
   })}</div>`;
 }
 
-const matches = (t, slug, el) =>
-  t.slug === slug && t.stepId === el.dataset.step && t.label === el.dataset.label && Number(t.seconds) === Number(el.dataset.seconds);
+// seconds is only a tiebreaker: "+1 min" in the tray may change it on a running timer.
+const matches = (t, slug, el) => t.slug === slug && t.stepId === el.dataset.step && t.label === el.dataset.label;
 
 const leftMs = t => (t.pausedLeft != null ? t.pausedLeft : t.endAt - Date.now());
 
@@ -87,7 +87,8 @@ export function bindTimers(root, slug) {
 
   function find(el, list) {
     const mine = list.filter(t => matches(t, slug, el));
-    return mine.find(t => !t.done) || mine[0] || null;
+    const exact = t => Number(t.seconds) === Number(el.dataset.seconds);
+    return mine.find(t => !t.done && exact(t)) || mine.find(t => !t.done) || mine.find(exact) || mine[0] || null;
   }
 
   function refresh() {

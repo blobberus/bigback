@@ -14,10 +14,9 @@ import { icon } from '../components/recipe-icons.js';
 import { rxState, rxPatch, toggleId } from '../components/recipe-state.js';
 import { ingredientsHtml, bindIngredients } from '../components/recipe-ingredients.js';
 import { stepTextHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
-import { cookedLine } from '../components/recipe-journal.js';
+import { cookedLine, clip } from '../components/recipe-journal.js';
 
 const RECENT = 12 * 3600e3;   // one "I cooked this" per session-ish
-const clip = (s, n) => { s = String(s || '').replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s; };
 
 export async function render(root, { slug }) {
   const back = `#/r/${slug}`;
