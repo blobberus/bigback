@@ -95,6 +95,26 @@ eq('paragraph steps: section, tip, timers', st, [
   { section: null, text: 'Pat dry and season. Rest 15 minutes.', tip: 'dry skin is crisp skin', timers: [{ label: 'Rest', seconds: 900 }] },
   { section: 'Pan sauce', text: 'Simmer until reduced, about 3 minutes.', tip: null, timers: [{ label: 'Simmer', seconds: 180 }] }
 ]);
+const secText = list => list.map(s => [s.section, s.text]);
+eq('instruction ending in ":" alone in its paragraph stays a step',
+  secText(parseSteps('Make the dressing:\n\nWhisk the oil and vinegar.\n\nToss with the greens.')),
+  [[null, 'Make the dressing:'], [null, 'Whisk the oil and vinegar.'], [null, 'Toss with the greens.']]);
+eq('lone instruction step at the end / after a header line',
+  [secText(parseSteps('Sear the steak.\n\nPrepare the garnish:')), secText(parseSteps('Glaze:\nWhisk everything together:\n\nBrush it on.'))],
+  [[[null, 'Sear the steak.'], [null, 'Prepare the garnish:']],[['Glaze', 'Whisk everything together:'], ['Glaze', 'Brush it on.']]]);
+eq('":" line followed directly by steps is still a header',
+  secText(parseSteps('Make the dressing:\nWhisk the oil and vinegar.\n\nToss with the greens.')),
+  [['Make the dressing', 'Whisk the oil and vinegar.'], ['Make the dressing', 'Toss with the greens.']]);
+eq('label-like ":" lines alone in a paragraph stay headers',
+  secText(parseSteps('Brown butter:\n\nMelt the butter.\n\nFor the glaze:\n\nWhisk sugar and milk.')),
+  [['Brown butter', 'Melt the butter.'], ['For the glaze', 'Whisk sugar and milk.']]);
+eq('line mode: instruction ":" line is a header',
+  secText(parseSteps('Make the sauce:\nWhisk soy and honey\nSimmer 5 minutes')),
+  [['Make the sauce', 'Whisk soy and honey'], ['Make the sauce', 'Simmer 5 minutes']]);
+const glazed = [{ section: null, text: 'Roast the ham.', tip: null }, { section: 'Make the glaze', text: 'Whisk the following:', tip: null },
+  { section: 'Make the glaze', text: 'Brush it on.', tip: 'Thin with juice' }];
+eq('instruction-like section name round-trips through text', parseSteps(formatSteps(glazed)).map(s => [s.section, s.text, s.tip]),
+  glazed.map(s => [s.section, s.text, s.tip]));
 eq('line steps, numbering stripped, range → low value',
   parseSteps('1. Preheat the oven to 400°F\n2) Bake the cookies 10-12 minutes\nStep 3: Let cool 5 minutes').map(s => [s.text, s.timers]),
   [['Preheat the oven to 400°F', []], ['Bake the cookies 10-12 minutes', [{ label: 'Bake cookies', seconds: 600 }]], ['Let cool 5 minutes', [{ label: 'Cool', seconds: 300 }]]]);
