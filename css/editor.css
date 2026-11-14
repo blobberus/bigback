@@ -30,6 +30,7 @@
 .add-inbox li + li { border-top: 1px solid var(--line); }
 .add-inbox a { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 10px 8px 14px; color: var(--ink); text-decoration: none; }
 .add-inbox a:active { background: var(--surface-2); }
+.add-inbox a:focus-visible { outline-offset: -4px; border-radius: 10px; }   /* the list clips overflow */
 .add-inbox-ic { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--surface-2); color: var(--ink-2); }
 .add-inbox-ic svg { width: 18px; height: 18px; }
 .add-inbox-t { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -73,7 +74,6 @@
 .ed textarea.ed-title { min-height: 52px; resize: none; overflow: hidden; font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; line-height: 1.25; }
 .ed textarea.ed-short { min-height: 68px; }
 .ed-lines { line-height: 1.6; }
-.ed .input::placeholder { color: var(--muted); opacity: .8; }
 .ed .input[aria-invalid] { border-color: var(--danger); box-shadow: inset 0 0 0 1px var(--danger); }
 .ed-err { margin: 6px 0 0; font-size: .85rem; font-weight: 600; color: var(--danger); }
 .ed-row2 { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; }
@@ -91,7 +91,6 @@
 }
 .ed-photo-pick.has-img { aspect-ratio: 4 / 3; border: 1px solid var(--line); background: var(--surface-2); }
 .ed-photo-pick img { width: 100%; height: 100%; object-fit: cover; }
-.ed-photo-pick:focus-within { outline: 2.5px solid var(--accent); outline-offset: 2px; }
 .ed-photo-empty { display: grid; justify-items: center; gap: 3px; padding: 26px 16px; text-align: center; font-size: .85rem; color: var(--muted); }
 .ed-photo-empty svg { width: 30px; height: 30px; margin-bottom: 6px; color: var(--accent); }
 .ed-photo-empty strong { font-size: 1rem; color: var(--ink); }
@@ -176,7 +175,6 @@
   font-size: .875rem; color: var(--muted); transition: border-color .15s, background .15s;
 }
 .up-drop strong { font-size: 1.05rem; color: var(--ink); }
-.up-drop:focus-within { outline: 2.5px solid var(--accent); outline-offset: 2px; }
 .up-drop.is-over { border-color: var(--accent); background: var(--accent-soft); }
 .up-drop-ic { display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: 6px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); }
 .up-drop-ic svg { width: 26px; height: 26px; }

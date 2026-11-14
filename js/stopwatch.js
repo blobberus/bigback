@@ -11,11 +11,10 @@
  * the wake-lock indicator (small sun badge) and publishes the #tools height as --tools-h.
  */
 import { html, fmtClock } from './util.js';
-import { on } from './ui.js';
+import { on, reducedMotion as reduceMotion } from './ui.js';
 import { onWakeLock, wakeLockStatus } from './wakelock.js';
 
 const KEY = 'bb.stopwatch';
-const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 let st = load(), root = null, els = {}, open = false, raf = 0, slowT = 0, closeT = 0;
 
 function blank() { return { running: false, startedAt: null, accumulated: 0, laps: [] }; }

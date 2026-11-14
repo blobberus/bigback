@@ -291,7 +291,7 @@ function openAlarm() {
     }
   });
   sheet({
-    body, className: 'tt-alarm', dismissable: false,
+    body, className: 'tt-alarm', dismissable: false, role: 'alertdialog', label: 'Timer done',
     onOpen: (wrap, close) => { a.wrap = wrap; a.close = close; }
   }).then(() => { if (alarm === a) alarm = null; });
   paintAlarm();
@@ -308,7 +308,6 @@ function paintAlarm() {
   const done = timers.filter(t => t.done);
   const sig = done.map(t => t.id).join();
   if (sig === alarm.sig) return;
-  const first = !alarm.sig;
   alarm.sig = sig;
   const one = done.length === 1 ? done[0] : null;
   alarm.wrap?.querySelector('.sheet')?.setAttribute('aria-label', one ? `Timer done: ${one.label}` : `${done.length} timers done`);
@@ -338,7 +337,8 @@ function paintAlarm() {
       </li>`)}
     </ul>
     <div class="tt-alarm-actions"><button type="button" class="btn btn-primary tt-alarm-btn" data-alarm="all" autofocus>Dismiss all</button></div>`;
-  if (!first) alarm.body.querySelector('[autofocus]')?.focus({ preventScroll: true });
+  // The sheet focuses itself on open (before this body existed): land on the main action.
+  alarm.body.querySelector('[autofocus]')?.focus({ preventScroll: true });
 }
 
 // Any tap re-arms audio (iOS suspends it in the background; a reload needs a fresh gesture).
@@ -390,7 +390,7 @@ function controls(t) {
       ? html`<button type="button" class="tt-act" data-act="resume">${I.play}<span>Resume</span></button>`
       : html`<button type="button" class="tt-act" data-act="pause">${I.pause}<span>Pause</span></button>`}
     <button type="button" class="tt-act" data-act="add" aria-label="Add 1 minute">${I.plus}<span>1 min</span></button>
-    ${t.slug ? html`<a class="tt-act" href="#/r/${t.slug}" data-act="go">${I.go}<span>Recipe</span></a>` : ''}
+    ${t.slug ? html`<a class="tt-act" href="#/r/${t.slug}" data-act="go" aria-label="Open the recipe">${I.go}<span>Recipe</span></a>` : ''}
     <button type="button" class="tt-act tt-cancel${armed ? ' is-armed' : ''}" data-act="cancel"
       aria-label="${armed ? 'Tap again to cancel the timer' : 'Cancel timer'}">${I.x}<span>${armed ? 'Sure?' : 'Cancel'}</span></button>
   </div>`;

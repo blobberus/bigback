@@ -14,8 +14,8 @@ body[data-view="cook"] { --tools-b: calc(var(--safe-b) + 96px); }   /* .ck-nav i
 
 #tools {
   position: fixed; z-index: 40; bottom: var(--tools-b);
-  left: calc(var(--tools-x) + env(safe-area-inset-left, 0px));
-  right: calc(var(--tools-x) + env(safe-area-inset-right, 0px));
+  left: calc(var(--tools-x) + var(--safe-l));
+  right: calc(var(--tools-x) + var(--safe-r));
   display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "tray sw";
   align-items: end; gap: 8px 10px; pointer-events: none;
 }
@@ -82,7 +82,7 @@ body { padding-bottom: calc(var(--tools-b) + var(--tools-h, 56px) + 16px); }
 .tt-act:active { transform: scale(.96); background: var(--surface-3); }
 .tt-act svg { width: 20px; height: 20px; }
 .tt-act[data-act="pause"], .tt-act[data-act="resume"] { background: var(--accent-soft); color: var(--accent); }
-.tt-cancel.is-armed { background: var(--danger); color: var(--bg); }
+.tt-cancel.is-armed { background: var(--danger); color: var(--on-fill); }
 
 /* ---------- alarm sheet (ui.js sheet with className "tt-alarm") ---------- */
 .sheet.tt-alarm { text-align: center; }
@@ -205,6 +205,9 @@ body { padding-bottom: calc(var(--tools-b) + var(--tools-h, 56px) + 16px); }
 .st-conn[data-state="error"] .st-conn-dot { background: var(--danger); }
 .st-conn[data-state="error"] .st-conn-title { color: var(--danger); }
 .st-conn[data-state="busy"] .st-conn-dot { width: 14px; height: 14px; margin-top: 4px; background: none; border: 2px solid var(--line); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .st-conn[data-state="busy"] .st-conn-dot { animation-duration: 1.6s !important; animation-iteration-count: infinite !important; }
+}
 
 .st-secret { display: flex; gap: 6px; }
 .st-secret .input { flex: 1; min-width: 0; font-family: var(--font-mono); }

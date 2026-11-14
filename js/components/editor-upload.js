@@ -6,7 +6,7 @@
  *   normalizeUrl(s) → "https://…" | null     (accepts bare domains and share text with a link)
  */
 import { html, debounce } from '../util.js';
-import { $, $$, on, toast, busy, reportError } from '../ui.js';
+import { $, $$, on, toast, busy, reportError, scrollToEl } from '../ui.js';
 import { uploadToInbox } from '../store.js';
 import { isConnected } from '../prefs.js';
 import { linkType } from './editor-parse.js';
@@ -57,8 +57,8 @@ function formHtml(mode, d) {
           <input type="file" accept="image/*" capture="environment" class="sr-only" data-files aria-label="Take a photo">
           ${icon('camera')}<span>Take a photo of a recipe card</span>
         </label>
-        <ul class="up-files" data-filelist></ul>
-        <p class="ed-err" data-err="files" hidden></p>
+        <ul class="up-files" data-filelist aria-label="Chosen files"></ul>
+        <p class="ed-err" data-err="files" role="alert" hidden></p>
       </section>
 
       <section class="up-panel" data-panel="link" ${mode === 'link' ? '' : 'hidden'}>
@@ -112,7 +112,7 @@ function successHtml(id, label) {
   return html`
     <div class="up-done" role="status">
       <span class="up-done-ic">${icon('check')}</span>
-      <h1>In your inbox</h1>
+      <h1 tabindex="-1">In your inbox</h1>
       <p><strong>${label}</strong> will be built into a full recipe the next time you tell Claude <q>update the site</q>.</p>
       <div class="up-done-acts">
         <a class="btn btn-primary" href="#/pending/${id}">${icon('inbox')}<span>View upload</span></a>
@@ -191,7 +191,7 @@ export function mountUploadForm(root) {
     const p = $(`[data-err="${name}"]`, form);
     p.textContent = msg; p.hidden = false;
     const target = name === 'files' ? $('[data-drop]', form) : field(name);
-    target?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    scrollToEl(target);
     if (name !== 'files') target?.focus({ preventScroll: true });
   }
 
@@ -221,6 +221,7 @@ export function mountUploadForm(root) {
       form = null;
       root.innerHTML = successHtml(id, label);
       window.scrollTo(0, 0);
+      $('.up-done h1', root)?.focus({ preventScroll: true });   // the Send button is gone
       toast('Sent to your inbox', { type: 'ok' });
     } catch (e) {
       status.textContent = '';
@@ -233,9 +234,13 @@ export function mountUploadForm(root) {
     on(root, 'click', '[data-act]', async (e, el) => {
       const act = el.dataset.act;
       if (act === 'remove-file') {
-        const [gone] = files.splice(+el.dataset.i, 1);
+        const i = +el.dataset.i;
+        const [gone] = files.splice(i, 1);
         if (gone?.url) URL.revokeObjectURL(gone.url);
         paintFiles();
+        // Focus the next file's remove button, else the previous one, else the file picker.
+        const btns = $$('[data-act="remove-file"]', form);
+        (btns[Math.min(i, btns.length - 1)] || $('[data-drop] input', form))?.focus({ preventScroll: true });
       } else if (act === 'paste') {
         try {
           const t = await navigator.clipboard.readText();
@@ -248,6 +253,7 @@ export function mountUploadForm(root) {
       } else if (act === 'another') {
         renderForm({});
         window.scrollTo(0, 0);
+        $('[data-mode][aria-pressed="true"]', form)?.focus({ preventScroll: true });
       }
     }),
     on(root, 'change', '[data-files]', (e, el) => { addFiles(el.files); el.value = ''; }),

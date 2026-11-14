@@ -18,6 +18,7 @@ import { startTimer } from '../timers.js';
 const TOKEN_URL = 'https://github.com/settings/personal-access-tokens/new';
 const SHARE = html`<svg class="st-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>`;
 const DOTS = html`<svg class="st-glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>`;
+const NEW_TAB = html`<span class="sr-only"> (opens in a new tab)</span>`;
 const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 
 function seg(name, value, options, labelledby) {
@@ -44,7 +45,7 @@ function view(p) {
         </label>
         <div class="st-row">
           <div class="st-text"><strong>Notifications</strong><small id="st-notify"></small></div>
-          <button type="button" class="btn btn-sm btn-soft" data-act="notify" hidden>Allow</button>
+          <button type="button" class="btn btn-sm btn-soft" data-act="notify" aria-label="Allow notifications" hidden>Allow</button>
         </div>
         <div class="st-row">
           <div class="st-text"><strong>Test alarm</strong><small>Starts a 3-second timer so you can hear and feel the alarm.</small></div>
@@ -83,7 +84,7 @@ function view(p) {
             <div class="st-secret">
               <input id="st-token" class="input" type="password" name="token" value="${p.token}" placeholder="github_pat_…"
                 autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="st-token-hint">
-              <button type="button" class="btn btn-ghost st-reveal" data-act="reveal" aria-pressed="false" aria-controls="st-token">Show</button>
+              <button type="button" class="btn btn-ghost st-reveal" data-act="reveal" aria-label="Show token" aria-controls="st-token">Show</button>
             </div>
             <p class="hint" id="st-token-hint">Stored only on this device (localStorage). It's never committed to the repo and only ever sent to GitHub.</p>
           </div>
@@ -103,7 +104,7 @@ function view(p) {
         <details class="st-howto"${p.token ? '' : ' open'}>
           <summary>How to make a token (about 2 minutes)</summary>
           <ol class="st-steps">
-            <li>Open <a href="${TOKEN_URL}" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a>
+            <li>Open <a href="${TOKEN_URL}" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new${NEW_TAB}</a>
               while signed in as <strong class="st-owner-name">${p.owner}</strong>.</li>
             <li>Name it something like <em>Bigback phone</em> and pick an expiration. When it expires, make a new one and paste it here.</li>
             <li><strong>Repository access</strong>: choose <em>Only select repositories</em>, then pick <strong class="st-repo-name">${p.repo}</strong>.</li>
@@ -119,7 +120,7 @@ function view(p) {
       <div class="panel st-panel">
         <dl class="st-dl">
           <div><dt>Version</dt><dd>${APP_VERSION}</dd></div>
-          <div><dt>Repository</dt><dd><a class="st-repo-link" href="https://github.com/${p.owner}/${p.repo}" target="_blank" rel="noopener">${p.owner}/${p.repo}</a></dd></div>
+          <div><dt>Repository</dt><dd><a class="st-repo-link" href="https://github.com/${p.owner}/${p.repo}" target="_blank" rel="noopener" aria-describedby="st-new-tab">${p.owner}/${p.repo}</a><span id="st-new-tab" hidden>Opens in a new tab</span></dd></div>
           <div><dt>Running as</dt><dd>${standalone() ? 'Home Screen app' : 'Browser tab'}</dd></div>
         </dl>
 
@@ -275,7 +276,7 @@ export async function render(root) {
       const input = $('#st-token'), show = input.type === 'password';
       input.type = show ? 'text' : 'password';
       el.textContent = show ? 'Hide' : 'Show';
-      el.setAttribute('aria-pressed', String(show));
+      el.setAttribute('aria-label', show ? 'Hide token' : 'Show token');
     } else if (act === 'disconnect') {
       const ok = await confirmSheet('Saving recipes, notes and photos will be off on this device until you add a token again. Browsing keeps working.',
         { title: 'Disconnect GitHub?', ok: 'Disconnect', danger: true });

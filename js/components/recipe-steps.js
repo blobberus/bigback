@@ -58,7 +58,7 @@ export function stepTextHtml(step, n) {
     out.push(text.slice(pos, d.index));
     const label = `Step ${n} · ${durLabel(d.seconds, d.maxSeconds)}`;
     const idle = fmtClock(d.seconds * 1000);
-    out.push(html`<button type="button" class="rx-dur" data-act="timer" data-timer data-inline data-step="${step.id}" data-label="${label}" data-seconds="${d.seconds}" data-idle="${idle}">${icon('timer')}<span class="rx-dur-text">${text.slice(d.index, d.index + d.length)}</span><span class="sr-only"> (start timer)</span><span class="rx-timer-time" hidden></span></button>`);
+    out.push(html`<button type="button" class="rx-dur" data-act="timer" data-timer data-inline data-step="${step.id}" data-label="${label}" data-seconds="${d.seconds}" data-idle="${idle}">${icon('timer')}<span class="rx-dur-text">${text.slice(d.index, d.index + d.length)}</span><span class="sr-only rx-timer-sr"> (start timer)</span><span class="rx-timer-time" hidden></span></button>`);
     pos = d.index + d.length;
   }
   out.push(text.slice(pos));
@@ -71,7 +71,7 @@ export function timerButtonsHtml(step) {
   return html`<div class="rx-timers">${timers.map(t => {
     const label = t.label || 'Timer';
     const idle = fmtClock(t.seconds * 1000);
-    return html`<button type="button" class="rx-timer" data-act="timer" data-timer data-step="${step.id}" data-label="${label}" data-seconds="${t.seconds}" data-idle="${idle}" aria-label="Start timer: ${label}, ${durText(t.seconds)}">
+    return html`<button type="button" class="rx-timer" data-act="timer" data-timer data-step="${step.id}" data-label="${label}" data-seconds="${t.seconds}" data-idle="${idle}" data-dur="${durText(t.seconds)}" aria-label="Start timer: ${label}, ${durText(t.seconds)}">
       ${icon('timer')}<span class="rx-timer-label">${label}</span><span class="rx-timer-sep" aria-hidden="true">·</span><span class="rx-timer-time">${idle}</span>
     </button>`;
   })}</div>`;
@@ -101,6 +101,18 @@ export function bindTimers(root, slug) {
       el.classList.toggle('is-running', running);
       el.classList.toggle('is-paused', running && t.pausedLeft != null);
       el.classList.toggle('is-done', !!t && !!t.done);
+      // Name follows the state (not the ticking time, so screen readers aren't re-read every second).
+      const state = !t ? 'idle' : t.done ? 'done' : t.pausedLeft != null ? 'paused' : 'running';
+      if (el.dataset.state !== state) {
+        el.dataset.state = state;
+        const label = el.dataset.label;
+        if (el.hasAttribute('aria-label')) {
+          el.setAttribute('aria-label', state === 'idle' ? `Start timer: ${label}, ${el.dataset.dur}` : `${label} timer ${state}`);
+        } else {
+          const sr = el.querySelector('.rx-timer-sr');
+          if (sr) sr.textContent = state === 'idle' ? ' (start timer)' : ` (timer ${state})`;
+        }
+      }
       if (!time) return;
       if (running) {
         live = true;

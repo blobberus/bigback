@@ -1,12 +1,18 @@
 /* base.css — tokens, reset, layout shell, shared components.
    Feature CSS lives in library.css / recipe.css / editor.css / tools.css and must only
-   use these tokens. Z-scale: topbar 20 · nav 30 · tools 40 · sheet 60 · toast 70. */
+   use these tokens. Z-scale: topbar 20 · nav 30 · tools 40 · sheet 60 · toast 70.
+
+   Contrast (WCAG 2.1, both themes): --ink / --ink-2 / --muted / --accent / --danger / --warn / --ok
+   are ≥ 4.5:1 as text on --bg, --surface and --surface-2 (keep --surface-3 for fills, not text).
+   --on-fill is the text/icon colour on solid --accent/--danger/--ok/--warn fills (≥ 4.5:1).
+   --line is decorative (dividers, card edges); --line-strong (≥ 3:1 on --bg/--surface) marks the
+   edge of controls that have no other visible boundary: inputs, switch tracks, empty meters. */
 
 :root {
   --bg: #f6f1e9; --surface: #fffdf9; --surface-2: #efe7db; --surface-3: #e6dccd;
-  --ink: #241f1a; --ink-2: #594f45; --muted: #8a7e71; --line: #e2d7c8;
-  --accent: #b4441e; --accent-ink: #fff; --accent-soft: #f5e1d4; --accent-2: #4f6b2e; --accent-2-soft: #e3ead5;
-  --warn: #a86b12; --danger: #a8321e; --ok: #4f6b2e;
+  --ink: #241f1a; --ink-2: #594f45; --muted: #6f6356; --line: #e2d7c8; --line-strong: #8f8376;
+  --accent: #a83e1a; --accent-ink: #fff; --accent-soft: #f5e1d4; --accent-2: #4f6b2e; --accent-2-soft: #e3ead5;
+  --warn: #8c5a0e; --danger: #a8321e; --ok: #4f6b2e; --on-fill: #fff;
   --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -14,7 +20,10 @@
   --shadow: 0 1px 2px rgb(36 31 26 / .06), 0 6px 20px rgb(36 31 26 / .07);
   --shadow-lg: 0 10px 40px rgb(36 31 26 / .18);
   --nav-h: 64px; --top-h: 56px;
+  /* Notch / home-indicator insets (index.html sets viewport-fit=cover). Fixed and sticky bars pad
+     by these; left/right matter in landscape on notched phones. */
   --safe-b: env(safe-area-inset-bottom, 0px); --safe-t: env(safe-area-inset-top, 0px);
+  --safe-l: env(safe-area-inset-left, 0px); --safe-r: env(safe-area-inset-right, 0px);
   --gap: 16px; --maxw: 760px;
   --tap: 44px;
   color-scheme: light;
@@ -22,18 +31,18 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #1a1714; --surface: #24201c; --surface-2: #2d2823; --surface-3: #39332c;
-    --ink: #f2ebe1; --ink-2: #cdc1b2; --muted: #9b8f81; --line: #3a332c;
+    --ink: #f2ebe1; --ink-2: #cdc1b2; --muted: #a69a8c; --line: #3a332c; --line-strong: #807466;
     --accent: #e07a4f; --accent-ink: #1a1714; --accent-soft: #3e2a20; --accent-2: #a7c07a; --accent-2-soft: #2c3322;
-    --warn: #e0a84a; --danger: #ec7a64; --ok: #a7c07a;
+    --warn: #e0a84a; --danger: #ec7a64; --ok: #a7c07a; --on-fill: #1a1714;
     --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 6px 20px rgb(0 0 0 / .25); --shadow-lg: 0 10px 40px rgb(0 0 0 / .5);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #1a1714; --surface: #24201c; --surface-2: #2d2823; --surface-3: #39332c;
-  --ink: #f2ebe1; --ink-2: #cdc1b2; --muted: #9b8f81; --line: #3a332c;
+  --ink: #f2ebe1; --ink-2: #cdc1b2; --muted: #a69a8c; --line: #3a332c; --line-strong: #807466;
   --accent: #e07a4f; --accent-ink: #1a1714; --accent-soft: #3e2a20; --accent-2: #a7c07a; --accent-2-soft: #2c3322;
-  --warn: #e0a84a; --danger: #ec7a64; --ok: #a7c07a;
+  --warn: #e0a84a; --danger: #ec7a64; --ok: #a7c07a; --on-fill: #1a1714;
   --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 6px 20px rgb(0 0 0 / .25); --shadow-lg: 0 10px 40px rgb(0 0 0 / .5);
   color-scheme: dark;
 }
@@ -44,6 +53,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   margin: 0; min-height: 100dvh; background: var(--bg); color: var(--ink);
   font: 16px/1.5 var(--font-body); -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;   /* long URLs / unbroken words wrap instead of widening a 360px screen */
   padding-bottom: calc(var(--nav-h) + var(--safe-b) + 8px);
   -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none;
 }
@@ -54,32 +64,46 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.
 h1 { font-size: 1.75rem; } h2 { font-size: 1.35rem; } h3 { font-size: 1.1rem; }
 p { margin: 0 0 .8em; }
 :focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+/* A visually hidden input (file picker, checkbox) inside its label: ring the label instead. */
+label:has(> input.sr-only:focus-visible) { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+/* Programmatic focus targets (main, headings after a view swap, sheets) need no ring. */
+[tabindex="-1"]:focus { outline: none; }
 [hidden] { display: none !important; }
 svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+/* Reduced motion: transitions and decorative animations finish instantly (near-zero durations,
+   so transitionend/animationend still fire). Busy spinners keep turning, slowly — a frozen
+   spinner reads as "stuck". Feature CSS whitelists its own progress indicators the same way. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after {
+    transition-duration: .01ms !important; transition-delay: 0s !important;
+    animation-duration: .01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important;
+  }
+  #view[aria-busy="true"]:empty::before, .btn.is-busy::after { animation-duration: 1.6s !important; animation-iteration-count: infinite !important; }
+}
 
-.skip { position: absolute; left: -9999px; } .skip:focus { left: 8px; top: 8px; z-index: 99; background: var(--surface); padding: 8px 12px; }
+.skip { position: absolute; left: -9999px; } .skip:focus { left: calc(8px + var(--safe-l)); top: calc(8px + var(--safe-t)); z-index: 99; background: var(--surface); padding: 8px 12px; }
 .muted { color: var(--muted); } .small { font-size: .875rem; } .tiny { font-size: .75rem; }
 .serif { font-family: var(--font-display); }
-.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 
 /* ---------- shell ---------- */
 .topbar {
   position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 6px;
-  min-height: calc(var(--top-h) + var(--safe-t)); padding: var(--safe-t) 8px 0 12px;
+  min-height: calc(var(--top-h) + var(--safe-t)); padding: var(--safe-t) calc(8px + var(--safe-r)) 0 calc(12px + var(--safe-l));
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px);
   border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
 }
 #topbar-title { flex: 1; margin: 0; font-size: 1.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #topbar-actions { display: flex; gap: 4px; }
-#view { display: block; max-width: var(--maxw); margin: 0 auto; padding: var(--gap); outline: none; }
+#view { display: block; max-width: var(--maxw); margin: 0 auto; padding: var(--gap) max(var(--gap), var(--safe-r)) var(--gap) max(var(--gap), var(--safe-l)); outline: none; }
 #view[aria-busy="true"]:empty::before { content: ""; display: block; margin: 30vh auto; width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent); animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .bottomnav {
   position: fixed; inset: auto 0 0 0; z-index: 30; display: grid; grid-template-columns: repeat(4, 1fr);
-  height: calc(var(--nav-h) + var(--safe-b)); padding-bottom: var(--safe-b);
+  height: calc(var(--nav-h) + var(--safe-b)); padding: 0 var(--safe-r) var(--safe-b) var(--safe-l);
   background: color-mix(in srgb, var(--surface) 92%, transparent);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line);
 }
@@ -90,7 +114,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; 
 body[data-view="cook"] .bottomnav { display: none; }
 body[data-view="cook"] { padding-bottom: var(--safe-b); }
 
-.offline-banner { display: none; text-align: center; font-size: .8rem; padding: 4px; background: var(--warn); color: #fff; }
+.offline-banner { display: none; text-align: center; font-size: .8rem; padding: 4px; background: var(--warn); color: var(--on-fill); }
 body.is-offline .offline-banner { display: block; }
 
 /* ---------- buttons & inputs ---------- */
@@ -104,10 +128,15 @@ body.is-offline .offline-banner { display: block; }
 .btn:disabled { opacity: .55; cursor: default; }
 .btn svg { width: 18px; height: 18px; }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.btn-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn-danger { background: var(--danger); border-color: var(--danger); color: var(--on-fill); }
 .btn-ghost { background: transparent; border-color: transparent; }
 .btn-soft { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
 .btn-sm { min-height: 34px; padding: 0 12px; font-size: .875rem; }
+/* Compact controls keep their look but get a ≥ 44px-tall invisible hit area (::before, since
+   .btn.is-busy uses ::after). Library chips use the same trick. */
+.btn-sm, .seg button, .chip { position: relative; }
+.btn-sm::before, .seg button::before, .chip::before { content: ""; position: absolute; inset: -5px 0; }
+.chip::before { inset: -6px 0; }
 .btn-block { display: flex; width: 100%; }
 .btn.is-busy { color: transparent !important; position: relative; }
 .btn.is-busy::after { content: ""; position: absolute; width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid currentColor; border-color: var(--line); border-top-color: var(--accent); animation: spin .7s linear infinite; }
@@ -122,8 +151,9 @@ body.is-offline .offline-banner { display: block; }
 .field > label, .label { font-size: .8rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); }
 .input {
   width: 100%; min-height: var(--tap); padding: 10px 12px; border-radius: var(--r-sm);
-  border: 1px solid var(--line); background: var(--surface); font-size: 16px; /* ≥16px stops iOS zoom */
+  border: 1px solid var(--line-strong); background: var(--surface); font-size: 16px; /* ≥16px stops iOS zoom */
 }
+.input::placeholder { color: var(--muted); opacity: 1; }
 textarea.input { min-height: 96px; resize: vertical; line-height: 1.45; }
 .input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
 .hint { font-size: .8rem; color: var(--muted); }
@@ -136,23 +166,32 @@ textarea.input { min-height: 96px; resize: vertical; line-height: 1.45; }
 /* switch: <label class="switch"><input type="checkbox"><span></span> Label</label> */
 .switch { display: flex; align-items: center; gap: 12px; min-height: var(--tap); cursor: pointer; }
 .switch input { position: absolute; opacity: 0; }
-.switch span { position: relative; flex: none; width: 50px; height: 30px; border-radius: 999px; background: var(--surface-3); transition: background .2s; }
-.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / .3); transition: transform .2s; }
+.switch span { position: relative; flex: none; width: 50px; height: 30px; border-radius: 999px; background: var(--line-strong); transition: background .2s; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / .3); transition: transform .2s, background .2s; }
 .switch input:checked + span { background: var(--accent-2); }
-.switch input:checked + span::after { transform: translateX(20px); }
+.switch input:checked + span::after { transform: translateX(20px); background: var(--on-fill); }
 .switch input:focus-visible + span { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+/* Windows high-contrast: colour fills vanish, so draw the switch and pressed states with system colours. */
+@media (forced-colors: active) {
+  .switch span { border: 1px solid CanvasText; }
+  .switch span::after, .switch input:checked + span::after { background: CanvasText; }
+  .switch input:checked + span { background: Highlight; }
+  .seg button[aria-pressed="true"], .chip[aria-pressed="true"], .chip.on { outline: 2px solid Highlight; outline-offset: -2px; }
+}
 
 /* ---------- chips, badges, meters ---------- */
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
   display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 12px; border-radius: 999px;
   border: 1px solid var(--line); background: var(--surface); font-size: .85rem; font-weight: 600; color: var(--ink-2);
-  cursor: pointer; white-space: nowrap; text-decoration: none;
+  cursor: pointer; white-space: nowrap; text-decoration: none; max-width: 100%;
 }
+/* Wrap user text (playlist names, tags) in .chip-text so an overlong one ellipsizes in the chip. */
+.chip-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .chip[aria-pressed="true"], .chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .chip-tag { min-height: 24px; padding: 0 9px; font-size: .75rem; background: var(--surface-2); border-color: transparent; cursor: default; }
 .badge { display: inline-flex; align-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-size: .7rem; font-weight: 800; }
-.meter { letter-spacing: 1px; color: var(--accent); font-size: .8em; } .meter-off { color: var(--line); }
+.meter { letter-spacing: 1px; color: var(--accent); font-size: .8em; } .meter-off { color: var(--line-strong); }
 
 /* ---------- surfaces ---------- */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
@@ -170,7 +209,8 @@ textarea.input { min-height: 96px; resize: vertical; line-height: 1.45; }
 .sheet {
   width: 100%; max-width: 560px; max-height: 88dvh; overflow: auto; outline: none;
   background: var(--surface); border-radius: var(--r-lg) var(--r-lg) 0 0; box-shadow: var(--shadow-lg);
-  padding: 8px 18px calc(18px + var(--safe-b)); transform: translateY(100%); transition: transform .22s cubic-bezier(.2,.8,.2,1);
+  padding: 8px max(18px, var(--safe-r)) calc(18px + var(--safe-b)) max(18px, var(--safe-l));
+  transform: translateY(100%); transition: transform .22s cubic-bezier(.2,.8,.2,1);
 }
 .sheet-backdrop.open .sheet { transform: none; }
 .sheet-grip { width: 40px; height: 5px; border-radius: 3px; background: var(--line); margin: 4px auto 12px; }
@@ -184,10 +224,10 @@ textarea.input { min-height: 96px; resize: vertical; line-height: 1.45; }
 }
 
 /* ---------- toasts ---------- */
-#toasts { position: fixed; left: 0; right: 0; bottom: calc(var(--nav-h) + var(--safe-b) + 16px); z-index: 70; display: grid; justify-items: center; gap: 8px; pointer-events: none; padding: 0 16px; }
+#toasts { position: fixed; left: 0; right: 0; bottom: calc(var(--nav-h) + var(--safe-b) + 16px); z-index: 70; display: grid; justify-items: center; gap: 8px; pointer-events: none; padding: 0 max(16px, var(--safe-r)) 0 max(16px, var(--safe-l)); }
 .toast { max-width: 480px; padding: 12px 16px; border-radius: 12px; background: var(--ink); color: var(--bg); font-weight: 600; font-size: .9rem; box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(10px); transition: opacity .2s, transform .2s; pointer-events: auto; }
 .toast.show { opacity: 1; transform: none; }
-.toast-error { background: var(--danger); color: #fff; }
-.toast-ok { background: var(--ok); color: #fff; }
+.toast-error { background: var(--danger); color: var(--on-fill); }
+.toast-ok { background: var(--ok); color: var(--on-fill); }
 
 @media (min-width: 900px) { :root { --gap: 20px; } h1 { font-size: 2.1rem; } }

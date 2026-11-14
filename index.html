@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f6f1e9" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#1a1714" media="(prefers-color-scheme: dark)">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -38,6 +39,7 @@
   <!-- Global kitchen tools mount here (timers tray, stopwatch). -->
   <div id="tools"></div>
   <div id="toasts" aria-live="polite"></div>
+  <div id="route-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
   <nav class="bottomnav" aria-label="Main">
     <a href="#/" data-nav="library">

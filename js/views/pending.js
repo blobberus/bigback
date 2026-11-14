@@ -16,6 +16,7 @@ const baseName = p => String(p).split('/').pop();
 const safeHref = u => (/^https?:\/\//i.test(String(u || '')) ? u : null);
 const shortUrl = u => { try { const x = new URL(u); return (x.hostname.replace(/^www\./, '') + x.pathname).replace(/\/$/, ''); } catch { return u; } };
 const fmtDate = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); };
+const NEW_TAB = html`<span class="sr-only"> (opens in a new tab)</span>`;
 
 function kindOf(item) {
   const files = item.files || [];
@@ -80,7 +81,7 @@ function itemHtml(item) {
           ${href ? html`<a class="pd-link" href="${href}" target="_blank" rel="noopener noreferrer">
               <span class="pd-link-ic">${icon(type)}</span>
               <span class="pd-link-body"><strong>${LINK_LABEL[type]}</strong><span>${shortUrl(href)}</span></span>
-              ${icon('external', 'pd-link-ext')}
+              ${icon('external', 'pd-link-ext')}${NEW_TAB}
             </a>` : html`<p class="pd-plain">${item.url}</p>`}
         </section>` : ''}
 
@@ -89,13 +90,13 @@ function itemHtml(item) {
           <h2 class="section-title">${files.length === 1 ? 'File' : `Files · ${files.length}`}</h2>
           ${images.length ? html`<div class="pd-thumbs">${images.map(p => html`
             <a class="pd-thumb" href="${fileHref(p)}" target="_blank" rel="noopener">
-              <img src="${mediaUrl(p)}" data-fallback="${rawUrl(p)}" alt="${baseName(p)}" loading="lazy">
+              <img src="${mediaUrl(p)}" data-fallback="${rawUrl(p)}" alt="${baseName(p)}" loading="lazy">${NEW_TAB}
             </a>`)}</div>` : ''}
           ${others.length ? html`<ul class="pd-files">${others.map(p => html`
             <li><a href="${fileHref(p)}" target="_blank" rel="noopener">
               <span class="pd-file-ic">${fileIcon(p)}</span>
               <span class="pd-file-name">${baseName(p)}</span>
-              ${icon('external', 'pd-link-ext')}
+              ${icon('external', 'pd-link-ext')}${NEW_TAB}
             </a></li>`)}</ul>` : ''}
         </section>` : ''}
 
