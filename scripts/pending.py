@@ -151,7 +151,8 @@ def text_report(inbox, custom, groups):
     if custom:
         lines.append(f"CUSTOM {len(custom)} -> enrich (skill recipe-ingest, custom section)")
         for c in custom:
-            lines.append(f"- {c['slug']} \"{c['title']}\" {c['ingredients']} ing, {c['steps']} steps")
+            lines.append(f"- {c['slug']} \"{c['title']}\" ({c['ingredients']} ingredients / {c['steps']} steps) "
+                         f"-> recipes/{c['slug']}.json")
     if groups:
         total = sum(len(g["notes"]) for g in groups)
         lines.append(f"NOTES {total} open in {len(groups)} recipe(s) -> skill recipe-refinement, resolve_note.py")
