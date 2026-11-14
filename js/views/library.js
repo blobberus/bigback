@@ -15,7 +15,7 @@ import { html, raw, fmtMinutes } from '../util.js';
 import { getIndex, getLibrary, entryFor, mediaUrl, rawUrl, onChange } from '../store.js';
 import { setTopbar, on, stars, sheet } from '../ui.js';
 import { isConnected } from '../prefs.js';
-import { PROFICIENCY } from '../components/meta-editor.js';
+import { PROFICIENCY, editMeta } from '../components/meta-editor.js';
 
 /* ---------- shared display helpers ---------- */
 const svg = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
@@ -302,6 +302,7 @@ export async function render(root, params) {
   const s = readState(params);
   const pathOf = h => (h || '#/').split('?')[0];
   const myPath = pathOf(location.hash);
+  const savedY = history.state?.libScroll || 0;     // set below while scrolling; survives Back
   let idx, lib, rows = [], plSets = {}, alive = true;
 
   setTopbar({ title: 'Recipes' });
@@ -419,10 +420,49 @@ export async function render(root, params) {
     } else if (name === 'filters') openFilters();
     else if (name === 'rm' || name === 'add') { toggle(s, el.dataset.k, el.dataset.v); update(); }
     else if (name === 'clear-filters') { clearFilters(s); update(); }
+    else if (name === 'more') openMeta(el.closest('.rcard'));
+  }
+
+  /* ---------- card ⋯ / long-press → meta editor ---------- */
+  let press = null;
+  function openMeta(li) {
+    if (!li) return;
+    editMeta(li.dataset.slug, { title: li.dataset.title }).finally(() => { press = null; });
+  }
+  const cancelPress = () => { if (press && !press.fired) { clearTimeout(press.timer); press = null; } };
+  function onPointerDown(e) {
+    cancelPress(); press = null;
+    const link = e.target.closest('.rcard-link');
+    if (!link || e.button > 0) return;
+    const li = link.closest('.rcard');
+    press = {
+      x: e.clientX, y: e.clientY, fired: false,
+      timer: setTimeout(() => { press.fired = true; navigator.vibrate?.(12); openMeta(li); }, 500)
+    };
+  }
+  const onPointerMove = e => { if (press && !press.fired && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 10) cancelPress(); };
+  const onClickCapture = e => { if (press?.fired) { e.preventDefault(); e.stopPropagation(); press = null; } };
+  const onContextMenu = e => { if (press && e.target.closest('.rcard')) e.preventDefault(); };   // no native link menu mid-press
+  const listen = (el, type, fn, opts) => { el.addEventListener(type, fn, opts); return () => el.removeEventListener(type, fn, opts); };
+
+  /* ---------- scroll: stuck-toolbar hairline + remember position for Back ---------- */
+  let scrollT = 0;
+  function onScroll() {
+    part('bar').classList.toggle('is-stuck', window.scrollY > 2);
+    clearTimeout(scrollT);
+    scrollT = setTimeout(() => { if (alive) history.replaceState({ ...(history.state || {}), libScroll: Math.round(window.scrollY) }, ''); }, 160);
   }
 
   paint();
+  if (savedY > 0) requestAnimationFrame(() => window.scrollTo(0, savedY));
   const offs = [
+    listen(root, 'pointerdown', onPointerDown),
+    listen(root, 'pointermove', onPointerMove, { passive: true }),
+    listen(root, 'pointerup', cancelPress),
+    listen(root, 'pointercancel', cancelPress),
+    listen(root, 'click', onClickCapture, true),
+    listen(root, 'contextmenu', onContextMenu),
+    listen(window, 'scroll', onScroll, { passive: true }),
     guardImages(root),
     on(root, 'input', '.search-input', (e, el) => { s.q = el.value; clearBtn.hidden = !el.value; update({ soon: true }); }),
     on(root, 'keydown', '.search-input', (e, el) => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } }),
@@ -437,7 +477,7 @@ export async function render(root, params) {
   ];
   return () => {
     alive = false;
-    clearTimeout(hashT);
+    clearTimeout(hashT); clearTimeout(scrollT); cancelPress();
     offs.forEach(off => off());
   };
 }
