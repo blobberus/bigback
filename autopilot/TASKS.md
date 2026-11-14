@@ -63,9 +63,9 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 - [ ] Dark mode check, safe-area insets, 360px width check
 
 ## WS7 — Follow-ups from workstream reports (2026-11-14)
-- [ ] store: `unmarkCooked(slug)` (decrement, restore previous lastCooked) + "Undo" action in the toast after "I cooked this" (js/store.js, js/views/recipe.js)
-- [ ] Cook mode: replace promptSheet note composer with a sheet that keeps a draft in sessionStorage if dismissed (js/views/cook.js)
-- [ ] Recipe page: allow deleting applied/kept notes too (confirmSheet) (js/components/recipe-journal.js)
+- [x] store: `unmarkCooked(slug)` (decrement, restore previous lastCooked) + "Undo" action in the toast after "I cooked this" (js/store.js, js/views/recipe.js)
+- [x] Cook mode: replace promptSheet note composer with a sheet that keeps a draft in sessionStorage if dismissed (js/views/cook.js)
+- [x] Recipe page: allow deleting applied/kept notes too (confirmSheet) (js/components/recipe-journal.js)
 - [x] Library cards: add `-webkit-touch-callout: none; user-select: none` on long-press targets so iOS link preview doesn't fight the ⋯ editor (css/library.css)
 - [x] Editor parser: a short step line ending in ":" should stay a step when it's the only line of its paragraph and followed by a blank line (js/components/editor-parse.js + tests/editor-parse.html)
 - [x] Library: "Playlist order" sort when viewing a playlist (js/views/library.js)
