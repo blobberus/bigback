@@ -8,11 +8,17 @@
  *   promptSheet(title, { value, placeholder, ok, multiline }) → Promise<string|null>
  *   busy(button, promise) — disables + spinner until promise settles
  *   stars(n, max) → html string (read-only ●○ meter)
+ *   reducedMotion() → bool    scrollToEl(el, block='center') — smooth only when motion is welcome
  */
 import { esc, toStr } from './util.js';
 
 export const $ = (s, r = document) => r.querySelector(s);
 export const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+/** True when the user asked the OS for less motion — skip smooth scrolls and JS animations. */
+export const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+/** scrollIntoView that only animates when motion is welcome. */
+export const scrollToEl = (el, block = 'center') => el?.scrollIntoView({ block, behavior: reducedMotion() ? 'auto' : 'smooth' });
 
 export function on(root, type, selector, fn, opts) {
   const h = e => { const el = e.target.closest(selector); if (el && root.contains(el)) fn(e, el); };

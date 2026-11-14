@@ -9,7 +9,7 @@
  *   Drafts autosave per form (editor-drafts.js) and are offered back on return.
  */
 import { html, fmtMinutes, debounce, parseDurations } from '../util.js';
-import { $, $$, on, toast, busy, confirmSheet, reportError } from '../ui.js';
+import { $, $$, on, toast, busy, confirmSheet, reportError, scrollToEl } from '../ui.js';
 import { saveRecipe, deleteRecipe, getJournal, mediaUrl, rawUrl, NotConnectedError } from '../store.js';
 import { isConnected } from '../prefs.js';
 import { parseIngredients, parseSteps, formatIngredients, formatSteps, formatIngredientLine, parseLines } from './editor-parse.js';
@@ -346,7 +346,7 @@ export function mountRecipeForm(root, { recipe = null } = {}) {
       if (first === 'profile') $('[data-profile]', form).open = true;
       const el = field(first);
       el.focus({ preventScroll: true });
-      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      scrollToEl(el);
     }
   }
   const clearErr = name => {

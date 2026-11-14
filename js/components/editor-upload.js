@@ -6,7 +6,7 @@
  *   normalizeUrl(s) → "https://…" | null     (accepts bare domains and share text with a link)
  */
 import { html, debounce } from '../util.js';
-import { $, $$, on, toast, busy, reportError } from '../ui.js';
+import { $, $$, on, toast, busy, reportError, scrollToEl } from '../ui.js';
 import { uploadToInbox } from '../store.js';
 import { isConnected } from '../prefs.js';
 import { linkType } from './editor-parse.js';
@@ -191,7 +191,7 @@ export function mountUploadForm(root) {
     const p = $(`[data-err="${name}"]`, form);
     p.textContent = msg; p.hidden = false;
     const target = name === 'files' ? $('[data-drop]', form) : field(name);
-    target?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    scrollToEl(target);
     if (name !== 'files') target?.focus({ preventScroll: true });
   }
 

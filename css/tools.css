@@ -205,6 +205,9 @@ body { padding-bottom: calc(var(--tools-b) + var(--tools-h, 56px) + 16px); }
 .st-conn[data-state="error"] .st-conn-dot { background: var(--danger); }
 .st-conn[data-state="error"] .st-conn-title { color: var(--danger); }
 .st-conn[data-state="busy"] .st-conn-dot { width: 14px; height: 14px; margin-top: 4px; background: none; border: 2px solid var(--line); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .st-conn[data-state="busy"] .st-conn-dot { animation-duration: 1.6s !important; animation-iteration-count: infinite !important; }
+}
 
 .st-secret { display: flex; gap: 6px; }
 .st-secret .input { flex: 1; min-width: 0; font-family: var(--font-mono); }
