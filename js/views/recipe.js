@@ -17,6 +17,7 @@ import { icon } from '../components/recipe-icons.js';
 import { rxState, rxPatch, setDraft, toggleId } from '../components/recipe-state.js';
 import { ingredientsHtml, bindIngredients } from '../components/recipe-ingredients.js';
 import { groupBySection, stepTextHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
+import { mentionMatcher, bindMentions } from '../components/recipe-mentions.js';
 import {
   fmtDate, cookedLine, noteListHtml, composerHtml, connectHint, photoGridHtml, photoThumbsHtml,
   openPhotoUploader, openLightbox, confirmDeleteNote
@@ -236,16 +237,17 @@ export async function render(root, { slug }) {
 
   function stepsHtml(r, st, notes, photos) {
     const done = new Set(st.done);
+    const match = mentionMatcher(r.ingredients);
     let n = 0;
     return groupBySection(r.steps).map((g, gi) => html`
       ${g.section ? html`<h3 class="rx-subhead">${g.section}</h3>` : gi ? html`<hr class="rx-sep">` : ''}
       <ol class="rx-steps">${g.items.map(s => {
         n += 1;
-        return stepHtml(s, n, done.has(s.id), notes.filter(x => x.stepId === s.id), photos.filter(p => p.stepId === s.id), st);
+        return stepHtml(s, n, done.has(s.id), notes.filter(x => x.stepId === s.id), photos.filter(p => p.stepId === s.id), st, match);
       })}</ol>`);
   }
 
-  function stepHtml(s, n, isDone, notes, photos, st) {
+  function stepHtml(s, n, isDone, notes, photos, st, match) {
     const open = !!st.open[s.id];
     return html`
       <li class="rx-step${isDone ? ' is-done' : ''}" id="step-${s.id}">
@@ -253,7 +255,7 @@ export async function render(root, { slug }) {
           <span class="rx-num-n">${n}</span>${icon('check', 'rx-num-check')}
         </button>
         <div class="rx-step-body">
-          <p class="rx-step-text">${stepTextHtml(s, n)}</p>
+          <p class="rx-step-text">${stepTextHtml(s, n, { match })}</p>
           ${timerButtonsHtml(s)}
           ${s.tip ? html`<aside class="rx-tip"><span class="rx-tip-label">Why</span>${s.tip}</aside>` : ''}
           ${photoThumbsHtml(photos)}
@@ -394,6 +396,7 @@ export async function render(root, { slug }) {
   const offs = [
     timers,
     bindIngredients(root, () => data?.recipe, slug),
+    bindMentions(root, () => data?.recipe, slug),
     on(root, 'click', '[data-act]', onClick),
     on(root, 'submit', 'form[data-composer-form]', onSubmit),
     on(root, 'input', 'textarea[data-composer]', (e, el) => setDraft(slug, el.dataset.composer, el.value)),

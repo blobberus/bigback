@@ -54,6 +54,11 @@ def serve():
             pass
 
         def do_GET(self):
+            # The real site password would put every route behind the lock screen; tests
+            # exercise the app itself (tests/lock.html covers the lock).
+            if self.path.split("?")[0] == "/data/lock.json":
+                self.send_error(404)
+                return
             if self.path.startswith("/__smoke/"):
                 if self.path.startswith(HOLD):
                     RELEASE.wait(30)

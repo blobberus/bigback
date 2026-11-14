@@ -2,8 +2,10 @@
  * components/recipe-steps.js — step text with tappable durations + timer buttons
  * (recipe page and cook mode).
  *   groupBySection(list) → [{ section, items }]   consecutive runs, order preserved
- *   stepTextHtml(step, n, { slug }) → html        durations parsed from the text that no explicit
- *                                                 timer covers become inline timer links
+ *   stepTextHtml(step, n, { match }) → html       durations parsed from the text that no explicit
+ *                                                 timer covers become inline timer links; with
+ *                                                 match = mentionMatcher(ingredients) (recipe-mentions.js)
+ *                                                 ingredient names become amount links
  *   timerButtonsHtml(step, n) → html               one button per step.timers[] ("Dry brine · 15:00")
  *   bindTimers(root, slug) → off (off.refresh())   tap → startTimer; live remaining time on
  *                                                 running timers of this recipe (onTimers + 1s tick)
@@ -49,13 +51,20 @@ export function inlineDurations(step) {
   return parseDurations(step.text || '').filter(d => !covered(d, timers));
 }
 
-export function stepTextHtml(step, n) {
+export function stepTextHtml(step, n, { match } = {}) {
   const text = step.text || '';
   const out = [];
   let pos = 0;
-  for (const d of inlineDurations(step)) {
+  const spans = [...inlineDurations(step), ...(match ? match(text).map(m => ({ ...m, ing: true })) : [])]
+    .sort((a, b) => a.index - b.index);
+  for (const d of spans) {
     if (d.index < pos) continue;
     out.push(text.slice(pos, d.index));
+    if (d.ing) {
+      out.push(html`<button type="button" class="rx-ingref" data-ingref="${d.ids.join(' ')}" aria-expanded="false">${text.slice(d.index, d.index + d.length)}<span class="sr-only"> (amount)</span></button>`);
+      pos = d.index + d.length;
+      continue;
+    }
     const label = `Step ${n} · ${durLabel(d.seconds, d.maxSeconds)}`;
     const idle = fmtClock(d.seconds * 1000);
     out.push(html`<button type="button" class="rx-dur" data-act="timer" data-timer data-inline data-step="${step.id}" data-label="${label}" data-seconds="${d.seconds}" data-idle="${idle}">${icon('timer')}<span class="rx-dur-text">${text.slice(d.index, d.index + d.length)}</span><span class="sr-only rx-timer-sr"> (start timer)</span><span class="rx-timer-time" hidden></span></button>`);

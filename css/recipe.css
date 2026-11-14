@@ -145,27 +145,73 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 }
 
 .rx-ings { list-style: none; margin: 0; padding: 0; }
-.rx-ings li + li { border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+.rx-ings > li + li { border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
 .rx-ing {
   position: relative; display: flex; align-items: flex-start; gap: 14px; min-height: 54px;
-  padding: 13px 6px 12px 4px; cursor: pointer; border-radius: var(--r-sm); transition: background .15s;
+  padding: 13px 6px 12px 4px; border-radius: var(--r-sm);
 }
-.rx-ing:active { background: var(--surface-2); }
+/* Only the circle checks an item off; this keeps a 44px target around the 26px circle. */
+.rx-check-hit { flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin: -9px; border-radius: 50%; cursor: pointer; }
+.rx-check-hit:active .rx-check { transform: scale(.9); }
 .rx-ing-input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
 .rx-check {
   flex: none; display: grid; place-items: center; width: 26px; height: 26px; margin-top: 0;
   border-radius: 50%; border: 2px solid color-mix(in srgb, var(--muted) 55%, transparent);
-  background: var(--surface); color: transparent; transition: background .15s, border-color .15s, color .15s;
+  background: var(--surface); color: transparent; transition: background .15s, border-color .15s, color .15s, transform .08s;
 }
 .rx-check .rx-ic { width: 15px; height: 15px; stroke-width: 3.2; }
 .rx-ing.is-checked .rx-check { background: var(--accent-2); border-color: var(--accent-2); color: var(--surface); }
 .rx-ing-input:focus-visible + .rx-check { outline: 2.5px solid var(--accent); outline-offset: 2px; }
-.rx-ing-text { display: grid; gap: 2px; min-width: 0; font-size: 1.05rem; line-height: 1.4; transition: color .15s; }
+.rx-ing-text { flex: 1; display: grid; gap: 2px; min-width: 0; font-size: 1.05rem; line-height: 1.4; transition: color .15s; }
 .rx-qty { font-weight: 700; }
 .rx-qty.is-scaled { color: var(--accent); }
 .rx-ing-note { font-size: .88rem; color: var(--muted); line-height: 1.35; }
 .rx-ing.is-checked .rx-ing-text { color: var(--muted); }
 .rx-ing.is-checked .rx-qty { color: inherit; }
+
+/* Tappable amount → conversions panel under the row */
+.rx-qty-btn {
+  display: inline; margin: -2px -4px; padding: 2px 4px; border: 0; border-radius: 6px; background: none;
+  font: inherit; font-weight: 700; line-height: inherit; color: inherit; cursor: pointer;
+  text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
+}
+.rx-qty-btn.is-scaled { color: var(--accent); }
+.rx-qty-btn[aria-expanded="true"] { background: var(--accent-soft); color: var(--accent); text-decoration: none; }
+.rx-conv {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 4px 16px;
+  margin: 8px 0 2px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--surface-2);
+  font-size: .9rem; line-height: 1.35; color: var(--ink);
+}
+.rx-conv[hidden] { display: none; }
+.rx-conv-h { margin: 0 0 4px; font-size: .72rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.rx-conv ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; }
+.rx-conv li { font-variant-numeric: tabular-nums; }
+.rx-conv-by { font-size: .78rem; color: var(--muted); }
+.rx-ing.is-checked .rx-conv { color: var(--muted); }
+
+/* Ingredient named in a step → tap for the amount (bubble from recipe-mentions.js) */
+.rx-ingref {
+  display: inline; margin: 0 -2px; padding: 0 2px; border: 0; border-radius: 5px; background: none;
+  font: inherit; line-height: inherit; color: inherit; cursor: pointer;
+  text-decoration: underline dotted var(--accent); text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+}
+.rx-ingref[aria-expanded="true"] { background: var(--accent-soft); color: var(--accent); text-decoration-style: solid; }
+.rx-ingtip {
+  position: fixed; z-index: 15; max-width: min(280px, calc(100vw - 16px)); padding: 7px 11px;
+  display: grid; gap: 2px; border-radius: 10px; background: var(--ink); color: var(--bg);
+  font-size: .84rem; line-height: 1.35; box-shadow: var(--shadow-lg); animation: rx-tip-in .14s ease-out;
+}
+.rx-ingtip::after {
+  content: ""; position: absolute; top: 100%; left: var(--arrow-x, 50%); transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: var(--ink);
+}
+.rx-ingtip.is-below::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--ink); }
+.rx-ingtip strong { font-weight: 800; }
+.rx-ingtip-sec, .rx-ingtip-scale { opacity: .78; }
+.rx-ingtip-scale { font-size: .75rem; }
+@keyframes rx-tip-in { from { opacity: 0; transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) { .rx-ingtip { animation: none; } }
 .rx-ing.is-checked .rx-ing-item { text-decoration: line-through; text-decoration-thickness: 1.5px; text-decoration-color: color-mix(in srgb, var(--muted) 70%, transparent); }
 .rx-subhead + .rx-ings { margin-top: 2px; }
 .rx-ing-foot {

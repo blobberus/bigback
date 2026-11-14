@@ -16,7 +16,7 @@
  * SHELL must list every app file. When you add a JS/CSS file, add it here (anything missing
  * is still cached on first use, it just isn't available offline before that).
  */
-const VERSION = '3';
+const VERSION = '4';
 const SHELL_CACHE = `bb-shell-${VERSION}`;
 const DATA_CACHE = 'bb-data-v1';
 const MEDIA_CACHE = 'bb-media-v1';
@@ -28,11 +28,11 @@ const SHELL = [
   './', 'index.html', 'manifest.webmanifest',
   'css/base.css', 'css/library.css', 'css/recipe.css', 'css/editor.css', 'css/tools.css',
   'js/app.js', 'js/config.js', 'js/lock.js', 'js/prefs.js', 'js/util.js', 'js/ui.js', 'js/github.js', 'js/store.js',
-  'js/timers.js', 'js/stopwatch.js', 'js/wakelock.js',
+  'js/timers.js', 'js/stopwatch.js', 'js/wakelock.js', 'js/units.js',
   'js/views/library.js', 'js/views/playlists.js', 'js/views/recipe.js', 'js/views/cook.js',
   'js/views/add.js', 'js/views/pending.js', 'js/views/settings.js',
   'js/components/meta-editor.js', 'js/components/recipe-icons.js', 'js/components/recipe-ingredients.js',
-  'js/components/recipe-journal.js', 'js/components/recipe-state.js', 'js/components/recipe-steps.js',
+  'js/components/recipe-journal.js', 'js/components/recipe-mentions.js', 'js/components/recipe-state.js', 'js/components/recipe-steps.js',
   'js/components/editor-drafts.js', 'js/components/editor-form.js', 'js/components/editor-icons.js',
   'js/components/editor-ids.js', 'js/components/editor-parse.js', 'js/components/editor-upload.js',
   'assets/icons/icon.svg', 'assets/icons/icon-180.png', 'assets/icons/icon-192.png',

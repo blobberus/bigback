@@ -7,11 +7,18 @@
  *       handles checkbox changes, −/+ / ×½ ×1 ×2, and Reset inside `host`;
  *       re-renders the closest [data-ingredients] in place on scale/reset.
  *   qtyText(ing, factor) → "1½–2 cups" ('' when qty is null)
+ * Only the round checkbox checks an ingredient off. A convertible amount ("3 tbsp", "200 g") is a
+ * button that opens a breakdown under the row: other US measures + metric (units.js). Open rows
+ * are remembered per recipe for this page load, so they survive re-renders when scaling.
  */
 import { html, fmtQty, scaleQty, clamp } from '../util.js';
 import { on } from '../ui.js';
 import { icon } from './recipe-icons.js';
 import { rxState, rxPatch, toggleId } from './recipe-state.js';
+import { breakdown } from '../units.js';
+
+const convOpen = new Map();      // slug → Set(ingredient ids with the breakdown open)
+const openSet = slug => { if (!convOpen.has(slug)) convOpen.set(slug, new Set()); return convOpen.get(slug); };
 
 /* Abbreviations never pluralize; count-style words do ("4 cloves", "2 pinches"). */
 const ABBR = /^(tsp|tbsp|tbs|tb|t|c|lbs?|oz|fl\.? ?oz|g|kg|mg|ml|l|dl|cl|qt|pt|gal|in|cm|mm|pkg)\.?$/i;
@@ -77,19 +84,34 @@ function scalerHtml(recipe, f) {
     </div>`;
 }
 
-function rowHtml(ing, f, checked) {
+function convHtml(conv) {
+  const col = (title, lines) => (lines.length ? html`<div class="rx-conv-col">
+    <p class="rx-conv-h">${title}</p>
+    <ul>${lines.map(l => html`<li>${l.text}${l.by ? html` <span class="rx-conv-by">by ${l.by}</span>` : ''}</li>`)}</ul>
+  </div>` : '');
+  return html`${col('Imperial (US)', conv.us)}${col('Metric', conv.metric)}`;
+}
+
+function rowHtml(ing, f, checked, open) {
   const qty = qtyText(ing, f);
   const scaled = qty && Math.abs(f - 1) > 1e-9;
+  const conv = qty ? breakdown(ing, f) : null;
+  const isOpen = !!conv && open.has(ing.id);
+  const cls = `rx-qty${scaled ? ' is-scaled' : ''}`;
+  const amount = !qty ? '' : conv
+    ? html`<button type="button" class="${cls} rx-qty-btn" data-conv="${ing.id}" aria-expanded="${isOpen}" aria-controls="rx-conv-${ing.id}" aria-label="${qty}, other measures">${qty}</button> `
+    : html`<span class="${cls}">${qty}</span> `;
   return html`
-    <li>
-      <label class="rx-ing${checked ? ' is-checked' : ''}">
-        <input type="checkbox" class="rx-ing-input" data-ing="${ing.id}" ${checked ? 'checked' : ''}>
+    <li class="rx-ing${checked ? ' is-checked' : ''}">
+      <label class="rx-check-hit">
+        <input type="checkbox" class="rx-ing-input" data-ing="${ing.id}" aria-label="${qty ? `${qty} ` : ''}${ing.item}" ${checked ? 'checked' : ''}>
         <span class="rx-check" aria-hidden="true">${icon('check')}</span>
-        <span class="rx-ing-text">
-          <span class="rx-ing-line">${qty ? html`<span class="rx-qty${scaled ? ' is-scaled' : ''}">${qty}</span> ` : ''}<span class="rx-ing-item">${ing.item}</span></span>
-          ${ing.note ? html`<span class="rx-ing-note">${ing.note}</span>` : ''}
-        </span>
       </label>
+      <div class="rx-ing-text">
+        <span class="rx-ing-line">${amount}<span class="rx-ing-item">${ing.item}</span></span>
+        ${ing.note ? html`<span class="rx-ing-note">${ing.note}</span>` : ''}
+        ${conv ? html`<div class="rx-conv" id="rx-conv-${ing.id}"${isOpen ? '' : ' hidden'}>${convHtml(conv)}</div>` : ''}
+      </div>
     </li>`;
 }
 
@@ -115,11 +137,12 @@ export function ingredientsHtml(recipe, slug) {
     bySec.get(k).push(it);
   }
   const done = items.filter(i => checked.has(i.id)).length;
+  const open = openSet(slug);
   return html`
     ${scalerHtml(recipe, f)}
     ${[...bySec].map(([section, list]) => html`
       ${section ? html`<h3 class="rx-subhead">${section}</h3>` : ''}
-      <ul class="rx-ings">${list.map(i => rowHtml(i, f, checked.has(i.id)))}</ul>`)}
+      <ul class="rx-ings">${list.map(i => rowHtml(i, f, checked.has(i.id), open))}</ul>`)}
     ${footerHtml(items.length, done)}`;
 }
 
@@ -153,6 +176,13 @@ export function bindIngredients(host, getRecipe, slug, { onScale } = {}) {
       repaint(el);
       if (keep) box?.querySelector(keep)?.focus({ preventScroll: true });
       onScale?.(f);
+    }),
+    on(host, 'click', '[data-conv]', (e, el) => {
+      const id = el.dataset.conv, set = openSet(slug), open = !set.has(id);
+      if (open) set.add(id); else set.delete(id);
+      el.setAttribute('aria-expanded', String(open));
+      const panel = el.closest('.rx-ing')?.querySelector('.rx-conv');
+      if (panel) panel.hidden = !open;
     }),
     on(host, 'click', '[data-act="ing-reset"]', (e, el) => {
       rxPatch(slug, { checked: [] });

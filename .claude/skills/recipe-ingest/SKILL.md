@@ -80,6 +80,9 @@ pan/stage), not one sentence per step and not a wall of text.
   range, and the sensory cue that matters more than the clock ("until deep golden and it
   releases on its own, 18–22 minutes").
 - Quantities in the text only when an ingredient is split ("half the parmesan (¼ cup)").
+- Name ingredients in steps by the last word(s) of their list name ("the butter", "the stock"
+  for "cold unsalted butter" / "chicken stock"): the site turns those words into tap-for-amount
+  links (js/components/recipe-mentions.js). A number right before the name suppresses the link.
 - `timers`: one per explicit duration, `seconds` = the low end of the range, label 1–3
   words ("Simmer", "Rest", "Covered bake"). Skip "a few seconds" / "30 seconds" stirs
   only if trivial; anything ≥1 minute gets a timer.

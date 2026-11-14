@@ -42,7 +42,8 @@ rating, proficiency or playlists (exception: adding blank entries for new recipe
 - No build step, no npm. Vanilla ES modules, hash router, mobile-first CSS.
 - Python 3 stdlib only for scripts (`python scripts/…`). Node is not installed.
 - Step and ingredient `id`s are stable forever — notes reference them.
-- Small, focused commits with imperative messages; push to `main` after each batch.
+- Few commits: one per feature (code + tests + docs), imperative message, push to `main`.
+  The owner caps the repo at **140 commits per day** — check `git log --since=<today> --oneline | wc -l`.
 - Local preview: `python -m http.server 8080` from repo root → http://localhost:8080
 - Verify before committing: `python scripts/validate.py` (data + sw.js precache list) and
   `python scripts/smoke.py [routes…]` (headless Edge; routes without "#/", e.g. `r/<slug>`;

@@ -16,6 +16,7 @@ import { icon } from '../components/recipe-icons.js';
 import { rxState, rxPatch, setDraft, toggleId } from '../components/recipe-state.js';
 import { ingredientsHtml, bindIngredients } from '../components/recipe-ingredients.js';
 import { stepTextHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
+import { mentionMatcher, bindMentions } from '../components/recipe-mentions.js';
 import { cookedLine, clip } from '../components/recipe-journal.js';
 
 const RECENT = 12 * 3600e3;   // one "I cooked this" per session-ish
@@ -64,7 +65,7 @@ export async function render(root, { slug }) {
 
         <article class="ck-step" data-dir="${dir}" aria-live="polite" aria-label="Step ${n} of ${total}">
           ${s.section ? html`<p class="ck-section">${s.section}</p>` : ''}
-          <p class="ck-text">${stepTextHtml(s, n)}</p>
+          <p class="ck-text">${stepTextHtml(s, n, { match: mentionMatcher(recipe.ingredients) })}</p>
           ${timerButtonsHtml(s)}
           ${s.tip ? html`<aside class="rx-tip ck-tip"><span class="rx-tip-label">Why</span>${s.tip}</aside>` : ''}
           ${last ? doneCard() : ''}
@@ -231,6 +232,7 @@ export async function render(root, { slug }) {
   const timers = bindTimers(root, slug);
   const offs = [
     timers,
+    bindMentions(root, () => recipe, slug),
     on(root, 'click', '[data-act]', onClick),
     onChange(async ev => {
       if (!ev.paths?.some(p => p === `recipes/${slug}.json` || p === 'data/library.json')) return;

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ingredient links + conversions · Bigback</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/recipe.css">
+  <style>
+    body { padding-bottom: 24px; }
+    .t-sum { font-weight: 700; margin: 0 0 12px; }
+    .t-sum.bad { color: var(--danger); } .t-sum.good { color: var(--ok); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    td { padding: 6px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+    td:first-child { width: 2.5em; font-weight: 800; }
+    tr.pass td:first-child { color: var(--ok); } tr.fail td:first-child { color: var(--danger); }
+    #sandbox { position: absolute; left: 0; top: 200px; width: 390px; }
+  </style>
+</head>
+<body>
+<!-- Run: python scripts/smoke.py tests/ingredients.html -->
+<main id="view"><p class="muted">Running…</p></main>
+<div id="sandbox"></div>
+<script type="module">
+import { mentionMatcher, bindMentions } from '../js/components/recipe-mentions.js';
+import { ingredientsHtml, bindIngredients } from '../js/components/recipe-ingredients.js';
+import { stepTextHtml } from '../js/components/recipe-steps.js';
+import { breakdown, unitInfo } from '../js/units.js';
+import { toStr } from '../js/util.js';
+
+const results = [];
+const canon = v => JSON.stringify(v);
+function eq(name, got, want) {
+  const ok = canon(got) === canon(want);
+  results.push({ name, ok, detail: ok ? '' : `want ${canon(want)} got ${canon(got)}` });
+  if (!ok) console.error(`Test failed: ${name} | want ${canon(want)} | got ${canon(got)}`);
+}
+const truthy = (name, cond, detail = '') => eq(name, !!cond, true) || (detail && !cond && (results[results.length - 1].detail = detail));
+
+/* ---------- mention matcher ---------- */
+const CHICKEN = [
+  { id: 'i1', qty: 6, unit: null, item: 'bone-in, skin-on chicken thighs' },
+  { id: 'i2', qty: 2, unit: 'tsp', item: 'kosher salt' },
+  { id: 'i3', qty: 1, unit: 'tsp', item: 'black pepper' },
+  { id: 'i4', qty: 1, unit: 'tsp', item: 'neutral oil' },
+  { id: 'i5', qty: 4, unit: 'clove', item: 'garlic', section: 'Pan sauce' },
+  { id: 'i6', qty: 0.5, unit: 'cup', item: 'chicken stock', section: 'Pan sauce' },
+  { id: 'i7', qty: 1, unit: null, item: 'lemon', section: 'Pan sauce' },
+  { id: 'i8', qty: 3, unit: 'tbsp', item: 'cold unsalted butter', section: 'Pan sauce' },
+  { id: 'i9', qty: 4, unit: 'sprig', item: 'fresh thyme', section: 'Pan sauce' }
+];
+const m = mentionMatcher(CHICKEN);
+const linked = (text, match = m) => match(text).map(x => [text.slice(x.index, x.index + x.length), x.ids.join('+')]);
+
+eq('thighs, salt, pepper', linked('Pat the thighs very dry and season all over with the salt and pepper.'),
+  [['thighs', 'i1'], ['salt', 'i2'], ['pepper', 'i3']]);
+eq('garlic and thyme; "1 tablespoon of fat" is not an ingredient', linked('Pour off all but 1 tablespoon of fat. Add the garlic and thyme over medium-low heat.'),
+  [['garlic', 'i5'], ['thyme', 'i9']]);
+eq('stock, lemon (in "lemon juice"), cold butter, salt', linked('Add the stock and scrape up the browned bits. Off the heat, add the lemon juice, then swirl in the cold butter. Taste and adjust salt.'),
+  [['stock', 'i6'], ['lemon', 'i7'], ['butter', 'i8'], ['salt', 'i2']]);
+eq('"chicken" (two ingredients) and "sauce" stay plain', linked('Rest the chicken 5 minutes. Spoon the sauce onto plates and set the thighs on top.'), [['thighs', 'i1']]);
+eq('first mention per step only', linked('Add the garlic. Stir the garlic until golden.'), [['garlic', 'i5']]);
+eq('amount already in the step → no link', linked('Add 2 tbsp butter and the garlic.'), [['garlic', 'i5']]);
+eq('amount clause-scoped', linked('Add 2 tablespoons of the butter, garlic and thyme.'), [['garlic', 'i5'], ['thyme', 'i9']]);
+eq('amount in parentheses after', linked('Add the butter (3 tbsp) and stir.'), []);
+eq('durations and sizes are not amounts', [
+  linked('Simmer 10 minutes and add the garlic.'), linked('Heat a 12-inch skillet with the oil.'), linked('Cook until tender, then add butter.')],
+  [[['garlic', 'i5']], [['oil', 'i4']], [['butter', 'i8']]]);
+eq('word numbers are amounts', linked('Add two cloves garlic.'), []);
+
+const amb = mentionMatcher([
+  { id: 'a', qty: 1, unit: 'tsp', item: 'black pepper' }, { id: 'b', qty: 1, unit: null, item: 'red bell pepper' },
+  { id: 'c', qty: 2, unit: 'tbsp', item: 'neutral oil' }, { id: 'd', qty: 1, unit: 'tsp', item: 'toasted sesame oil' },
+  { id: 'e', qty: 2, unit: 'tbsp', item: 'soy sauce' }, { id: 'f', qty: null, unit: null, item: 'flaky salt, for serving' },
+  { id: 'g', qty: 2, unit: null, item: 'tomatoes' }, { id: 'h', qty: 1, unit: null, item: 'yellow onion' },
+  { id: 'j', qty: 4, unit: null, item: 'garlic cloves' }, { id: 'k', qty: 2, unit: 'cup', item: 'shredded mozzarella' },
+  { id: 'l', qty: 1, unit: 'lb', item: 'pork belly' }
+]);
+eq('"pepper" shared by two ingredients → no link; "bell pepper" → the bell pepper',
+  [linked('Season with pepper.', amb), linked('Add the bell pepper.', amb)], [[], [['bell pepper', 'b']]]);
+eq('"oil" → the ingredient whose whole name is oil', [linked('Heat the oil.', amb), linked('Drizzle with sesame oil.', amb)],
+  [[['oil', 'c']], [['sesame oil', 'd']]]);
+eq('generic "sauce" alone stays plain', [linked('Spoon the sauce over.', amb), linked('Add the soy sauce.', amb)], [[], [['soy sauce', 'e']]]);
+eq('no quantity → no link', linked('Finish with flaky salt.', amb), []);
+eq('plurals both ways', [linked('Add the tomato.', amb), linked('Soften the onions.', amb)], [[['tomato', 'g']], [['onions', 'h']]]);
+eq('"garlic cloves" is called garlic; participles and -lly nouns', [linked('Smash the garlic.', amb), linked('Top with the mozzarella.', amb), linked('Score the belly.', amb)],
+  [[['garlic', 'j']], [['mozzarella', 'k']], [['belly', 'l']]]);
+const twice = mentionMatcher([{ id: 'x1', qty: 1, unit: 'cup', item: 'butter', section: 'Cake' }, { id: 'x2', qty: 4, unit: 'tbsp', item: 'unsalted butter', section: 'Frosting' }]);
+eq('same ingredient in two sections → both amounts', twice('Cream the butter.').map(x => x.ids), [['x1', 'x2']]);
+
+const stepHtml = toStr(stepTextHtml({ id: 's9', text: 'Add the garlic and cook 1 minute.', timers: [] }, 9, { match: m }));
+truthy('step text renders both an ingredient link and a timer link', /data-ingref="i5"[^>]*>garlic/.test(stepHtml) && /class="rx-dur"/.test(stepHtml), stepHtml);
+
+/* ---------- unit conversions ---------- */
+const flat = b => b && [...b.us, ...b.metric].map(l => l.text + (l.by ? ` (${l.by})` : ''));
+const B = (qty, unit, item = 'water', f = 1, qtyMax = null) => flat(breakdown({ qty, qtyMax, unit, item }, f));
+eq('1 cup water', B(1, 'cup'), ['8 fl oz', '16 tbsp', '48 tsp', '237 ml', '≈ 237 g (weight)']);
+eq('⅓ cup: tablespoons + teaspoons', B(1 / 3, 'cup', 'milk'), ['2⅔ fl oz', '5 tbsp + 1 tsp', '16 tsp', '79 ml', '≈ 81 g (weight)']);
+eq('3 tbsp butter: no fuzzy cup line; grams by weight', B(3, 'tbsp', 'cold unsalted butter'), ['1½ fl oz', '9 tsp', '44 ml', '≈ 43 g (weight)']);
+eq('2 tsp → ⅔ tbsp; unknown density → no grams', B(2, 'tsp', 'kosher salt'), ['⅔ tbsp', '9.9 ml']);
+eq('1 stick butter', B(1, 'stick', 'unsalted butter'), ['½ cup', '4 fl oz', '8 tbsp', '24 tsp', '118 ml', '≈ 114 g (weight)']);
+eq('cinnamon stick, counts and cloves are not convertible', [B(1, 'stick', 'cinnamon'), B(6, null, 'eggs'), B(4, 'clove', 'garlic')], [null, null, null]);
+eq('2½ lb → lb + oz, oz, kg', B(2.5, 'lb', 'chicken thighs'), ['2 lb 8 oz', '40 oz', '1.13 kg']);
+eq('200 g flour → oz, lb, and cups by volume', B(200, 'g', 'all-purpose flour'), ['≈ ½ lb', '7 oz', '≈ 1⅔ cups (volume)']);
+eq('500 ml stock', B(500, 'ml', 'chicken stock'), ['≈ 1 pt', '2⅛ cups', '17 fl oz', '0.5 l', '≈ 500 g (weight)']);
+eq('scaled ×2 and ranges', [B(1, 'cup', 'rice', 2), B(1, 'cup', 'rice', 1, 1.5)],
+  [['1 pt', '16 fl oz', '32 tbsp', '473 ml'], ['8–12 fl oz', '16–24 tbsp', '237–355 ml']]);
+eq('big amounts drop spoon counts; litres and kilos take over', [B(6, 'cup', 'water'), B(3, 'lb', 'potatoes')],
+  [['1½ qt', '3 pt', '48 fl oz', '1.42 l', '≈ 1.42 kg (weight)'], ['48 oz', '1.36 kg']]);
+eq('T is a tablespoon, t a teaspoon; spelled-out units', ['T', 't', 'Tablespoons', 'fl. oz', 'Grams', 'pinch'].map(u => unitInfo(u)?.key ?? null),
+  ['tbsp', 'tsp', 'tbsp', 'floz', 'g', null]);
+
+/* ---------- DOM: checkbox-only toggling, amount panel, mention bubble ---------- */
+const recipe = { slug: 'zz-test', ingredients: CHICKEN, steps: [] };
+const box = document.querySelector('#sandbox');
+box.innerHTML = `<div data-ingredients>${toStr(ingredientsHtml(recipe, 'zz-test'))}</div><p class="rx-step-text">${stepHtml}</p>`;
+const offIng = bindIngredients(box, recipe, 'zz-test');
+const offMen = bindMentions(box, () => recipe, 'zz-test');
+const row = [...box.querySelectorAll('.rx-ing')].find(r => r.querySelector('[data-ing="i8"]'));
+const cb = row.querySelector('.rx-ing-input');
+row.querySelector('.rx-ing-item').click();
+truthy('tapping the ingredient name does not check it', !cb.checked && !row.classList.contains('is-checked'));
+row.querySelector('.rx-check-hit').click();
+truthy('tapping the circle checks it', cb.checked && row.classList.contains('is-checked'));
+row.querySelector('.rx-check-hit').click();
+const qb = row.querySelector('[data-conv]'), panel = row.querySelector('.rx-conv');
+truthy('convertible amount is a button, panel starts hidden', qb && qb.textContent === '3 tbsp' && panel.hidden);
+qb.click();
+truthy('tap amount → breakdown with Imperial and Metric lists', !panel.hidden && qb.getAttribute('aria-expanded') === 'true'
+  && /Imperial/.test(panel.textContent) && /Metric/.test(panel.textContent) && /9 tsp/.test(panel.textContent) && /44 ml/.test(panel.textContent) && !cb.checked, panel.textContent);
+qb.click();
+truthy('tap again → closed', panel.hidden && qb.getAttribute('aria-expanded') === 'false');
+truthy('counts ("6") and cloves stay plain text', !box.querySelector('[data-conv="i1"]') && !box.querySelector('[data-conv="i5"]'));
+
+const link = box.querySelector('[data-ingref="i5"]');
+link.click();
+let tip = document.querySelector('.rx-ingtip');
+truthy('tap step ingredient → bubble above it with the amount', tip && /4 cloves/.test(tip.textContent) && /garlic/.test(tip.textContent)
+  && link.getAttribute('aria-expanded') === 'true' && tip.getBoundingClientRect().bottom <= link.getBoundingClientRect().top + 1, tip?.textContent);
+document.body.click();
+truthy('tap elsewhere closes it', !document.querySelector('.rx-ingtip') && link.getAttribute('aria-expanded') === 'false');
+link.click();
+window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+truthy('Escape closes it', !document.querySelector('.rx-ingtip'));
+offIng(); offMen();
+box.remove();
+sessionStorage.removeItem('bb.rx:zz-test');
+
+const failed = results.filter(r => !r.ok).length;
+document.querySelector('#view').innerHTML = `
+  <p class="t-sum ${failed ? 'bad' : 'good'}">${results.length - failed}/${results.length} passed</p>
+  <table>${results.map(r => `<tr class="${r.ok ? 'pass' : 'fail'}"><td>${r.ok ? '✓' : '✗'}</td><td>${r.name.replace(/</g, '&lt;')}${r.detail ? `<br><small>${r.detail.replace(/</g, '&lt;')}</small>` : ''}</td></tr>`).join('')}</table>`;
+</script>
+</body>
+</html>
