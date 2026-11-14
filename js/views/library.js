@@ -7,6 +7,9 @@
  *      &pl=pl-k3x9&src=pdf,web&needs=1&sort=rating
  * Values within a category OR together; categories AND together. Blank values are
  * categories of their own (Unrated, Not set, Untagged).
+ * Sort defaults to "recent" (omitted from the query). Inside a playlist an extra
+ * "playlist" sort (the playlist's own recipe order) is offered and is the default;
+ * elsewhere sort=playlist is ignored and falls back to "recent".
  *
  * Also exports helpers shared with playlists.js:
  *   ICON, thumb(summary, cls), guardImages(el) → off, connectHint(), plural(n, word), relTime(iso)
@@ -112,6 +115,9 @@ const hostOf = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } 
 
 /* ---------- state <-> hash query ---------- */
 const SORTS = { recent: 'Recently added', title: 'Title A–Z', rating: 'Rating', prof: 'Proficiency', time: 'Total time' };
+const PL_SORTS = { playlist: 'Playlist order', ...SORTS };   // only inside #/playlist/<id>
+const sortsFor = inPl => (inPl ? PL_SORTS : SORTS);
+const defaultSort = inPl => (inPl ? 'playlist' : 'recent');
 const RATINGS = {
   unrated: ['Unrated', r => r == null], '1-4': ['1–4', r => r >= 1 && r <= 4],
   '5-7': ['5–7', r => r >= 5 && r <= 7], '8-10': ['8–10', r => r >= 8]
@@ -134,6 +140,7 @@ function readState(params) {
   const list = (k, ok = () => true) =>
     [...new Set(q.getAll(k).flatMap(v => v.split(',')).map(v => v.trim()).filter(v => v && ok(v)))];
   const sort = q.get('sort');
+  const inPl = !!params.playlist;
   return {
     q: q.get('q') || '',
     tag: list('tag').map(t => t.toLowerCase()),
@@ -143,18 +150,18 @@ function readState(params) {
     pl: list('pl'),
     src: list('src', v => has(SOURCES, v)),
     needs: q.get('needs') === '1',
-    sort: has(SORTS, sort) ? sort : 'recent'
+    sort: has(sortsFor(inPl), sort) ? sort : defaultSort(inPl)
   };
 }
 
-function toQuery(s) {
+function toQuery(s, defSort) {
   const enc = v => encodeURIComponent(v);
   const parts = [];
   if (s.q.trim()) parts.push('q=' + enc(s.q.trim()));
   for (const k of LIST_KEYS) if (s[k].length) parts.push(`${k}=${s[k].map(enc).join(',')}`);
   if (s.untagged) parts.push('untagged=1');
   if (s.needs) parts.push('needs=1');
-  if (s.sort !== 'recent') parts.push('sort=' + s.sort);
+  if (s.sort !== defSort) parts.push('sort=' + s.sort);
   return parts.join('&');
 }
 
@@ -181,13 +188,15 @@ const SORT_FNS = {
   title: byTitle,
   rating: (a, b) => nullsLast(a.e.rating, b.e.rating, -1) || byTitle(a, b),
   prof: (a, b) => nullsLast(a.e.proficiency, b.e.proficiency, -1) || byTitle(a, b),
-  time: (a, b) => nullsLast(a.t, b.t, 1) || byTitle(a, b)
+  time: (a, b) => nullsLast(a.t, b.t, 1) || byTitle(a, b),
+  playlist: (a, b) => nullsLast(a.pos, b.pos, 1) || byTitle(a, b)
 };
 
-function toRow(r, lib) {
+/** pos: index in the viewed playlist's recipe list (null outside a playlist). */
+function toRow(r, lib, pos = null) {
   const e = entryFor(lib, r.slug);
   return {
-    r, e, t: totalTime(r),
+    r, e, t: totalTime(r), pos,
     ts: Math.max(Date.parse(r.updatedAt) || 0, Date.parse(e.addedAt) || 0),
     hay: fold(`${r.title} ${r.summary || ''} ${e.tags.join(' ')}`)
   };
@@ -377,8 +386,9 @@ export async function render(root, params) {
     [idx, lib] = await Promise.all([getIndex(), getLibrary()]);
     plSets = Object.fromEntries(lib.playlists.map(p => [p.id, new Set(p.recipes)]));
     pl = plId ? lib.playlists.find(p => p.id === plId) || null : null;
-    const scope = plId ? idx.recipes.filter(r => plSets[plId]?.has(r.slug)) : idx.recipes;
-    rows = scope.map(r => toRow(r, lib));
+    const order = new Map((pl?.recipes || []).map((slug, i) => [slug, i]));
+    const scope = plId ? idx.recipes.filter(r => order.has(r.slug)) : idx.recipes;
+    rows = scope.map(r => toRow(r, lib, order.get(r.slug) ?? null));
     s.pl = s.pl.filter(id => plSets[id]);            // drop filters for deleted playlists
   }
   const shownRows = () => rows.filter(x => matches(x, s, plSets)).sort(SORT_FNS[s.sort]);
@@ -405,7 +415,7 @@ export async function render(root, params) {
       <label class="sort">
         <span class="sort-label">Sort</span>
         <select class="sort-select" aria-label="Sort recipes">
-          ${Object.entries(SORTS).map(([k, l]) => html`<option value="${k}">${l}</option>`)}
+          ${Object.entries(sortsFor(!!plId)).map(([k, l]) => html`<option value="${k}">${l}</option>`)}
         </select>
         ${raw(ICON.chevron)}
       </label>
@@ -482,7 +492,7 @@ export async function render(root, params) {
   function syncHash() {
     clearTimeout(hashT);
     if (!alive) return;
-    const qs = toQuery(s);
+    const qs = toQuery(s, defaultSort(!!plId));
     const url = base + (qs ? '?' + qs : '');
     if ((location.hash || '#/') !== url) history.replaceState(history.state, '', url);
   }

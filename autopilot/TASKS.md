@@ -68,7 +68,7 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 - [ ] Recipe page: allow deleting applied/kept notes too (confirmSheet) (js/components/recipe-journal.js)
 - [x] Library cards: add `-webkit-touch-callout: none; user-select: none` on long-press targets so iOS link preview doesn't fight the ⋯ editor (css/library.css)
 - [ ] Editor parser: a short step line ending in ":" should stay a step when it's the only line of its paragraph and followed by a blank line (js/components/editor-parse.js + tests/editor-parse.html)
-- [ ] Library: "Playlist order" sort when viewing a playlist (js/views/library.js)
+- [x] Library: "Playlist order" sort when viewing a playlist (js/views/library.js)
 - [ ] Shared test page `tests/util.html` for util.js parseDurations / fmtQty / scaleQty / slugify (~25 assertions)
 
 ## Polish backlog (only if all above done and commit target not met)
