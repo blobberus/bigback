@@ -31,8 +31,10 @@ const NAV_OF = { library: 'library', recipe: 'library', cook: 'library', pending
 let cleanup = null, seq = 0;
 
 function parse() {
-  const h = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
-  const [path, qs = ''] = h.split('?');
+  // Split before decoding so an encoded "&" in a search ("mac %26 cheese") stays in its value.
+  const h = location.hash.replace(/^#\/?/, '');
+  const i = h.indexOf('?');
+  const path = decodeURIComponent(i < 0 ? h : h.slice(0, i)), qs = i < 0 ? '' : h.slice(i + 1);
   for (const [re, view, fn] of ROUTES) {
     const m = path.replace(/\/+$/, '').match(re);
     if (m) return { view, params: { ...fn(m), query: new URLSearchParams(qs) } };
@@ -46,7 +48,8 @@ async function route() {
   const root = $('#view');
   try { cleanup?.(); } catch (e) { console.error(e); }
   cleanup = null;
-  $$('.bottomnav [data-nav]').forEach(a => a.toggleAttribute('aria-current', a.dataset.nav === NAV_OF[view]));
+  const nav = params.playlist ? 'playlists' : NAV_OF[view];
+  $$('.bottomnav [data-nav]').forEach(a => a.toggleAttribute('aria-current', a.dataset.nav === nav));
   document.body.dataset.view = view;
   root.setAttribute('aria-busy', 'true');
   try {
