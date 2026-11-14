@@ -236,9 +236,11 @@ export async function saveRecipe(recipe, { heroFile = null, isNew = false } = {}
   if (heroFile) {
     const blob = await compressImage(heroFile);
     heroB64 = await blobToBase64(blob);
+    // compressImage returns the original when it can't help (HEIC, tiny PNG) — keep its extension.
+    const ext = blob === heroFile ? (fileExt(heroFile.name) || 'jpg') : 'jpg';
     // Unique name per upload so phones/CDN never show a cached old photo.
     if (r.image && r.image.startsWith(`media/${r.slug}/`)) oldHero = r.image;
-    r.image = `media/${r.slug}/hero-${Date.now().toString(36)}.jpg`;
+    r.image = `media/${r.slug}/hero-${Date.now().toString(36)}.${ext}`;
   }
   await write(`${isNew ? 'Add custom recipe' : 'Edit recipe'}: ${r.title}`, async ({ read, readJson, json }) => {
     const files = [json(P.recipe(r.slug), r)];
