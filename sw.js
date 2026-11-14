@@ -16,7 +16,7 @@
  * SHELL must list every app file. When you add a JS/CSS file, add it here (anything missing
  * is still cached on first use, it just isn't available offline before that).
  */
-const VERSION = '1';
+const VERSION = '2';
 const SHELL_CACHE = `bb-shell-${VERSION}`;
 const DATA_CACHE = 'bb-data-v1';
 const MEDIA_CACHE = 'bb-media-v1';
@@ -33,6 +33,8 @@ const SHELL = [
   'js/views/add.js', 'js/views/pending.js', 'js/views/settings.js',
   'js/components/meta-editor.js', 'js/components/recipe-icons.js', 'js/components/recipe-ingredients.js',
   'js/components/recipe-journal.js', 'js/components/recipe-state.js', 'js/components/recipe-steps.js',
+  'js/components/editor-drafts.js', 'js/components/editor-form.js', 'js/components/editor-icons.js',
+  'js/components/editor-ids.js', 'js/components/editor-parse.js', 'js/components/editor-upload.js',
   'assets/icons/icon.svg', 'assets/icons/icon-180.png', 'assets/icons/icon-192.png',
   'assets/icons/icon-512.png', 'assets/icons/maskable-512.png'
 ];
