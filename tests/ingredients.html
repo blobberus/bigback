@@ -25,7 +25,7 @@
 import { mentionMatcher, bindMentions } from '../js/components/recipe-mentions.js';
 import { ingredientsHtml, bindIngredients } from '../js/components/recipe-ingredients.js';
 import { stepTextHtml } from '../js/components/recipe-steps.js';
-import { breakdown, unitInfo } from '../js/units.js';
+import { breakdown, unitInfo, findAmounts } from '../js/units.js';
 import { toStr } from '../js/util.js';
 
 const results = [];
@@ -39,15 +39,15 @@ const truthy = (name, cond, detail = '') => eq(name, !!cond, true) || (detail &&
 
 /* ---------- mention matcher ---------- */
 const CHICKEN = [
-  { id: 'i1', qty: 6, unit: null, item: 'bone-in, skin-on chicken thighs' },
-  { id: 'i2', qty: 2, unit: 'tsp', item: 'kosher salt' },
+  { id: 'i1', qty: 6, unit: null, item: 'bone-in, skin-on chicken thighs', note: 'about 2.5 lb, patted very dry' },
+  { id: 'i2', qty: 2, unit: 'tsp', item: 'kosher salt', note: 'Diamond Crystal; use 1¼ tsp Morton' },
   { id: 'i3', qty: 1, unit: 'tsp', item: 'black pepper' },
   { id: 'i4', qty: 1, unit: 'tsp', item: 'neutral oil' },
   { id: 'i5', qty: 4, unit: 'clove', item: 'garlic', section: 'Pan sauce' },
   { id: 'i6', qty: 0.5, unit: 'cup', item: 'chicken stock', section: 'Pan sauce' },
   { id: 'i7', qty: 1, unit: null, item: 'lemon', section: 'Pan sauce' },
-  { id: 'i8', qty: 3, unit: 'tbsp', item: 'cold unsalted butter', section: 'Pan sauce' },
-  { id: 'i9', qty: 4, unit: 'sprig', item: 'fresh thyme', section: 'Pan sauce' }
+  { id: 'i8', qty: 3, unit: 'tbsp', item: 'cold unsalted butter', section: 'Pan sauce', note: 'cubed' },
+  { id: 'i9', qty: 4, unit: 'sprig', item: 'fresh thyme', section: 'Pan sauce', note: 'or ½ tsp dried' }
 ];
 const m = mentionMatcher(CHICKEN);
 const linked = (text, match = m) => match(text).map(x => [text.slice(x.index, x.index + x.length), x.ids.join('+')]);
@@ -107,10 +107,17 @@ eq('scaled ×2 and ranges', [B(1, 'cup', 'rice', 2), B(1, 'cup', 'rice', 1, 1.5)
   [['1 pt', '16 fl oz', '32 tbsp', '473 ml'], ['8–12 fl oz', '16–24 tbsp', '237–355 ml']]);
 eq('big amounts drop spoon counts; litres and kilos take over', [B(6, 'cup', 'water'), B(3, 'lb', 'potatoes')],
   [['1½ qt', '3 pt', '48 fl oz', '1.42 l', '≈ 1.42 kg (weight)'], ['48 oz', '1.36 kg']]);
+const amts = t => findAmounts(t).map(a => [t.slice(a.index, a.index + a.length), a.qty, a.qtyMax, a.unit]);
+eq('amounts in notes', ['or ½ tsp dried', 'Diamond Crystal; use 1¼ tsp Morton', 'about 2.5 lb, patted very dry', 'juiced (about 3 tbsp)', 'one 14-oz can', '1 1/2 cups, or 2–3 Tbsp. more'].map(amts),
+  [[['½ tsp', 0.5, null, 'tsp']], [['1¼ tsp', 1.25, null, 'tsp']], [['2.5 lb', 2.5, null, 'lb']], [['3 tbsp', 3, null, 'tbsp']],
+   [['14-oz', 14, null, 'oz']], [['1 1/2 cups', 1.5, null, 'cups'], ['2–3 Tbsp.', 2, 3, 'Tbsp']]]);
+eq('not amounts: sizes, times, temperatures, counts, cinnamon sticks', ['cut into 1-inch pieces', 'rest 10 minutes', 'at 350°F', '2 cloves', 'v2.5 lb', '1 cinnamon stick'].map(amts),
+  [[], [], [], [], [], []]);
+eq('1¼ tsp: no fuzzy "≈ ⅜ tbsp"', B(1.25, 'tsp', 'salt'), ['6.2 ml']);
 eq('T is a tablespoon, t a teaspoon; spelled-out units', ['T', 't', 'Tablespoons', 'fl. oz', 'Grams', 'pinch'].map(u => unitInfo(u)?.key ?? null),
   ['tbsp', 'tsp', 'tbsp', 'floz', 'g', null]);
 
-/* ---------- DOM: checkbox-only toggling, amount panel, mention bubble ---------- */
+/* ---------- DOM: row taps, amount panels, mention bubble ---------- */
 const recipe = { slug: 'zz-test', ingredients: CHICKEN, steps: [] };
 const box = document.querySelector('#sandbox');
 box.innerHTML = `<div data-ingredients>${toStr(ingredientsHtml(recipe, 'zz-test'))}</div><p class="rx-step-text">${stepHtml}</p>`;
@@ -119,26 +126,56 @@ const offMen = bindMentions(box, () => recipe, 'zz-test');
 const row = [...box.querySelectorAll('.rx-ing')].find(r => r.querySelector('[data-ing="i8"]'));
 const cb = row.querySelector('.rx-ing-input');
 row.querySelector('.rx-ing-item').click();
-truthy('tapping the ingredient name does not check it', !cb.checked && !row.classList.contains('is-checked'));
+truthy('tapping the ingredient name checks it', cb.checked && row.classList.contains('is-checked'));
+row.querySelector('.rx-ing-note').click();
+truthy('tapping the note unchecks it', !cb.checked && !row.classList.contains('is-checked'));
 row.querySelector('.rx-check-hit').click();
 truthy('tapping the circle checks it', cb.checked && row.classList.contains('is-checked'));
 row.querySelector('.rx-check-hit').click();
-const qb = row.querySelector('[data-conv]'), panel = row.querySelector('.rx-conv');
+const qb = row.querySelector('[data-conv="i8"]'), panel = row.querySelector('#rx-conv-i8');
 truthy('convertible amount is a button, panel starts hidden', qb && qb.textContent === '3 tbsp' && panel.hidden);
 qb.click();
 truthy('tap amount → breakdown with Imperial and Metric lists', !panel.hidden && qb.getAttribute('aria-expanded') === 'true'
   && /Imperial/.test(panel.textContent) && /Metric/.test(panel.textContent) && /9 tsp/.test(panel.textContent) && /44 ml/.test(panel.textContent) && !cb.checked, panel.textContent);
+panel.querySelector('li').click();
+truthy('tapping inside the breakdown leaves the checkbox alone', !cb.checked && !panel.hidden);
 qb.click();
 truthy('tap again → closed', panel.hidden && qb.getAttribute('aria-expanded') === 'false');
+const thyme = [...box.querySelectorAll('.rx-ing')].find(r => r.querySelector('[data-ing="i9"]'));
+const nb = thyme.querySelector('[data-conv="i9-n0"]'), np = thyme.querySelector('#rx-conv-i9-n0');
+truthy('amount in a note ("or ½ tsp dried") is its own button', nb && nb.textContent === '½ tsp' && np.hidden && !thyme.querySelector('[data-conv="i9"]'));
+nb.click();
+truthy('tap note amount → its breakdown, checkbox untouched', !np.hidden && /2\.5 ml/.test(np.textContent) && /½ tsp/.test(np.querySelector('.rx-conv-cap')?.textContent || '')
+  && !thyme.querySelector('.rx-ing-input').checked, np.textContent);
+const chick = [...box.querySelectorAll('.rx-ing')].find(r => r.querySelector('[data-ing="i1"]'));
+chick.querySelector('[data-conv="i1-n0"]').click();
+truthy('"about 2.5 lb" in a note → 2 lb 8 oz / 1.13 kg', /2 lb 8 oz/.test(chick.querySelector('#rx-conv-i1-n0').textContent) && /1\.13 kg/.test(chick.querySelector('#rx-conv-i1-n0').textContent));
 truthy('counts ("6") and cloves stay plain text', !box.querySelector('[data-conv="i1"]') && !box.querySelector('[data-conv="i5"]'));
 
 const link = box.querySelector('[data-ingref="i5"]');
+link.scrollIntoView({ block: 'center' });
 link.click();
 let tip = document.querySelector('.rx-ingtip');
-truthy('tap step ingredient → bubble above it with the amount', tip && /4 cloves/.test(tip.textContent) && /garlic/.test(tip.textContent)
-  && link.getAttribute('aria-expanded') === 'true' && tip.getBoundingClientRect().bottom <= link.getBoundingClientRect().top + 1, tip?.textContent);
-document.body.click();
-truthy('tap elsewhere closes it', !document.querySelector('.rx-ingtip') && link.getAttribute('aria-expanded') === 'false');
+const gap = tip && link.getBoundingClientRect().top - tip.getBoundingClientRect().bottom;
+truthy('tap step ingredient → bubble right above it with the amount', tip && /4 cloves/.test(tip.textContent) && /garlic/.test(tip.textContent)
+  && link.getAttribute('aria-expanded') === 'true' && gap >= 0 && gap <= 12, `${tip?.textContent} gap ${gap}`);
+const down = el => el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+down(tip);
+truthy('touching the bubble itself keeps it', document.querySelector('.rx-ingtip'));
+down(box.querySelector('.rx-ing-note'));
+truthy('touching anywhere else closes it (pointerdown: iOS sends no click for plain text)', !document.querySelector('.rx-ingtip') && link.getAttribute('aria-expanded') === 'false');
+link.click(); link.click();
+truthy('tapping the same word again closes it', !document.querySelector('.rx-ingtip'));
+const bare = document.createElement('p');
+bare.innerHTML = toStr(stepTextHtml({ id: 's8', text: 'Melt the butter.', timers: [] }, 8, { match: mentionMatcher(CHICKEN) }));
+document.body.append(bare);
+bare.scrollIntoView({ block: 'center' });
+bare.querySelector('[data-ingref]').click();
+truthy('works without any view binding (amounts ride in the button)', /3 tbsp/.test(document.querySelector('.rx-ingtip')?.textContent || ''));
+bare.remove();
+await new Promise(r => setTimeout(r, 0));
+link.scrollIntoView({ block: 'center' });
+truthy('word removed from the page → bubble goes too', !document.querySelector('.rx-ingtip'));
 link.click();
 window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
 truthy('Escape closes it', !document.querySelector('.rx-ingtip'));

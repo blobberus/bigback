@@ -94,7 +94,30 @@ async function boot() {
   applyTheme(getPrefs());
   onPrefs(applyTheme);
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    // Home Screen apps resume from memory without a page load, so the browser never checks
+    // for a new version on its own; check whenever the app comes back to the foreground.
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      let last = Date.now();
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible' || Date.now() - last < 30000) return;
+        last = Date.now();
+        reg.update().catch(() => {});
+      });
+    }).catch(() => {});
+    // A new deploy's service worker took over: this page is still running the old code, and its
+    // next lazy imports would come from the new cache (old + new modules mixed). Reload once —
+    // timers, the stopwatch, checked ingredients and drafts all survive it.
+    if (navigator.serviceWorker.controller) {
+      let reloading = false;
+      const busy = () => document.querySelector('.sheet-backdrop') || /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '');
+      const reload = () => { if (!reloading && !busy()) { reloading = true; location.reload(); } };
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        reload();
+        // Typing or in a sheet → wait for the next navigation or app switch.
+        window.addEventListener('hashchange', reload);
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reload(); });
+      });
+    }
   }
 
   // Site password (data/lock.json): nothing renders until it's unlocked or this device is remembered.

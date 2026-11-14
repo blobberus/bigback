@@ -6,6 +6,8 @@
  *       line = { text, by? }   by: 'weight' | 'volume' when it's a density estimate
  *       Equivalents only: the unit the recipe already uses is left out. Rounded to cook-friendly
  *       fractions; "≈" marks a rounding error over ~2 %.
+ *   findAmounts(text, item) → [{ index, length, qty, qtyMax, unit }]   convertible amounts written
+ *       in free text, e.g. an ingredient note: "or ½ tsp dried", "use 1¼ tsp Morton", "about 2.5 lb"
  */
 import { fmtQty } from './util.js';
 
@@ -100,7 +102,7 @@ function usVolume(lo, hi, skip, by) {
     if (hi == null && tb >= 1 && top <= VOL.cup / 2 + 0.01 && rem > 0.06 && rem < 2.94) {
       const r = nice(rem);
       push(`${r.approx ? '≈ ' : ''}${tb} tbsp + ${r.t} tsp`);
-    } else plain('tbsp', 'tbsp');
+    } else if (tb >= 1 || !nice(lo / VOL.tbsp).approx) plain('tbsp', 'tbsp');   // "⅔ tbsp" yes, "≈ ⅜ tbsp" no
   }
   if (!skip.has('tsp') && lo >= VOL.tsp / 8 * 0.99 && top <= VOL.cup + 0.01) plain('tsp', 'tsp');
   return out;
@@ -168,4 +170,33 @@ export function breakdown(ing, factor = 1) {
     }
   }
   return us.length || met.length ? { us, metric: met } : null;
+}
+
+/* ---------- amounts in free text ---------- */
+const VULG = { '½': 1 / 2, '¼': 1 / 4, '¾': 3 / 4, '⅓': 1 / 3, '⅔': 2 / 3, '⅛': 1 / 8, '⅜': 3 / 8, '⅝': 5 / 8, '⅞': 7 / 8 };
+const NUM = '(?:\\d+\\s+\\d+/\\d+|\\d+/\\d+|\\d+(?:[.,]\\d+)?(?:\\s?[½¼¾⅓⅔⅛⅜⅝⅞])?|[½¼¾⅓⅔⅛⅜⅝⅞])';
+// (prefix)(number)(– number)? unit — the prefix stands in for a lookbehind, which older Safari lacks.
+const AMT = new RegExp(`(^|[^\\w.,/])(${NUM})(?:\\s*(?:-|–|to)\\s*(${NUM}))?[\\s-]*(fl\\.?\\s?oz|[A-Za-z]+)\\.?(?![A-Za-z])`, 'g');
+
+function num(s) {
+  s = s.trim().replace(',', '.');
+  let m;
+  if ((m = s.match(/^(\d+)\s+(\d+)\/(\d+)$/))) return +m[1] + m[2] / m[3];
+  if ((m = s.match(/^(\d+)\/(\d+)$/))) return m[2] > 0 ? m[1] / m[2] : NaN;
+  if ((m = s.match(/^(\d+(?:\.\d+)?)?\s?([½¼¾⅓⅔⅛⅜⅝⅞])?$/)) && (m[1] || m[2])) return (m[1] ? +m[1] : 0) + (m[2] ? VULG[m[2]] : 0);
+  return NaN;
+}
+
+export function findAmounts(text, item = '') {
+  const out = [];
+  text = String(text || '');
+  for (const m of text.matchAll(AMT)) {
+    const [, pre, a, b, unit] = m;
+    const qty = num(a), qtyMax = b != null ? num(b) : null;
+    if (!(qty > 0) || !unitInfo(unit, item)) continue;
+    const index = m.index + pre.length;
+    const ing = { qty, qtyMax: qtyMax > qty ? qtyMax : null, unit, item };
+    if (breakdown(ing)) out.push({ index, length: m[0].length - pre.length, ...ing });
+  }
+  return out;
 }

@@ -16,6 +16,7 @@ import { html, parseDurations, fmtClock, fmtMinutes } from '../util.js';
 import { on, toast } from '../ui.js';
 import { startTimer, onTimers, listTimers } from '../timers.js';
 import { icon } from './recipe-icons.js';
+import { mentionButton } from './recipe-mentions.js';
 
 export function groupBySection(list = []) {
   const groups = [];
@@ -61,7 +62,7 @@ export function stepTextHtml(step, n, { match } = {}) {
     if (d.index < pos) continue;
     out.push(text.slice(pos, d.index));
     if (d.ing) {
-      out.push(html`<button type="button" class="rx-ingref" data-ingref="${d.ids.join(' ')}" aria-expanded="false">${text.slice(d.index, d.index + d.length)}<span class="sr-only"> (amount)</span></button>`);
+      out.push(mentionButton(text.slice(d.index, d.index + d.length), d));
       pos = d.index + d.length;
       continue;
     }

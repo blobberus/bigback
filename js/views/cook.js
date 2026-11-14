@@ -65,7 +65,7 @@ export async function render(root, { slug }) {
 
         <article class="ck-step" data-dir="${dir}" aria-live="polite" aria-label="Step ${n} of ${total}">
           ${s.section ? html`<p class="ck-section">${s.section}</p>` : ''}
-          <p class="ck-text">${stepTextHtml(s, n, { match: mentionMatcher(recipe.ingredients) })}</p>
+          <p class="ck-text">${stepTextHtml(s, n, { match: mentionMatcher(recipe.ingredients, { slug }) })}</p>
           ${timerButtonsHtml(s)}
           ${s.tip ? html`<aside class="rx-tip ck-tip"><span class="rx-tip-label">Why</span>${s.tip}</aside>` : ''}
           ${last ? doneCard() : ''}

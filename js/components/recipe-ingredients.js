@@ -7,17 +7,19 @@
  *       handles checkbox changes, −/+ / ×½ ×1 ×2, and Reset inside `host`;
  *       re-renders the closest [data-ingredients] in place on scale/reset.
  *   qtyText(ing, factor) → "1½–2 cups" ('' when qty is null)
- * Only the round checkbox checks an ingredient off. A convertible amount ("3 tbsp", "200 g") is a
- * button that opens a breakdown under the row: other US measures + metric (units.js). Open rows
- * are remembered per recipe for this page load, so they survive re-renders when scaling.
+ * Tapping the circle or the text checks an ingredient off. Convertible amounts are buttons that
+ * open a breakdown under the row instead (other US measures + metric, units.js): the main amount
+ * ("3 tbsp") and any written in the note ("or ½ tsp dried"). Note amounts are shown as written,
+ * not scaled. Open panels are remembered per recipe for this page load, so they survive
+ * re-renders when scaling.
  */
 import { html, fmtQty, scaleQty, clamp } from '../util.js';
 import { on } from '../ui.js';
 import { icon } from './recipe-icons.js';
 import { rxState, rxPatch, toggleId } from './recipe-state.js';
-import { breakdown } from '../units.js';
+import { breakdown, findAmounts } from '../units.js';
 
-const convOpen = new Map();      // slug → Set(ingredient ids with the breakdown open)
+const convOpen = new Map();      // slug → Set(panel keys open: "i3" main amount, "i3-n0" first note amount)
 const openSet = slug => { if (!convOpen.has(slug)) convOpen.set(slug, new Set()); return convOpen.get(slug); };
 
 /* Abbreviations never pluralize; count-style words do ("4 cloves", "2 pinches"). */
@@ -92,15 +94,33 @@ function convHtml(conv) {
   return html`${col('Imperial (US)', conv.us)}${col('Metric', conv.metric)}`;
 }
 
+const convBtn = (key, label, open, cls = '') =>
+  html`<button type="button" class="rx-qty-btn${cls}" data-conv="${key}" aria-expanded="${open}" aria-controls="rx-conv-${key}" aria-label="${label}, other measures">${label}</button>`;
+const convPanel = (key, conv, open, caption = '') =>
+  html`<div class="rx-conv" id="rx-conv-${key}"${open ? '' : ' hidden'}>${caption ? html`<p class="rx-conv-cap">${caption}</p>` : ''}${convHtml(conv)}</div>`;
+
+/** Note text with its convertible amounts as buttons → { html, panels }. */
+function noteParts(ing, open, scaled) {
+  const note = String(ing.note || ''), parts = [], panels = [];
+  let pos = 0;
+  findAmounts(note, ing.item).forEach((a, k) => {
+    const key = `${ing.id}-n${k}`, label = note.slice(a.index, a.index + a.length);
+    parts.push(note.slice(pos, a.index), convBtn(key, label, open.has(key), ' rx-note-amt'));
+    panels.push(convPanel(key, breakdown(a), open.has(key), scaled ? `${label} — as written, not scaled` : label));
+    pos = a.index + a.length;
+  });
+  parts.push(note.slice(pos));
+  return { html: html`${parts}`, panels };
+}
+
 function rowHtml(ing, f, checked, open) {
   const qty = qtyText(ing, f);
   const scaled = qty && Math.abs(f - 1) > 1e-9;
   const conv = qty ? breakdown(ing, f) : null;
   const isOpen = !!conv && open.has(ing.id);
   const cls = `rx-qty${scaled ? ' is-scaled' : ''}`;
-  const amount = !qty ? '' : conv
-    ? html`<button type="button" class="${cls} rx-qty-btn" data-conv="${ing.id}" aria-expanded="${isOpen}" aria-controls="rx-conv-${ing.id}" aria-label="${qty}, other measures">${qty}</button> `
-    : html`<span class="${cls}">${qty}</span> `;
+  const amount = !qty ? '' : conv ? html`${convBtn(ing.id, qty, isOpen, ` rx-qty${scaled ? ' is-scaled' : ''}`)} ` : html`<span class="${cls}">${qty}</span> `;
+  const note = ing.note ? noteParts(ing, open, Math.abs(f - 1) > 1e-9) : null;
   return html`
     <li class="rx-ing${checked ? ' is-checked' : ''}">
       <label class="rx-check-hit">
@@ -109,8 +129,9 @@ function rowHtml(ing, f, checked, open) {
       </label>
       <div class="rx-ing-text">
         <span class="rx-ing-line">${amount}<span class="rx-ing-item">${ing.item}</span></span>
-        ${ing.note ? html`<span class="rx-ing-note">${ing.note}</span>` : ''}
-        ${conv ? html`<div class="rx-conv" id="rx-conv-${ing.id}"${isOpen ? '' : ' hidden'}>${convHtml(conv)}</div>` : ''}
+        ${note ? html`<span class="rx-ing-note">${note.html}</span>` : ''}
+        ${conv ? convPanel(ing.id, conv, isOpen) : ''}
+        ${note ? note.panels : ''}
       </div>
     </li>`;
 }
@@ -178,11 +199,17 @@ export function bindIngredients(host, getRecipe, slug, { onScale } = {}) {
       onScale?.(f);
     }),
     on(host, 'click', '[data-conv]', (e, el) => {
-      const id = el.dataset.conv, set = openSet(slug), open = !set.has(id);
-      if (open) set.add(id); else set.delete(id);
+      const key = el.dataset.conv, set = openSet(slug), open = !set.has(key);
+      if (open) set.add(key); else set.delete(key);
       el.setAttribute('aria-expanded', String(open));
-      const panel = el.closest('.rx-ing')?.querySelector('.rx-conv');
+      const panel = el.closest('.rx-ing')?.querySelector(`#rx-conv-${key}`);
       if (panel) panel.hidden = !open;
+    }),
+    // The text checks the item off too — except the amount buttons and the open breakdowns.
+    on(host, 'click', '.rx-ing-text', (e, el) => {
+      if (e.target.closest('button, a, .rx-conv')) return;
+      if (String(getSelection?.() || '').trim()) return;           // selecting text, not tapping
+      el.closest('.rx-ing')?.querySelector('.rx-ing-input')?.click();
     }),
     on(host, 'click', '[data-act="ing-reset"]', (e, el) => {
       rxPatch(slug, { checked: [] });

@@ -84,11 +84,18 @@ edit it by hand except to delete it, which turns the password off (the recovery 
   "iterations": 600000,         // PBKDF2-HMAC-SHA256 rounds; slow on purpose, the file is public
   "salt": "base64, 16 random bytes",
   "check": "hex SHA-256 of the 32-byte derived key",
-  "updatedAt": "2026-11-14T10:00:00Z"
+  "updatedAt": "2026-11-14T10:00:00Z",
+  "vault": {                    // optional: Settings → "Keep my GitHub token with the password"
+    "alg": "AES-GCM",
+    "iv": "base64, 12 bytes",
+    "data": "base64 ciphertext of the GitHub token; key = SHA-256(derived key ‖ 'bigback token vault v1')"
+  }
 }
 ```
 A lock screen, not encryption: it gates the app, and the data files stay public. Devices remember
 the derived key (`bb.unlock` in localStorage), which stays valid only while it matches `check`.
+When `vault` is present, unlocking on a device with no token restores it (wiped storage, a new
+Home Screen app). Changing the password re-encrypts it; Disconnect in Settings deletes it.
 
 ## Journal — `journal/<slug>.json` (user-owned; model updates `status` only)
 ```jsonc

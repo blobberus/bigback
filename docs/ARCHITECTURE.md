@@ -16,7 +16,7 @@ Push to main ──▶ .github/workflows/pages.yml (validate, rebuild index, dep
 | File | Role | Owner |
 |---|---|---|
 | `app.js` | boot, hash router, global listeners, mounts tools | core |
-| `lock.js` | site password: `unlockGate()` before first render, lock screen, PBKDF2 config (data/lock.json) | core |
+| `lock.js` | site password: `unlockGate()` before first render, lock screen, PBKDF2 config (data/lock.json), optional token vault | core |
 | `config.js`, `prefs.js` | repo defaults; device-local prefs (token, wakeLock, theme) | core |
 | `util.js` | `html` template (auto-escape), durations, fractions, image compression | core |
 | `ui.js` | `toast`, `sheet`, `confirmSheet`, `promptSheet`, `setTopbar`, `on` (delegation) | core |

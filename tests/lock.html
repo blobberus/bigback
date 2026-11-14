@@ -21,7 +21,9 @@
 <!-- WebCrypto needs real time: this holds smoke.py's DOM dump until the release below. -->
 <img hidden alt="" src="/__smoke/hold">
 <script type="module">
-import { makeLock, checkPassword, validLock, remember, forgetDevice, isRemembered, rememberedHere, showLockScreen, ITERATIONS } from '../js/lock.js';
+import { makeLock, checkPassword, validLock, remember, forgetDevice, isRemembered, rememberedHere, showLockScreen, ITERATIONS,
+  sealToken, openVault, restoreToken, storedKey } from '../js/lock.js';
+import { getPrefs, setPrefs } from '../js/prefs.js';
 
 const results = [];
 function ok(name, cond, detail = '') {
@@ -69,8 +71,8 @@ try {
 
   /* ---------- lock screen UI ---------- */
   const html = document.documentElement;
-  let resolved = false;
-  const done = showLockScreen(config).then(() => { resolved = true; });
+  let resolved = false, gotKey = null;
+  const done = showLockScreen(config).then(k => { resolved = true; gotKey = k; });
   const el = document.querySelector('.lock');
   ok('lock screen renders and hides the app', el && html.classList.contains('is-locked') && getComputedStyle(document.querySelector('#view')).display === 'none');
   ok('password field is focused', document.activeElement?.id === 'lock-pw');
@@ -89,7 +91,25 @@ try {
   await done;
   ok('right password unlocks and removes the screen', resolved && !document.contains(el) && !html.classList.contains('is-locked'));
   ok('…and remembers this device', (await isRemembered(config)) && rememberedHere() === 'device');
+  ok('…and hands back the key (for the token vault)', gotKey === key && storedKey() === key);
   forgetDevice();
+
+  /* ---------- token vault ---------- */
+  const TOKEN = 'github_pat_11ABCDEFG0123456789_abcdefghijklmnopqrstuvwxyz';
+  const vault = await sealToken(key, TOKEN);
+  ok('vault holds no readable token', !JSON.stringify(vault).includes('github_pat') && vault.iv && vault.data);
+  const withVault = { ...config, vault };
+  ok('right key opens it', (await openVault(withVault, key)) === TOKEN);
+  ok('another password\'s key does not', (await openVault(withVault, again.key)) === null);
+  ok('fresh IV every seal', (await sealToken(key, TOKEN)).iv !== vault.iv);
+  const saved = getPrefs().token;
+  setPrefs({ token: '' });
+  ok('wiped device: unlocking restores the token', (await restoreToken(withVault, key)) && getPrefs().token === TOKEN);
+  setPrefs({ token: 'github_pat_newer' });
+  ok('never overwrites a token the device already has', !(await restoreToken(withVault, key)) && getPrefs().token === 'github_pat_newer');
+  setPrefs({ token: '' });
+  ok('no vault → nothing restored', !(await restoreToken(config, key)) && getPrefs().token === '');
+  setPrefs({ token: saved });
 
   /* ---------- real cost ---------- */
   const t0 = performance.now();

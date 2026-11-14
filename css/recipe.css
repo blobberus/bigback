@@ -162,7 +162,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 .rx-check .rx-ic { width: 15px; height: 15px; stroke-width: 3.2; }
 .rx-ing.is-checked .rx-check { background: var(--accent-2); border-color: var(--accent-2); color: var(--surface); }
 .rx-ing-input:focus-visible + .rx-check { outline: 2.5px solid var(--accent); outline-offset: 2px; }
-.rx-ing-text { flex: 1; display: grid; gap: 2px; min-width: 0; font-size: 1.05rem; line-height: 1.4; transition: color .15s; }
+.rx-ing-text { flex: 1; display: grid; gap: 2px; min-width: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; font-size: 1.05rem; line-height: 1.4; transition: color .15s; }
 .rx-qty { font-weight: 700; }
 .rx-qty.is-scaled { color: var(--accent); }
 .rx-ing-note { font-size: .88rem; color: var(--muted); line-height: 1.35; }
@@ -184,6 +184,9 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
   font-size: .9rem; line-height: 1.35; color: var(--ink);
 }
 .rx-conv[hidden] { display: none; }
+.rx-conv { cursor: auto; }
+.rx-conv-cap { grid-column: 1 / -1; margin: 0 0 2px; font-size: .8rem; font-weight: 700; color: var(--ink-2); }
+.rx-note-amt { font-weight: 650; color: var(--ink-2); }
 .rx-conv-h { margin: 0 0 4px; font-size: .72rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .rx-conv ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; }
 .rx-conv li { font-variant-numeric: tabular-nums; }

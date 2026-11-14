@@ -1,7 +1,8 @@
 /**
  * sw.js — offline support (WS4). app.js registers it on https only.
  *
- * Caches (bump VERSION to move everyone onto a fresh shell cache):
+ * Caches (VERSION is replaced at deploy with a hash of the app files — .github/workflows/pages.yml —
+ * so every code change moves phones onto a fresh shell cache; app.js then reloads once):
  *   bb-shell-<VERSION>  app shell — stale-while-revalidate. Served instantly from cache and
  *                       revalidated in the background; when any shell file has changed, the
  *                       whole cached shell is refetched so lazily-loaded views don't mix old

@@ -237,7 +237,7 @@ export async function render(root, { slug }) {
 
   function stepsHtml(r, st, notes, photos) {
     const done = new Set(st.done);
-    const match = mentionMatcher(r.ingredients);
+    const match = mentionMatcher(r.ingredients, { slug });
     let n = 0;
     return groupBySection(r.steps).map((g, gi) => html`
       ${g.section ? html`<h3 class="rx-subhead">${g.section}</h3>` : gi ? html`<hr class="rx-sep">` : ''}

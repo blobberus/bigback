@@ -73,7 +73,8 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 
 ## WS8 — User requests
 - [x] Site password: lock screen on every device, set/change/remove in Settings, remember this device (js/lock.js, data/lock.json, tests/lock.html)
-- [x] Ingredient names in steps link to their amount (bubble above the word); ingredient amounts open a US + metric breakdown; only the checkbox checks an item off (js/components/recipe-mentions.js, js/units.js, tests/ingredients.html)
+- [x] Ingredient names in steps link to their amount (bubble above the word); ingredient amounts, including ones in notes, open a US + metric breakdown (js/components/recipe-mentions.js, js/units.js, tests/ingredients.html)
+- [x] Token vault (token restored by the site password); Home Screen app auto-updates (sw.js VERSION stamped per code change, reload on controllerchange)
 
 ## Polish backlog (only if all above done and commit target not met)
 - Shopping list from selected recipes; unit toggle (US/metric); print view;

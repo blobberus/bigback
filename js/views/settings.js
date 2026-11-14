@@ -13,7 +13,7 @@ import { setTopbar, on, toast, confirmSheet, busy, sheet, reportError } from '..
 import { html } from '../util.js';
 import { getPrefs, setPrefs, onPrefs } from '../prefs.js';
 import { getLock, saveLock } from '../store.js';
-import { makeLock, validLock, remember, forgetDevice, rememberedHere, supported as lockSupported, MIN_LENGTH } from '../lock.js';
+import { makeLock, validLock, remember, forgetDevice, rememberedHere, supported as lockSupported, MIN_LENGTH, sealToken, storedKey } from '../lock.js';
 import { APP_VERSION } from '../config.js';
 import { GitHub } from '../github.js';
 import { initWakeLock, wakeLockStatus, onWakeLock } from '../wakelock.js';
@@ -82,12 +82,13 @@ function view(p) {
           <span class="st-conn-dot" aria-hidden="true"></span>
           <div class="st-text"><strong class="st-conn-title"></strong><small class="st-conn-sub"></small></div>
         </div>
-        <form class="st-form" data-form="gh" autocomplete="off" novalidate>
+        <form class="st-form" data-form="gh" novalidate>
+          <input class="sr-only" type="text" name="username" value="GitHub token (Bigback)" autocomplete="username" tabindex="-1" aria-hidden="true">
           <div class="field">
             <label for="st-token">Access token</label>
             <div class="st-secret">
               <input id="st-token" class="input" type="password" name="token" value="${p.token}" placeholder="github_pat_…"
-                autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="st-token-hint">
+                autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="st-token-hint">
               <button type="button" class="btn btn-ghost st-reveal" data-act="reveal" aria-label="Show token" aria-controls="st-token">Show</button>
             </div>
             <p class="hint" id="st-token-hint">Stored only on this device (localStorage). It's never committed to the repo and only ever sent to GitHub.</p>
@@ -131,6 +132,11 @@ function view(p) {
           <button type="button" class="btn" data-act="lock-forget" hidden>Lock this device</button>
           <button type="button" class="btn st-danger" data-act="lock-remove" hidden>Remove password</button>
         </div>
+        <label class="switch st-switch st-vault" hidden>
+          <input type="checkbox" data-vault aria-describedby="st-vault-sub">
+          <span></span>
+          <div class="st-text"><strong>Keep my GitHub token with the password</strong><small id="st-vault-sub"></small></div>
+        </label>
         <p class="hint st-lock-note">This adds a lock screen to the app on every device. It isn't encryption: the recipe files in the
           public GitHub repo can still be read there.</p>
       </div>
@@ -236,7 +242,7 @@ export async function render(root) {
     box.querySelector('.st-conn-sub').textContent = sub;
   }
 
-  let lockOn = false, lockSeq = 0;
+  let lockOn = false, lockSeq = 0, lockCfg = null;
   async function paintLock({ force = false } = {}) {
     const my = ++lockSeq;
     let cfg = null;
@@ -257,6 +263,27 @@ export async function render(root) {
     $('[data-act="lock-remove"]').hidden = !lockOn;
     $('[data-act="lock-remove"]').disabled = !connected;
     $('[data-act="lock-forget"]').hidden = !lockOn;
+    lockCfg = lockOn ? cfg : null;
+    const vaultOn = !!cfg?.vault, box = $('input[data-vault]'), canVault = connected && !!storedKey() && lockSupported();
+    $('.st-vault').hidden = !lockOn;
+    box.checked = vaultOn;
+    box.disabled = !canVault;
+    $('#st-vault-sub').textContent = vaultOn
+      ? "On. A device or Home Screen app that lost its token gets it back when you enter the password, so there's no need to make or paste a new one. A stronger password keeps the token safer."
+      : canVault
+        ? 'Saves an encrypted copy of this token in the repo. Entering the password on any device then restores it. Use a long password: the copy is public, so its safety is the password.'
+        : 'Connect GitHub on a device that knows the password to turn this on.';
+  }
+
+  /** Re-encrypt (or drop) the vault for the current token. Commits data/lock.json. */
+  async function writeVault(on, token = getPrefs().token) {
+    const cfg = await getLock({ force: true });
+    if (!validLock(cfg)) return;
+    const { vault, ...rest } = cfg;
+    const next = { ...rest, updatedAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z') };
+    if (on) next.vault = await sealToken(storedKey(), token);
+    else if (!vault) return;
+    await saveLock(next);
   }
 
   async function onLock(act, el) {
@@ -285,6 +312,8 @@ export async function render(root) {
     try {
       await busy(el, (async () => {
         const { config, key } = await makeLock(pw);
+        // Changing the password keeps the token copy, re-encrypted for the new password.
+        if (change && lockCfg?.vault && getPrefs().token) config.vault = await sealToken(key, getPrefs().token);
         await saveLock(config);
         remember(key, true);
       })());
@@ -360,6 +389,9 @@ export async function render(root) {
       setConn(r.state, r.title, r.sub);
       toast(r.state === 'ok' ? 'GitHub connected' : 'Saved — but this token is read-only', { type: r.state === 'ok' ? 'ok' : 'info' });
       $('.st-howto').open = false;
+      if (r.state === 'ok' && lockCfg?.vault && storedKey()) {
+        writeVault(true, vals.token).then(() => alive && paintLock({ force: true })).catch(reportError);
+      }
     } else {
       setConn('warn', 'Saved, not tested', "Couldn't reach GitHub to test it. It will be used once you're online.");
       toast('Saved');
@@ -391,9 +423,14 @@ export async function render(root) {
       el.textContent = show ? 'Hide' : 'Show';
       el.setAttribute('aria-label', show ? 'Hide token' : 'Show token');
     } else if (act === 'disconnect') {
-      const ok = await confirmSheet('Saving recipes, notes and photos will be off on this device until you add a token again. Browsing keeps working.',
+      const vaulted = !!lockCfg?.vault;
+      const ok = await confirmSheet(`Saving recipes, notes and photos will be off on this device until you add a token again. Browsing keeps working.${
+        vaulted ? ' This also deletes the copy kept with your password, so other devices that lose their token will need it pasted again.' : ''}`,
         { title: 'Disconnect GitHub?', ok: 'Disconnect', danger: true });
       if (!ok || !alive) return;
+      if (vaulted) {
+        try { await busy(el, writeVault(false)); } catch (e) { reportError(e); return; }
+      }
       checkSeq++;
       setPrefs({ token: '' });
       $('#st-token').value = '';
@@ -427,6 +464,15 @@ export async function render(root) {
 
   const offs = [
     on(root, 'change', 'input[data-pref]', (e, el) => setPrefs({ [el.dataset.pref]: el.checked })),
+    on(root, 'change', 'input[data-vault]', async (e, el) => {
+      const on = el.checked;
+      el.disabled = true;
+      try {
+        await writeVault(on);
+        toast(on ? 'Token saved with your password' : 'Token copy removed', { type: 'ok' });
+      } catch (err) { el.checked = !on; reportError(err); }
+      if (alive) paintLock({ force: true });
+    }),
     on(root, 'click', '[data-theme]', (e, el) => setPrefs({ theme: el.dataset.theme })),
     on(root, 'click', '[data-units]', (e, el) => setPrefs({ units: el.dataset.units })),
     on(root, 'click', '[data-act]', onAct),

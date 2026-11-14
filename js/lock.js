@@ -9,12 +9,21 @@
  *   in localStorage (or sessionStorage when "Remember this device" is off). It only counts while
  *   SHA-256(key) === lock.check, so changing or removing the password re-locks other devices.
  *
- *   unlockGate()                       → Promise; resolves once the app may render
- *   showLockScreen(config)             → Promise; resolves after the right password
+ *   Token vault (optional, config.vault): the GitHub token AES-GCM-encrypted with a key derived
+ *   from the password, so a device or Home Screen app whose storage was wiped gets its token
+ *   back by unlocking: no new token, no re-pasting. Public like the rest of the file, so its
+ *   safety is the password's strength (600k PBKDF2 rounds per guess).
+ *
+ *   unlockGate()                       → Promise; resolves once the app may render (and restores
+ *                                        the token from the vault when this device has none)
+ *   showLockScreen(config)             → Promise<key>; resolves after the right password
+ *   sealToken(key, token) → vault      openVault(config, key) → token | null
+ *   storedKey() → this device's derived key | null      restoreToken(config, key) → bool
  *   makeLock(password, {iterations})   → { config, key }      checkPassword(config, pw) → key | null
  *   validLock(c) · isRemembered(config) · remember(key, persist) · forgetDevice() · supported()
  */
 import { getLock } from './store.js';
+import { getPrefs, setPrefs } from './prefs.js';
 
 export const ITERATIONS = 600000;     // OWASP 2023 guidance for PBKDF2-HMAC-SHA256
 export const MIN_LENGTH = 4;
@@ -68,6 +77,35 @@ export async function isRemembered(config) {
   return !!k && HEX64.test(k) && validLock(config) && (await sha256(fromHex(k))) === config.check;
 }
 export const rememberedHere = () => { try { return localStorage.getItem(KEY) ? 'device' : sessionStorage.getItem(KEY) ? 'session' : null; } catch { return null; } };
+export const storedKey = () => { const k = stored(); return k && HEX64.test(k) ? k : null; };
+
+/* ---------- token vault ---------- */
+// AES key = SHA-256(derived key ‖ label): a different hash of the key than the public `check`.
+async function vaultKey(keyHex, usage) {
+  const bytes = new Uint8Array([...fromHex(keyHex), ...te.encode('bigback token vault v1')]);
+  return crypto.subtle.importKey('raw', await crypto.subtle.digest('SHA-256', bytes), 'AES-GCM', false, [usage]);
+}
+export async function sealToken(keyHex, token) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await vaultKey(keyHex, 'encrypt'), te.encode(token));
+  return { alg: 'AES-GCM', iv: toB64(iv), data: toB64(new Uint8Array(ct)) };
+}
+export async function openVault(config, keyHex) {
+  const v = config?.vault;
+  if (!v?.iv || !v?.data || !keyHex || !supported()) return null;
+  try {
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(v.iv) }, await vaultKey(keyHex, 'decrypt'), fromB64(v.data));
+    return new TextDecoder().decode(pt);
+  } catch { return null; }
+}
+/** No token on this device, but the vault has one → put it back. */
+export async function restoreToken(config, keyHex) {
+  if (getPrefs().token || !config?.vault) return false;
+  const token = await openVault(config, keyHex);
+  if (!token) return false;
+  setPrefs({ token });
+  return true;
+}
 
 /* ---------- gate ---------- */
 const root = document.documentElement;
@@ -77,8 +115,8 @@ export async function unlockGate() {
   try { config = await getLock(); } catch (e) { console.warn('lock: could not read data/lock.json', e); }
   try {
     if (!validLock(config)) return;
-    if (supported() && await isRemembered(config)) return;
-    await showLockScreen(config);
+    const key = supported() && await isRemembered(config) ? storedKey() : await showLockScreen(config);
+    await restoreToken(config, key).catch(e => console.warn('lock: token vault', e));
   } finally {
     root.classList.remove('is-gating');
   }
@@ -142,7 +180,7 @@ export function showLockScreen(config, { host = document.body } = {}) {
         remember(key, form.elements.remember.checked);
         el.remove();
         root.classList.remove('is-locked');
-        resolve();
+        resolve(key);
         return;
       }
       checking = false; btn.disabled = false; btn.textContent = 'Unlock';

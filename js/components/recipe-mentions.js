@@ -1,14 +1,17 @@
 /**
  * components/recipe-mentions.js — ingredient names inside step text become tappable; a tap shows
  * a small bubble above the word with the (scaled) amount. Recipe page + cook mode.
- *   mentionMatcher(ingredients) → match(text) → [{ index, length, ids }]
+ *   mentionMatcher(ingredients, { slug }) → match(text) → [{ index, length, ids, ings, slug }]
  *       first mention per ingredient per step; skipped when the step already gives an amount
  *       ("Add 2 tbsp butter") and for ingredients without a quantity ("salt, to taste").
- *   bindMentions(root, getRecipe, slug) → off      tap → bubble; tap again / outside / Esc closes
- * Links are <button class="rx-ingref" data-ingref="i3 i7"> rendered by stepTextHtml().
+ *   mentionButton(text, span) → html   <button class="rx-ingref" data-ingref data-amt data-slug>
+ *       Self-contained: the amounts ride along in data-amt and the scale factor is read from
+ *       recipe-state at tap time, so one global handler (installed on first render) serves every
+ *       view. Tap → bubble right above the word; tap it again, tap anywhere else, scroll it away
+ *       or press Esc to close.
+ *   bindMentions() → off    optional; closes the bubble on view cleanup
  */
 import { html, toStr, fmtQty } from '../util.js';
-import { on } from '../ui.js';
 import { rxState } from './recipe-state.js';
 import { qtyText } from './recipe-ingredients.js';
 
@@ -67,7 +70,7 @@ function phrasesFor(item) {
   return { phrases: out, core: core ? core.map(stem).join(' ') : '' };
 }
 
-export function mentionMatcher(ingredients = []) {
+export function mentionMatcher(ingredients = [], { slug = '' } = {}) {
   const byKey = new Map();          // stemmed phrase → Set(ids)
   const coreOf = new Map();         // id → stemmed core name
   let maxLen = 1;
@@ -92,7 +95,7 @@ export function mentionMatcher(ingredients = []) {
     if (ids.length === 1 || sameName) resolve.set(key, ids);
     else if (exact.length) resolve.set(key, exact);
   }
-  const hasQty = new Set(ingredients.filter(i => i?.id && qtyText(i)).map(i => i.id));
+  const byId = new Map(ingredients.filter(i => i?.id && qtyText(i)).map(i => [i.id, i]));
 
   return function match(text) {
     text = String(text || '');
@@ -106,7 +109,8 @@ export function mentionMatcher(ingredients = []) {
         const last = toks[p + len - 1];
         // Words must be adjacent (only spaces between), not split by punctuation.
         if (len > 1 && toks.slice(p, p + len - 1).some((t, j) => /\S/.test(text.slice(t.e, toks[p + j + 1].s)))) continue;
-        const span = { index: toks[p].s, length: last.e - toks[p].s, ids: ids.filter(id => hasQty.has(id) && !seen.has(id)) };
+        const keep = ids.filter(id => byId.has(id) && !seen.has(id));
+        const span = { index: toks[p].s, length: last.e - toks[p].s, ids: keep, ings: keep.map(id => byId.get(id)), slug };
         ids.forEach(id => seen.add(id));
         if (span.ids.length && !amountGiven(text, toks, p, last)) found.push(span);
         p += len - 1;
@@ -132,7 +136,13 @@ function amountGiven(text, toks, p, last) {
 }
 
 /* ---------- bubble ---------- */
-const factorFor = slug => { const f = Number(rxState(slug).factor); return f > 0 ? f : 1; };
+const factorFor = slug => { const f = slug ? Number(rxState(slug).factor) : 1; return f > 0 ? f : 1; };
+
+export function mentionButton(text, span) {
+  installMentions();
+  const amt = JSON.stringify(span.ings.map(i => ({ q: i.qty, m: i.qtyMax ?? null, u: i.unit || null, i: i.item, s: i.section || null })));
+  return html`<button type="button" class="rx-ingref" data-ingref="${span.ids.join(' ')}" data-amt="${amt}" data-slug="${span.slug || ''}" aria-expanded="false">${text}<span class="sr-only"> (amount)</span></button>`;
+}
 
 function bubbleHtml(ings, f) {
   const multi = ings.length > 1;
@@ -140,75 +150,86 @@ function bubbleHtml(ings, f) {
     Math.abs(f - 1) > 1e-9 ? html`<span class="rx-ingtip-scale">Scaled ×${fmtQty(f)}</span>` : ''}`;
 }
 
-export function bindMentions(root, getRecipe, slug) {
-  let tip = null, btn = null, raf = 0, mo = null;
+let installed = false, tip = null, btn = null, raf = 0, mo = null;
 
-  function close() {
-    if (!tip) return;
-    tip.remove(); tip = null;
-    mo?.disconnect(); mo = null;
-    if (btn) { btn.setAttribute('aria-expanded', 'false'); btn.removeAttribute('aria-describedby'); }
-    btn = null;
-  }
+function close() {
+  if (!tip) return;
+  tip.remove(); tip = null;
+  mo?.disconnect(); mo = null;
+  if (btn) { btn.setAttribute('aria-expanded', 'false'); btn.removeAttribute('aria-describedby'); }
+  btn = null;
+}
 
-  function place() {
-    if (!tip) return;
-    if (!btn?.isConnected) return close();
-    const r = btn.getClientRects()[0] || btn.getBoundingClientRect();
-    const vw = document.documentElement.clientWidth;
-    const tw = tip.offsetWidth, th = tip.offsetHeight;
-    const mid = r.left + r.width / 2;
-    const left = Math.max(8, Math.min(mid - tw / 2, vw - tw - 8));
-    const bar = document.querySelector('.topbar')?.getBoundingClientRect().bottom || 0;
-    const below = r.top - th - 10 < bar + 4;
-    tip.classList.toggle('is-below', below);
-    tip.style.left = `${Math.round(left)}px`;
-    tip.style.top = `${Math.round(below ? r.bottom + 10 : r.top - th - 10)}px`;
-    tip.style.setProperty('--arrow-x', `${Math.round(Math.max(12, Math.min(tw - 12, mid - left)))}px`);
-  }
+/** Bubble's bottom edge sits 8px above the word (the arrow fills the gap); below it if there's no room. */
+function place() {
+  if (!tip) return;
+  if (!btn?.isConnected) return close();
+  const r = btn.getClientRects()[0] || btn.getBoundingClientRect();
+  const vh = document.documentElement.clientHeight;
+  if (r.bottom < 0 || r.top > vh) return close();               // scrolled out of view
+  const vw = document.documentElement.clientWidth;
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  const mid = r.left + r.width / 2;
+  const left = Math.max(8, Math.min(mid - tw / 2, vw - tw - 8));
+  const bar = document.querySelector('.topbar')?.getBoundingClientRect().bottom || 0;
+  const below = r.top - th - 8 < Math.max(0, bar) + 4;
+  tip.classList.toggle('is-below', below);
+  tip.style.left = `${Math.round(left)}px`;
+  tip.style.top = `${Math.round(below ? r.bottom + 8 : r.top - th - 8)}px`;
+  tip.style.setProperty('--arrow-x', `${Math.round(Math.max(12, Math.min(tw - 12, mid - left)))}px`);
+}
 
-  function open(el) {
-    close();
-    const all = getRecipe()?.ingredients || [];
-    const ings = el.dataset.ingref.split(' ').map(id => all.find(i => i.id === id)).filter(i => i && qtyText(i));
-    if (!ings.length) return;
-    tip = document.createElement('div');
-    tip.className = 'rx-ingtip';
-    tip.id = `rx-ingtip-${slug}`;
-    tip.setAttribute('role', 'status');
-    tip.innerHTML = toStr(bubbleHtml(ings, factorFor(slug)));
-    document.body.append(tip);
-    btn = el;
-    el.setAttribute('aria-expanded', 'true');
-    el.setAttribute('aria-describedby', tip.id);
-    place();
-    // Re-rendered step (cook mode paging, store refresh) → the word is gone, so is the bubble.
-    mo = new MutationObserver(() => { if (!btn?.isConnected) close(); });
-    mo.observe(root, { childList: true, subtree: true });
-  }
+function open(el) {
+  close();
+  let ings = [];
+  try { ings = JSON.parse(el.dataset.amt || '[]').map(x => ({ qty: x.q, qtyMax: x.m, unit: x.u, item: x.i, section: x.s })); } catch { /* bad markup */ }
+  ings = ings.filter(i => qtyText(i));
+  if (!ings.length) return;
+  tip = document.createElement('div');
+  tip.className = 'rx-ingtip';
+  tip.id = 'rx-ingtip';
+  tip.setAttribute('role', 'status');
+  tip.innerHTML = toStr(bubbleHtml(ings, factorFor(el.dataset.slug)));
+  document.body.append(tip);
+  btn = el;
+  el.setAttribute('aria-expanded', 'true');
+  el.setAttribute('aria-describedby', tip.id);
+  place();
+  // The word re-rendered away (cook-mode paging, store refresh) → so is the bubble.
+  mo = new MutationObserver(() => { if (!btn?.isConnected) close(); });
+  mo.observe(document.body, { childList: true, subtree: true });
+}
 
-  const offClick = on(root, 'click', '[data-ingref]', (e, el) => {
+export function installMentions() {
+  if (installed) return;
+  installed = true;
+  document.addEventListener('click', e => {
+    const el = e.target.closest?.('[data-ingref]');
+    if (!el) return;
     e.preventDefault();
     if (btn === el) close(); else open(el);
   });
-  const onDoc = e => { if (tip && !e.target.closest?.('[data-ingref]') && !tip.contains(e.target)) close(); };
-  const onKey = e => {
+  // "Tap anywhere else" uses pointerdown: iOS Safari doesn't fire click on plain text or
+  // empty space, so a click listener alone would leave the bubble stuck open.
+  document.addEventListener('pointerdown', e => {
+    if (!tip) return;
+    const t = e.target;
+    if (tip.contains(t) || (btn && btn.contains(t))) return;
+    close();
+  }, true);
+  window.addEventListener('keydown', e => {
     if (!tip || e.key !== 'Escape') return;
     e.preventDefault(); e.stopPropagation();          // cook mode's Esc = leave; close the bubble first
     const b = btn; close(); b?.focus({ preventScroll: true });
-  };
+  }, true);
   const onMove = () => { if (tip && !raf) raf = requestAnimationFrame(() => { raf = 0; place(); }); };
-  document.addEventListener('click', onDoc, true);
-  window.addEventListener('keydown', onKey, true);
   window.addEventListener('scroll', onMove, { capture: true, passive: true });
   window.addEventListener('resize', onMove);
+  window.addEventListener('hashchange', close);
+}
 
-  return () => {
-    close(); offClick();
-    if (raf) cancelAnimationFrame(raf);
-    document.removeEventListener('click', onDoc, true);
-    window.removeEventListener('keydown', onKey, true);
-    window.removeEventListener('scroll', onMove, { capture: true });
-    window.removeEventListener('resize', onMove);
-  };
+/** Views call this so leaving the page closes an open bubble. */
+export function bindMentions() {
+  installMentions();
+  return close;
 }
