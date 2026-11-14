@@ -15,7 +15,7 @@
 import { html, raw, fmtMinutes } from '../util.js';
 import {
   getIndex, getLibrary, entryFor, mediaUrl, rawUrl, onChange, NotConnectedError,
-  createPlaylist, renamePlaylist, deletePlaylist
+  createPlaylist, renamePlaylist, deletePlaylist, addToPlaylist, removeFromPlaylist
 } from '../store.js';
 import { setTopbar, on, stars, sheet, promptSheet, confirmSheet, toast, reportError } from '../ui.js';
 import { isConnected } from '../prefs.js';
@@ -34,6 +34,7 @@ export const ICON = {
   pencil: svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>'),
   trash: svg('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'),
   chevron: svg('<path d="M7 10l5 5 5-5"/>'),
+  check: svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
   file: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>'),
   link: svg('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'),
   text: svg('<path d="M5 6h14M5 10h14M5 14h10M5 18h7"/>'),
@@ -236,7 +237,7 @@ function facets(rows, plSets) {
 }
 
 /* ---------- markup ---------- */
-function card({ r, e, t }) {
+function card({ r, e, t }, pl) {
   const tags = e.tags.slice(0, 3);
   const flags = r.status === 'custom' || r.openNotes > 0;
   return html`<li class="rcard" data-slug="${r.slug}" data-title="${r.title}">
@@ -258,8 +259,32 @@ function card({ r, e, t }) {
       </span>
     </a>
     <button type="button" class="icon-btn rcard-more" data-act="more" aria-label="Rating, tags &amp; playlists for ${r.title}">${raw(ICON.more)}</button>
+    ${pl ? html`<button type="button" class="icon-btn rcard-remove" data-act="unlist" aria-label="Remove ${r.title} from ${pl.name}" title="Remove from playlist">${raw(ICON.minus)}</button>` : ''}
   </li>`;
 }
+
+function playlistHead(count) {
+  return html`<div class="pl-head">
+    ${count ? html`<button type="button" class="btn btn-soft" data-act="pl-add">${raw(ICON.plus)}Add recipes</button>` : ''}
+    <span class="spacer"></span>
+    <button type="button" class="icon-btn" data-act="pl-rename" aria-label="Rename playlist" title="Rename">${raw(ICON.pencil)}</button>
+    <button type="button" class="icon-btn" data-act="pl-delete" aria-label="Delete playlist" title="Delete">${raw(ICON.trash)}</button>
+  </div>`;
+}
+
+const emptyPlaylist = pl => html`<div class="empty lib-empty">
+  <span class="lib-empty-art">${raw(ICON.playlist)}</span>
+  <h2>Nothing in “${pl.name}” yet</h2>
+  <p>Pick recipes from your library to keep them together here.</p>
+  <button type="button" class="btn btn-primary" data-act="pl-add">${raw(ICON.plus)}Add recipes</button>
+</div>`;
+
+const missingPlaylist = () => html`<div class="empty lib-empty">
+  <span class="lib-empty-art">${raw(ICON.playlist)}</span>
+  <h2>Playlist not found</h2>
+  <p>It may have been deleted on another device.</p>
+  <a class="btn" href="#/playlists">All playlists</a>
+</div>`;
 
 /** Horizontal quick row: active filters (removable) first, then one-tap suggestions. */
 function quickChips(s, lib, f) {
@@ -338,14 +363,22 @@ export async function render(root, params) {
   const pathOf = h => (h || '#/').split('?')[0];
   const myPath = pathOf(location.hash);
   const savedY = history.state?.libScroll || 0;     // set below while scrolling; survives Back
-  let idx, lib, rows = [], plSets = {}, alive = true;
+  const plId = params.playlist || null;
+  let idx, lib, pl = null, rows = [], plSets = {}, alive = true, leaving = false, shownTitle = '';
 
-  setTopbar({ title: 'Recipes' });
+  const topbar = () => {
+    const title = plId ? pl?.name || 'Playlist' : 'Recipes';
+    if (title !== shownTitle) setTopbar(plId ? { title, back: '#/playlists' } : { title });
+    shownTitle = title;
+  };
+  topbar();
 
   async function load() {
     [idx, lib] = await Promise.all([getIndex(), getLibrary()]);
-    rows = idx.recipes.map(r => toRow(r, lib));
     plSets = Object.fromEntries(lib.playlists.map(p => [p.id, new Set(p.recipes)]));
+    pl = plId ? lib.playlists.find(p => p.id === plId) || null : null;
+    const scope = plId ? idx.recipes.filter(r => plSets[plId]?.has(r.slug)) : idx.recipes;
+    rows = scope.map(r => toRow(r, lib));
     s.pl = s.pl.filter(id => plSets[id]);            // drop filters for deleted playlists
   }
   const shownRows = () => rows.filter(x => matches(x, s, plSets)).sort(SORT_FNS[s.sort]);
@@ -356,7 +389,7 @@ export async function render(root, params) {
     <div class="lib-bar" role="search" data-part="bar">
       <div class="search">
         ${raw(ICON.search)}
-        <input class="input search-input" type="search" value="${s.q}" placeholder="Search recipes"
+        <input class="input search-input" type="search" value="${s.q}" placeholder="${plId ? 'Search this playlist' : 'Search recipes'}"
           aria-label="Search recipes" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search">
         <button type="button" class="search-clear" data-act="clear-q" aria-label="Clear search" ${s.q ? '' : raw('hidden')}>${raw(ICON.x)}</button>
       </div>
@@ -364,6 +397,7 @@ export async function render(root, params) {
         ${raw(ICON.filter)}<span>Filters</span><span class="badge" data-part="nf" hidden></span>
       </button>
     </div>
+    <div data-part="plhead"></div>
     <div data-part="pending"></div>
     <div class="qchips" data-part="chips" role="group" aria-label="Quick filters"></div>
     <div class="lib-count" data-part="count"></div>
@@ -376,19 +410,29 @@ export async function render(root, params) {
   const clearBtn = root.querySelector('.search-clear');
 
   function paint() {
+    if (leaving) return;
+    topbar();
+    if (plId && !pl) {                                   // deleted (maybe on another device)
+      ['bar', 'chips', 'count', 'plhead'].forEach(n => { part(n).hidden = true; });
+      ['list', 'pending', 'foot'].forEach(n => { part(n).innerHTML = ''; });
+      part('empty').innerHTML = missingPlaylist();
+      return;
+    }
     const nf = filterCount(s);
     const narrowed = !!s.q.trim() || nf > 0;
     const shown = shownRows();
     const any = rows.length > 0;
     const f = facets(rows, plSets);
 
+    part('plhead').hidden = !pl;
+    part('plhead').innerHTML = pl ? playlistHead(rows.length) : '';
     part('bar').hidden = !any;
     const fbtn = root.querySelector('.filter-btn');
     fbtn.classList.toggle('is-active', nf > 0);
     fbtn.setAttribute('aria-label', nf ? `Filters, ${nf} active` : 'Filters');
     part('nf').hidden = !nf;
     part('nf').textContent = nf || '';
-    part('pending').innerHTML = !narrowed && idx.pending.length ? pendingStrip(idx.pending) : '';
+    part('pending').innerHTML = !plId && !narrowed && idx.pending.length ? pendingStrip(idx.pending) : '';
     const chips = any ? quickChips(s, lib, f) : '';
     part('chips').hidden = !chips;
     part('chips').innerHTML = chips;
@@ -402,8 +446,8 @@ export async function render(root, params) {
         </select>
         ${raw(ICON.chevron)}
       </label>`;
-    part('list').innerHTML = html`${shown.map(card)}`;
-    part('empty').innerHTML = !any ? emptyLibrary(idx.pending.length > 0)
+    part('list').innerHTML = html`${shown.map(x => card(x, pl))}`;
+    part('empty').innerHTML = !any ? (pl ? emptyPlaylist(pl) : emptyLibrary(idx.pending.length > 0))
       : !shown.length ? html`<div class="empty lib-empty">
           <h2>No recipes match</h2>
           <p>${nf ? 'Try loosening the filters or a different search.' : 'Try a different search.'}</p>
@@ -456,6 +500,71 @@ export async function render(root, params) {
     else if (name === 'rm' || name === 'add') { toggle(s, el.dataset.k, el.dataset.v); update(); }
     else if (name === 'clear-filters') { clearFilters(s); update(); }
     else if (name === 'more') openMeta(el.closest('.rcard'));
+    else if (!pl) return;
+    else if (name === 'pl-add') openPicker();
+    else if (name === 'pl-rename') askRenamePlaylist(pl);
+    else if (name === 'pl-delete') {
+      const gone = pl;
+      askDeletePlaylist(gone, () => { leaving = true; }).then(ok => {
+        if (ok) { if (alive) location.hash = '#/playlists'; } else leaving = false;
+      });
+    } else if (name === 'unlist') {
+      const li = el.closest('.rcard');
+      try { removeFromPlaylist(pl.id, li.dataset.slug); toast(`Removed from “${pl.name}”`); } catch (e) { reportError(e); }
+    }
+  }
+
+  /* ---------- "Add recipes" picker (playlist view) ---------- */
+  async function openPicker() {
+    if (!connected()) return;
+    const target = pl;
+    const all = [...idx.recipes].sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base', numeric: true }));
+    const body = document.createElement('div');
+    body.className = 'picker';
+    const countLine = () => {
+      const n = body.querySelectorAll('.pick-box:checked').length;
+      return n ? `${plural(n, 'recipe')} in this playlist` : 'Tap recipes to add them';
+    };
+    body.innerHTML = all.length ? html`
+      <div class="search picker-search">${raw(ICON.search)}
+        <input class="input search-input" type="search" placeholder="Find a recipe" aria-label="Find a recipe"
+          autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search">
+      </div>
+      <p class="pick-count" aria-live="polite"></p>
+      <ul class="pick-list">${all.map(r => html`<li data-hay="${fold(`${r.title} ${entryFor(lib, r.slug).tags.join(' ')}`)}">
+        <label class="pick">
+          <input type="checkbox" class="pick-box" value="${r.slug}" ${target.recipes.includes(r.slug) ? raw('checked') : ''}>
+          ${thumb(r, 'pick-thumb')}
+          <span class="pick-title">${r.title}</span>
+          <span class="pick-check" aria-hidden="true">${raw(ICON.check)}</span>
+        </label>
+      </li>`)}</ul>
+      <p class="pick-none" hidden>No recipes match.</p>`
+      : html`<div class="empty"><p>No recipes in your library yet.</p><a class="btn btn-primary" href="#/add">${raw(ICON.plus)}Add a recipe</a></div>`;
+    const count = body.querySelector('.pick-count');
+    if (count) count.textContent = countLine();
+    body.addEventListener('change', e => {
+      const cb = e.target.closest('.pick-box');
+      if (!cb) return;
+      try { (cb.checked ? addToPlaylist : removeFromPlaylist)(target.id, cb.value); }
+      catch (err) { cb.checked = !cb.checked; reportError(err); }
+      count.textContent = countLine();
+    });
+    const find = body.querySelector('.search-input');
+    find?.addEventListener('input', () => {
+      const terms = fold(find.value).split(/\s+/).filter(Boolean);
+      let n = 0;
+      body.querySelectorAll('.pick-list li').forEach(li => { const ok = terms.every(t => li.dataset.hay.includes(t)); li.hidden = !ok; n += ok; });
+      body.querySelector('.pick-none').hidden = n > 0;
+    });
+    find?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); find.blur(); } });
+    const offImgs = guardImages(body);
+    await sheet({
+      title: `Add to “${target.name}”`, body, className: 'picker-sheet',
+      actions: [{ label: 'Done', value: true, kind: 'primary' }],
+      onOpen: (wrap, close) => on(wrap, 'click', 'a[href]', () => close(null))
+    });
+    offImgs();
   }
 
   /* ---------- card ⋯ / long-press → meta editor ---------- */

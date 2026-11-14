@@ -20,7 +20,7 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 - [x] Search box (title/summary/tags)
 - [x] Filter sheet: tags, rating (incl. Unrated), proficiency (incl. Not set), untagged, playlist, source type
 - [x] Sort: recent, title, rating, proficiency, time
-- [ ] Playlists: create/rename/delete, add/remove recipes, playlist view (`#/playlist/<id>`)
+- [x] Playlists: create/rename/delete, add/remove recipes, playlist view (`#/playlist/<id>`)
 - [x] Inline edit on card long-press or recipe page: tags, rating /10, proficiency /5
 
 ## WS2 — Recipe view (`js/views/recipe.js`, `css/recipe.css`)
