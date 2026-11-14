@@ -176,10 +176,19 @@ export async function openLightbox({ slug, entry, recipe }) {
         ${step ? html`<p class="rx-lb-step">${clip(step.text, 160)}</p>` : ''}
         ${entry.resolution ? html`<p class="rx-note-res">${entry.resolution}</p>` : ''}
       </figcaption>
-    </figure>`;
+    </figure>
+    <div class="rx-lb-actions">
+      <button type="button" class="btn btn-ghost rx-lb-del" data-lb="delete">${icon('trash')} Delete</button>
+      <button type="button" class="btn rx-lb-close" data-lb="close" autofocus>Close</button>
+    </div>`;
   const v = await sheet({
     title: 'Journal photo', body, className: 'rx-lb-sheet',
-    actions: [{ label: 'Delete', value: 'delete', kind: 'danger' }, { label: 'Close', value: null }]
+    onOpen(wrap, close) {
+      wrap.addEventListener('click', e => {
+        const b = e.target.closest('[data-lb]');
+        if (b) close(b.dataset.lb === 'delete' ? 'delete' : null);
+      });
+    }
   });
   if (v !== 'delete') return;
   const ok = await confirmSheet('This removes the photo and its note from the journal.', { title: 'Delete this photo?', ok: 'Delete', danger: true });
