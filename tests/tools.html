@@ -9,7 +9,7 @@
   <style>.pass { color: var(--ok); } .fail { color: var(--danger); font-weight: 700; }</style>
 </head>
 <body data-view="library">
-  <!-- Run: python scripts/smoke.py tests/tools.html  (add --dom to see each check) -->
+  <!-- Run: python scripts/smoke.py tests/tools.html "tests/tools.html?sw"  (add --dom to see each check) -->
   <main id="view"><h1>Kitchen tools</h1><ol id="results" class="small"></ol></main>
   <div id="tools"></div>
   <div id="toasts" aria-live="polite"></div>
@@ -29,6 +29,13 @@
     const wait = ms => new Promise(r => setTimeout(r, ms));
     const stored = k => JSON.parse(localStorage.getItem(k) || 'null');
 
+    // tests/tools.html → timers, stopwatch, wake lock.  tests/tools.html?sw → service worker
+    // (separate run: it needs real network time inside the smoke test's virtual-time budget).
+    if (new URLSearchParams(location.search).has('sw')) await swSuite(); else await toolsSuite();
+    out.insertAdjacentHTML('beforeend', `<li><strong>${fails ? fails + ' check(s) did not pass' : 'All checks passed'}</strong></li>`);
+    document.title = `${fails ? 'FAIL' : 'PASS'} ${out.children.length - 1} checks`;   // read by real-time runners
+
+    async function toolsSuite() {
     const T = await import('../js/timers.js');
     T.mount();
 
@@ -125,7 +132,40 @@
     check('onWakeLock returns unsubscribe', typeof off2 === 'function');
     off2();
 
-    out.insertAdjacentHTML('beforeend', `<li><strong>${fails ? fails + ' check(s) did not pass' : 'All checks passed'}</strong></li>`);
+    }
+
+    async function swSuite() {
+    /* ---- service worker (localhost counts as a secure context) ----
+       Needs real time: headless virtual time (smoke.py) stalls worker installs, so there this
+       suite stops after "registered" without a summary line. It counts as passed only when the
+       "All checks passed" line (and the PASS title) appear, e.g. in a normal browser tab. */
+    out.insertAdjacentHTML('beforebegin', '<p class="muted small">Service worker suite. No summary line below means it was cut short (virtual time), not passed.</p>');
+    if ('serviceWorker' in navigator && window.isSecureContext) {
+      const timeout = (p, ms) => Promise.race([p, wait(ms).then(() => null)]);
+      const reg = await navigator.serviceWorker.register('../sw.js');
+      check('service worker registered', !!reg);
+      await timeout(navigator.serviceWorker.ready, 3000);
+      if (!navigator.serviceWorker.controller) {
+        await timeout(new Promise(r => navigator.serviceWorker.addEventListener('controllerchange', r, { once: true })), 2000);
+      }
+      check('service worker controls the page', !!navigator.serviceWorker.controller);
+      const names = await caches.keys();
+      check('shell cache created', names.some(n => n.startsWith('bb-shell-')), names.join(','));
+      const shell = await caches.open(names.find(n => n.startsWith('bb-shell-')) || 'none');
+      check('app shell precached', !!(await shell.match(new URL('../js/app.js', location.href).href)) && !!(await shell.match(new URL('../', location.href).href)));
+      const r = await fetch(`../recipes/index.json?t=${Date.now()}`, { cache: 'no-store' });
+      check('data request still served', r.ok && Array.isArray((await r.json()).recipes));
+      const data = await caches.open('bb-data-v1');
+      check('data cached without cache-buster', !!(await data.match(new URL('../recipes/index.json', location.href).href)));
+      const api = await caches.match('https://api.github.com/repos/x/y');
+      check('GitHub API never cached', !api);
+      await reg.unregister();
+      await Promise.all((await caches.keys()).filter(k => k.startsWith('bb-')).map(k => caches.delete(k)));
+    } else {
+      check('service worker test skipped (no secure context)', true);
+    }
+    }
+
   </script>
 </body>
 </html>

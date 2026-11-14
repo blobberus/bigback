@@ -47,7 +47,7 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 - [x] Global collapsible stopwatch (button reachable from every screen): start/pause/lap/reset, persists
 - [x] Wake lock setting (Screen Wake Lock API, re-acquire on visibilitychange, status indicator)
 - [x] Settings view: GitHub token + repo, wake lock, theme, units pref, test connection
-- [ ] PWA: manifest, icons, service worker (app-shell cache, network-first data)
+- [x] PWA: manifest, icons, service worker (app-shell cache, network-first data)
 
 ## WS5 — Agent brain (`.claude/`, `scripts/`)
 - [ ] Research-backed skill `.claude/skills/recipe-refinement/` (feedback → precise recipe edits)
