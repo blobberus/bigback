@@ -149,6 +149,15 @@ def main():
             if not (ROOT / f).exists():
                 err(p.relative_to(ROOT).as_posix(), f"file missing: {f}")
 
+    # Service worker precache must list every shipped JS/CSS file (offline support).
+    sw = ROOT / "sw.js"
+    if sw.exists():
+        sw_text = sw.read_text(encoding="utf-8")
+        for f in sorted([*ROOT.glob("js/**/*.js"), *ROOT.glob("css/*.css")]):
+            rel = f.relative_to(ROOT).as_posix()
+            if f"'{rel}'" not in sw_text:
+                err("sw.js", f"SHELL precache list is missing {rel} (add it and bump VERSION)")
+
     expected = build_index.dump(build_index.build())
     idx = ROOT / "recipes" / "index.json"
     if not idx.exists() or idx.read_text(encoding="utf-8") != expected:
