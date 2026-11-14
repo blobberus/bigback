@@ -163,7 +163,6 @@
 .rlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .rcard {
   position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
-  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
   transition: transform .12s ease, box-shadow .15s;
 }
 .rcard:has(.rcard-link:active) { transform: scale(.985); }
@@ -171,6 +170,9 @@
   display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 14px; align-items: start;
   min-height: 104px; padding: 10px 46px 10px 10px; border-radius: inherit; color: inherit; text-decoration: none;
 }
+/* Long-press target (library.js opens the ⋯ meta editor): no iOS link preview / image
+   callout and no text selection fighting the press. */
+.rcard-link, .rcard-link img { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .rcard-thumb { width: 84px; height: 84px; border-radius: calc(var(--r) - 5px); }
 .rcard-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding-top: 1px; }
 .rcard-title {
