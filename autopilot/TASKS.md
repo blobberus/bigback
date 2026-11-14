@@ -34,11 +34,11 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 - [ ] Cook mode: large text, one step at a time, swipe/next/prev
 
 ## WS3 — Add & edit (`js/views/add.js`, `css/editor.css`)
-- [ ] Choice screen: Custom recipe vs Upload file/link
-- [ ] Custom form: title, summary, servings, times, ingredients (smart line parse), steps, hero photo
-- [ ] Image compression (canvas → JPEG ≤1600px) before upload
+- [x] Choice screen: Custom recipe vs Upload file/link
+- [x] Custom form: title, summary, servings, times, ingredients (smart line parse), steps, hero photo
+- [x] Image compression (canvas → JPEG ≤1600px) before upload
 - [ ] Upload: file (PDF/image/any), link (YouTube/Instagram/web), pasted text, hint → inbox commit
-- [ ] Edit existing recipe (reuses custom form; preserves ids)
+- [x] Edit existing recipe (reuses custom form; preserves ids)
 - [ ] Delete recipe / delete pending item (with confirm sheet, not window.confirm)
 
 ## WS4 — Kitchen tools & PWA (`js/timers.js`, `js/stopwatch.js`, `js/wakelock.js`, `js/views/settings.js`, `css/tools.css`, `sw.js`)

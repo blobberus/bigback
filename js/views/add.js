@@ -5,14 +5,31 @@
  */
 import { setTopbar } from '../ui.js';
 import { html } from '../util.js';
-import { getIndex, onChange } from '../store.js';
+import { getIndex, getRecipe, onChange } from '../store.js';
 import { linkType } from '../components/editor-parse.js';
 import { icon } from '../components/editor-icons.js';
 import { loadDraft, draftKey, draftAge } from '../components/editor-drafts.js';
+import { mountRecipeForm } from '../components/editor-form.js';
 
 export async function render(root, params = {}) {
   const mode = params.mode || 'choose';
-  if (mode === 'custom' || mode === 'edit' || mode === 'upload') {
+  if (mode === 'custom') {
+    setTopbar({ title: 'New recipe', back: '#/add' });
+    return mountRecipeForm(root, { recipe: null });
+  }
+  if (mode === 'edit') {
+    setTopbar({ title: 'Edit recipe', back: `#/r/${params.slug}` });
+    const recipe = await getRecipe(params.slug);
+    if (!recipe) {
+      root.innerHTML = html`<div class="empty">
+        <p><strong>That recipe isn’t here.</strong></p>
+        <p class="muted small">It may have been renamed or deleted.</p>
+        <a class="btn" href="#/">Back to recipes</a></div>`;
+      return;
+    }
+    return mountRecipeForm(root, { recipe });
+  }
+  if (mode === 'upload') {
     root.innerHTML = '<div class="empty"><p>Coming soon</p></div>';
     return;
   }

@@ -40,3 +40,127 @@
   .add-card { grid-template-columns: 1fr; align-content: start; min-height: 210px; padding: 22px; }
   .add-card .add-chev { display: none; }
 }
+
+/* ---------- banners (connect / restore draft) ---------- */
+.ed-banner {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px; padding: 12px 12px 12px 14px;
+  border-radius: var(--r); border: 1px solid transparent; background: var(--accent-soft); color: var(--ink); text-decoration: none;
+}
+.ed-banner-ic { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: var(--surface); color: var(--accent); }
+.ed-banner-ic svg { width: 20px; height: 20px; }
+.ed-banner-body { flex: 1; min-width: 0; display: grid; gap: 2px; font-size: .85rem; line-height: 1.35; color: var(--ink-2); }
+.ed-banner-body strong { font-size: .95rem; color: var(--ink); }
+.ed-banner-chev { flex: none; width: 18px; height: 18px; color: var(--accent); }
+.ed-banner-connect:active { filter: brightness(.97); }
+.ed-banner-draft { flex-wrap: wrap; background: var(--accent-2-soft); }
+.ed-banner-draft .ed-banner-ic { color: var(--accent-2); }
+.ed-banner-acts { display: flex; flex: 1 0 100%; justify-content: flex-end; gap: 6px; }
+.ed-banner-acts .btn { min-height: var(--tap); }
+@media (min-width: 560px) { .ed-banner-acts { flex: none; } }
+
+/* ---------- recipe form ---------- */
+.ed-sec { padding: 20px 0; border-top: 1px solid var(--line); }
+.ed-sec:first-of-type { padding-top: 4px; border-top: 0; }
+.ed-h { margin: 0 0 4px; font-size: 1.22rem; }
+.ed-h label { cursor: pointer; }
+.ed-h-row { display: flex; align-items: center; gap: 8px; }
+.ed-count { padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: .75rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.ed-count:empty { display: none; }
+.ed-opt { margin-left: 4px; font: 600 .72rem/1 var(--font-body); letter-spacing: .02em; text-transform: none; color: var(--muted); }
+.ed .hint { margin: 0 0 8px; line-height: 1.4; }
+.ed .hint q { color: var(--ink-2); font-weight: 600; }
+.ed .field { margin-bottom: 16px; }
+.ed textarea.ed-title { min-height: 52px; resize: none; overflow: hidden; font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; line-height: 1.25; }
+.ed textarea.ed-short { min-height: 68px; }
+.ed-lines { line-height: 1.6; }
+.ed .input::placeholder { color: var(--muted); opacity: .8; }
+.ed .input[aria-invalid] { border-color: var(--danger); box-shadow: inset 0 0 0 1px var(--danger); }
+.ed-err { margin: 6px 0 0; font-size: .85rem; font-weight: 600; color: var(--danger); }
+.ed-row2 { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; }
+.ed-times { min-width: 0; margin: 0; padding: 0; border: 0; }
+.ed-times legend { margin-bottom: 6px; padding: 0; }
+.ed-row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.ed-time { display: grid; gap: 4px; font-size: .8rem; font-weight: 600; color: var(--ink-2); }
+.ed-time .input { text-align: center; font-variant-numeric: tabular-nums; }
+.ed .ed-time-hint { margin: 8px 0 0; }
+
+/* photo */
+.ed-photo-pick {
+  position: relative; display: block; overflow: hidden; cursor: pointer; border-radius: var(--r);
+  border: 1.5px dashed color-mix(in srgb, var(--ink-2) 28%, var(--line)); background: var(--surface);
+}
+.ed-photo-pick.has-img { aspect-ratio: 4 / 3; border: 1px solid var(--line); background: var(--surface-2); }
+.ed-photo-pick img { width: 100%; height: 100%; object-fit: cover; }
+.ed-photo-pick:focus-within { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+.ed-photo-empty { display: grid; justify-items: center; gap: 3px; padding: 26px 16px; text-align: center; font-size: .85rem; color: var(--muted); }
+.ed-photo-empty svg { width: 30px; height: 30px; margin-bottom: 6px; color: var(--accent); }
+.ed-photo-empty strong { font-size: 1rem; color: var(--ink); }
+.ed-photo-bar { display: flex; align-items: center; gap: 2px; margin-top: 8px; }
+.ed-photo-bar .hint { flex: 1; margin: 0; }
+.ed-photo-bar .btn { min-height: var(--tap); }
+
+/* live previews */
+.ed-pv { margin-top: 10px; padding: 12px 14px; border-radius: var(--r); background: var(--surface-2); }
+.ed-pv:empty { display: none; }
+.ed-pv-label { margin: 0 0 4px; font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.ed-pv-list { margin: 0; padding: 0; list-style: none; }
+.ed-pv-ing {
+  display: grid; grid-template-columns: minmax(4.5em, max-content) 1fr; gap: 12px; padding: 6px 0;
+  border-top: 1px solid color-mix(in srgb, var(--line) 75%, transparent); font-size: .95rem; line-height: 1.35;
+}
+.ed-pv-sec + .ed-pv-ing, .ed-pv-gap + .ed-pv-ing, .ed-pv-list > .ed-pv-ing:first-child { border-top: 0; }
+.ed-pv-amt { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ed-pv-amt.is-none { font-weight: 400; color: var(--muted); }
+.ed-pv-note { color: var(--muted); }
+.ed-pv-sec { margin: 14px 0 2px; font-size: .74rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-2); }
+.ed-pv-gap { height: 10px; }
+.ed-pv-list > .ed-pv-sec:first-child { margin-top: 2px; }
+.ed-pv-list > .ed-pv-gap:first-child { display: none; }
+.ed-pv-step { display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 8px 0; }
+.ed-pv-num { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--surface); color: var(--ink-2); font-size: .8rem; font-weight: 800; }
+.ed-pv-body { min-width: 0; }
+.ed-pv-body > p { margin: 0; font-size: .95rem; line-height: 1.45; overflow-wrap: anywhere; }
+.ed-timers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.ed-timer {
+  display: inline-flex; align-items: center; gap: 5px; min-height: 26px; padding: 0 10px 0 7px; border-radius: 999px;
+  background: var(--accent-2-soft); color: var(--accent-2); font-size: .78rem; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.ed-timer svg { width: 14px; height: 14px; }
+.ed-timer-l { font-weight: 600; color: var(--ink-2); }
+.ed-timer-l::before { content: "·"; margin-right: 5px; color: var(--muted); }
+.ed-pv-body > .ed-pv-tip { margin-top: 7px; font-size: .85rem; color: var(--ink-2); }
+.ed-pv-tip strong { margin-right: 4px; color: var(--accent-2); }
+
+/* flavor profile (collapsible) */
+.ed-more > summary {
+  display: flex; align-items: center; gap: 2px; min-height: var(--tap); cursor: pointer; list-style: none;
+  font-family: var(--font-display); font-size: 1.22rem; font-weight: 600;
+}
+.ed-more > summary::-webkit-details-marker { display: none; }
+.ed-more > summary::after {
+  content: ""; width: 8px; height: 8px; margin: 0 6px 4px auto; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+  transform: rotate(45deg); transition: transform .2s;
+}
+.ed-more[open] > summary::after { margin-bottom: -2px; transform: rotate(-135deg); }
+
+/* sticky save bar, sits just above the bottom nav */
+.ed-savebar {
+  position: sticky; bottom: calc(var(--nav-h) + var(--safe-b)); z-index: 5;
+  display: flex; align-items: center; gap: 12px; margin: 4px calc(-1 * var(--gap)) 0; padding: 10px var(--gap);
+  background: color-mix(in srgb, var(--bg) 90%, transparent); border-top: 1px solid var(--line);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.ed-status { flex: 1; min-width: 0; font-size: .8rem; line-height: 1.3; color: var(--muted); }
+.ed-save { min-width: 168px; min-height: 48px; font-size: 1rem; }
+
+/* danger zone (edit only) */
+.ed-danger { margin-top: 28px; padding: 16px; border-radius: var(--r); border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--line)); }
+.ed-danger-h { margin: 0 0 8px; font: 800 .78rem/1 var(--font-body); letter-spacing: .09em; text-transform: uppercase; color: var(--danger); }
+.ed-danger p { font-size: .9rem; color: var(--ink-2); }
+.ed-btn-danger { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); background: transparent; color: var(--danger); }
+.ed-btn-danger:active { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+
+@media (min-width: 640px) {
+  .ed-row2 { grid-template-columns: 1fr 1fr; }
+  .ed-photo-pick.has-img { aspect-ratio: 16 / 9; }
+}
