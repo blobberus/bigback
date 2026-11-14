@@ -35,7 +35,7 @@ export const toStr = v => (v && v[RAW] ? v.s : String(v ?? ''));
 
 export function slugify(s) {
   return String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '')
-    .replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'recipe';
+    .replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+/, '').slice(0, 60).replace(/-+$/, '') || 'recipe';
 }
 
 /** uid('n') → "n-20261114-ab12" ; uid() → "20261114-101500-ab12" */
