@@ -131,10 +131,10 @@ const ING_PLACEHOLDER = '1 1/2 cups flour, sifted\n2-3 cloves garlic, minced\n1 
 const STEP_PLACEHOLDER = 'Heat the oven to 425°F.\n\nRoast the vegetables for 25 minutes, until browned at the edges.\nTip: give them room on the pan so they brown, not steam.\n\nSauce:\n\nWhisk everything together and simmer 2 minutes.';
 const opt = (t = 'optional') => html`<span class="ed-opt">${t}</span>`;
 
-export function connectBanner() {
+export function connectBanner(sub = 'Keep going — your draft stays on this device.') {
   return html`<a class="ed-banner ed-banner-connect" href="#/settings">
     <span class="ed-banner-ic">${icon('plug')}</span>
-    <span class="ed-banner-body"><strong>Connect GitHub in Settings to save</strong><span>Keep going — your draft stays on this device.</span></span>
+    <span class="ed-banner-body"><strong>Connect GitHub in Settings to save</strong><span>${sub}</span></span>
     ${icon('chevron', 'ed-banner-chev')}
   </a>`;
 }

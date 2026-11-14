@@ -40,7 +40,7 @@ function formHtml(mode, d) {
   const canPaste = !!navigator.clipboard?.readText;
   const segBtn = (m, ic, label) => html`<button type="button" data-mode="${m}" aria-pressed="${m === mode}">${icon(ic)}<span>${label}</span></button>`;
   return html`
-    ${isConnected() ? '' : connectBanner()}
+    ${isConnected() ? '' : connectBanner('Keep going — anything you type stays on this device (files need picking again).')}
     <form class="up" data-form novalidate autocomplete="off">
       <div class="seg up-seg" role="group" aria-label="What are you adding?">
         ${segBtn('file', 'file', 'File')}${segBtn('link', 'link', 'Link')}${segBtn('text', 'text', 'Text')}
