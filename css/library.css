@@ -93,7 +93,7 @@
   backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px);
   transition: box-shadow .2s;
 }
-.lib-bar.is-stuck { box-shadow: 0 1px 0 color-mix(in srgb, var(--line) 70%, transparent); }
+.lib-bar.is-stuck { box-shadow: 0 1px 0 var(--line); }
 .search { position: relative; flex: 1; min-width: 0; }
 .search > svg { position: absolute; left: 14px; top: 50%; translate: 0 -50%; width: 19px; height: 19px; color: var(--muted); pointer-events: none; }
 .search-input { padding-left: 42px; padding-right: 44px; border-radius: 999px; -webkit-appearance: none; appearance: none; }
