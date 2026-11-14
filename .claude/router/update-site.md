@@ -35,10 +35,9 @@ Subagent brief (fill the `<…>`):
 
 Per built item (sequential):
 ```bash
-python scripts/finalize_inbox.py <id> <slug>   # git mv originals → sources/<slug>/, library entry, index
+python scripts/finalize_inbox.py <id> <slug>   # git mv originals → sources/<slug>/, library entry, index; stages only these
 python scripts/validate.py                     # 0 errors before committing
-git add -A recipes/<slug>.json recipes/index.json sources/<slug> inbox/<id> data/library.json
-git commit -m "Build recipe: <Title>"
+git commit -m "Build recipe: <Title>"          # no `git add` needed (and don't sweep in other recipes)
 ```
 Blocked item: `git add inbox/<id>/item.json && git commit -m "Block inbox item: <id>"`.
 

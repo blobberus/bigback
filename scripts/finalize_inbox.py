@@ -8,6 +8,7 @@
 3. git rm inbox/<id>/item.json and remove the folder
 4. add a blank data/library.json entry for <slug> if missing (never edits existing ones)
 5. rebuild recipes/index.json
+6. git add the recipe, library, index and archived files (only these) - then just commit
 Safe to re-run: already-moved files are detected; a missing inbox folder is accepted
 only if <slug> already has a library entry. Exits 1 loudly on anything odd.
 """
@@ -185,6 +186,14 @@ def main():
         print("index updated")
     else:
         print("index unchanged")
+
+    # Stage exactly what this build touched (moves/removals are already staged by git mv/rm),
+    # so the caller can `git commit` without sweeping in other unfinished work.
+    paths = [rel(rpath), rel(lpath), rel(build_index.INDEX)] + [f for f in files if (ROOT / f).exists()]
+    r = git("add", "--", *paths)
+    if r.returncode != 0:
+        die(f"git add failed: {r.stderr.strip()}")
+    print(f"staged {len(paths)} paths - next: git commit -m \"Build recipe: {recipe.get('title') or slug}\"")
 
 
 if __name__ == "__main__":
