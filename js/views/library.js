@@ -8,12 +8,16 @@
  * Values within a category OR together; categories AND together. Blank values are
  * categories of their own (Unrated, Not set, Untagged).
  *
- * Also exports display helpers shared with playlists.js:
- *   ICON, thumb(summary, cls), guardImages(el) → off, connectHint(), plural(n, word)
+ * Also exports helpers shared with playlists.js:
+ *   ICON, thumb(summary, cls), guardImages(el) → off, connectHint(), plural(n, word), relTime(iso)
+ *   askNewPlaylist() → id|null   askRenamePlaylist(pl) → bool   askDeletePlaylist(pl, onDeleting) → bool
  */
 import { html, raw, fmtMinutes } from '../util.js';
-import { getIndex, getLibrary, entryFor, mediaUrl, rawUrl, onChange } from '../store.js';
-import { setTopbar, on, stars, sheet } from '../ui.js';
+import {
+  getIndex, getLibrary, entryFor, mediaUrl, rawUrl, onChange, NotConnectedError,
+  createPlaylist, renamePlaylist, deletePlaylist
+} from '../store.js';
+import { setTopbar, on, stars, sheet, promptSheet, confirmSheet, toast, reportError } from '../ui.js';
 import { isConnected } from '../prefs.js';
 import { PROFICIENCY, editMeta } from '../components/meta-editor.js';
 
@@ -62,6 +66,37 @@ export function guardImages(el) {
 
 export const connectHint = () => (isConnected() ? '' : html`<p class="connect-hint">Connect GitHub to save ratings &amp; playlists → <a href="#/settings">Settings</a></p>`);
 export const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+/* ---------- playlist flows (shared with playlists.js) ---------- */
+const cleanName = n => (n || '').trim().replace(/\s+/g, ' ').slice(0, 60);
+/** Fail fast before asking for input the store can't save. */
+function connected() {
+  if (isConnected()) return true;
+  reportError(new NotConnectedError());
+  return false;
+}
+/** → new playlist id, or null */
+export async function askNewPlaylist() {
+  if (!connected()) return null;
+  const name = cleanName(await promptSheet('New playlist', { placeholder: 'e.g. Weeknight dinners', ok: 'Create' }));
+  if (!name) return null;
+  try { return createPlaylist(name); } catch (e) { reportError(e); return null; }
+}
+export async function askRenamePlaylist(pl) {
+  if (!connected()) return false;
+  const name = cleanName(await promptSheet('Rename playlist', { value: pl.name, placeholder: 'Playlist name', ok: 'Rename' }));
+  if (!name || name === pl.name) return false;
+  try { renamePlaylist(pl.id, name); return true; } catch (e) { reportError(e); return false; }
+}
+/** onDeleting() runs just before the delete so callers can stop re-rendering a vanishing playlist. */
+export async function askDeletePlaylist(pl, onDeleting) {
+  if (!connected()) return false;
+  const ok = await confirmSheet(`“${pl.name}” will be removed. The recipes in it stay in your library.`,
+    { title: 'Delete playlist?', ok: 'Delete', danger: true });
+  if (!ok) return false;
+  try { onDeleting?.(); deletePlaylist(pl.id); toast(`Deleted “${pl.name}”`); return true; }
+  catch (e) { reportError(e); return false; }
+}
 
 export function relTime(iso) {
   const t = Date.parse(iso);
