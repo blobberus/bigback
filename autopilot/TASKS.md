@@ -39,7 +39,7 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 - [x] Image compression (canvas → JPEG ≤1600px) before upload
 - [x] Upload: file (PDF/image/any), link (YouTube/Instagram/web), pasted text, hint → inbox commit
 - [x] Edit existing recipe (reuses custom form; preserves ids)
-- [ ] Delete recipe / delete pending item (with confirm sheet, not window.confirm)
+- [x] Delete recipe / delete pending item (with confirm sheet, not window.confirm)
 
 ## WS4 — Kitchen tools & PWA (`js/timers.js`, `js/stopwatch.js`, `js/wakelock.js`, `js/views/settings.js`, `css/tools.css`, `sw.js`)
 - [ ] Countdown timer manager: multiple timers, persist across reload (endAt), tray UI
