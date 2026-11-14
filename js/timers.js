@@ -390,7 +390,7 @@ function controls(t) {
       ? html`<button type="button" class="tt-act" data-act="resume">${I.play}<span>Resume</span></button>`
       : html`<button type="button" class="tt-act" data-act="pause">${I.pause}<span>Pause</span></button>`}
     <button type="button" class="tt-act" data-act="add" aria-label="Add 1 minute">${I.plus}<span>1 min</span></button>
-    ${t.slug ? html`<a class="tt-act" href="#/r/${t.slug}" data-act="go">${I.go}<span>Recipe</span></a>` : ''}
+    ${t.slug ? html`<a class="tt-act" href="#/r/${t.slug}" data-act="go" aria-label="Open the recipe">${I.go}<span>Recipe</span></a>` : ''}
     <button type="button" class="tt-act tt-cancel${armed ? ' is-armed' : ''}" data-act="cancel"
       aria-label="${armed ? 'Tap again to cancel the timer' : 'Cancel timer'}">${I.x}<span>${armed ? 'Sure?' : 'Cancel'}</span></button>
   </div>`;

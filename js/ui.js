@@ -178,7 +178,7 @@ export function setTopbar({ title = 'Bigback', back = null, actions = '' } = {})
 
 export function stars(n, max) {
   if (n == null) return '';
-  return `<span class="meter" aria-label="${n} of ${max}">${'●'.repeat(n)}<span class="meter-off">${'○'.repeat(max - n)}</span></span>`;
+  return `<span class="meter" role="img" aria-label="${n} of ${max}">${'●'.repeat(n)}<span class="meter-off">${'○'.repeat(max - n)}</span></span>`;
 }
 
 /** Report a failed write in a friendly way. */

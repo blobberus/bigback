@@ -28,7 +28,17 @@ const ROUTES = [
 ];
 const NAV_OF = { library: 'library', recipe: 'library', cook: 'library', pending: 'library', add: 'add', playlists: 'playlists', settings: 'settings' };
 
-let cleanup = null, seq = 0;
+let cleanup = null, seq = 0, firstRoute = true;
+
+/** After a client-side navigation: tell screen readers where they landed, and if the focused
+ *  element was replaced with the old view, put focus on the new view instead of <body>. */
+function announceRoute() {
+  if (firstRoute) { firstRoute = false; return; }
+  const live = document.getElementById('route-announcer');
+  if (live) live.textContent = `${$('#topbar-title')?.textContent || document.title} page`;
+  const f = document.activeElement;
+  if (!f || f === document.body || !f.isConnected) $('#view')?.focus({ preventScroll: true });
+}
 
 function parse() {
   // Split before decoding so an encoded "&" in a search ("mac %26 cheese") stays in its value.
@@ -49,7 +59,8 @@ async function route() {
   try { cleanup?.(); } catch (e) { console.error(e); }
   cleanup = null;
   const nav = params.playlist ? 'playlists' : NAV_OF[view];
-  $$('.bottomnav [data-nav]').forEach(a => a.toggleAttribute('aria-current', a.dataset.nav === nav));
+  // aria-current must carry a value: an empty attribute means "false" to screen readers.
+  $$('.bottomnav [data-nav]').forEach(a => (a.dataset.nav === nav ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   document.body.dataset.view = view;
   root.setAttribute('aria-busy', 'true');
   try {
@@ -58,7 +69,7 @@ async function route() {
     root.innerHTML = '';
     root.scrollTop = 0; window.scrollTo(0, 0);
     const c = await mod.render(root, params);
-    if (my === seq) cleanup = typeof c === 'function' ? c : null;
+    if (my === seq) { cleanup = typeof c === 'function' ? c : null; announceRoute(); }
   } catch (e) {
     console.error(e);
     if (my === seq) root.innerHTML = `<div class="empty"><p>Couldn't open this page.</p><p class="muted small">${String(e.message || e).replace(/</g, '&lt;')}</p><a class="btn" href="#/">Back to recipes</a></div>`;
@@ -97,7 +108,8 @@ function boot() {
 
   const offline = () => document.body.classList.toggle('is-offline', !navigator.onLine);
   window.addEventListener('online', () => { offline(); toast('Back online', { type: 'ok' }); });
-  window.addEventListener('offline', offline);
+  // The banner only appears visually; say it too.
+  window.addEventListener('offline', () => { offline(); toast('Offline — showing saved copies'); });
   offline();
 
   // Kitchen tools are global — mounted once, survive navigation.

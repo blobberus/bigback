@@ -101,21 +101,27 @@ export async function editMeta(slug, { title = '' } = {}) {
 
   /* ---------- painters (update in place so focus/keyboard survive) ---------- */
   function paintScale(attr, value, valEl, text) {
-    body.querySelectorAll(`[data-${attr}]`).forEach(b => {
+    const pills = body.querySelectorAll(`[data-${attr}]`);
+    pills.forEach(b => {
       const n = +b.dataset[attr];
       b.setAttribute('aria-pressed', String(n === value));
       b.classList.toggle('is-fill', value != null && n < value);
     });
+    const hadFocus = valEl.contains(document.activeElement);
+    const what = attr === 'rate' ? 'rating' : 'proficiency';
     valEl.innerHTML = value == null
       ? html`<span class="me-blank">${text}</span>`
-      : html`<span>${text}</span><button type="button" class="me-clear" data-clear="${attr}">Clear</button>`;
+      : html`<span>${text}</span><button type="button" class="me-clear" data-clear="${attr}" aria-label="Clear ${what}">Clear</button>`;
+    if (hadFocus) pills[0]?.focus();               // the Clear button just disappeared
   }
   const paintRating = () => paintScale('rate', st.rating, body.querySelector('[data-val="rating"]'), st.rating == null ? 'Unrated' : `${st.rating}/10`);
   const paintProf = () => paintScale('prof', st.proficiency, body.querySelector('[data-val="prof"]'), profLabel(st.proficiency));
 
   function paintTags() {
+    const hadFocus = part('tags').contains(document.activeElement);
     part('tags').innerHTML = html`${st.tags.map(t => html`<span class="tag-chip">${t}<button type="button" data-untag="${t}" aria-label="Remove tag ${t}">${raw(ICON.x)}</button></span>`)}`;
     input.placeholder = st.tags.length ? 'Add another' : 'Add a tag';
+    if (hadFocus) input.focus();                   // the removed tag's button is gone
     paintSugg();
   }
   function paintSugg() {
@@ -125,8 +131,12 @@ export async function editMeta(slug, { title = '' } = {}) {
     part('sugg').innerHTML = html`${fresh ? html`<button type="button" class="chip me-sugg-new" data-addtag="${typed}">${raw(ICON.plus)}Add “${typed}”</button>` : ''}${pool.slice(0, 12).map(t => html`<button type="button" class="chip" data-addtag="${t}">${raw(ICON.plus)}${t}</button>`)}`;
     part('sugg').hidden = !fresh && !pool.length;
   }
-  function paintPlaylists() {
-    part('pls').innerHTML = html`${playlists.map(p => html`<button type="button" class="chip me-pl" data-pl="${p.id}" aria-pressed="${p.on}">${raw(p.on ? ICON.check : ICON.plus)}${p.name}</button>`)}<button type="button" class="chip me-pl-new" data-act="newpl" ${part('newpl').hidden ? '' : raw('hidden')}>${raw(ICON.plus)}New playlist</button>`;
+  /** Repaint the playlist chips; keyboard focus follows `focusId` (or the chip that had it). */
+  function paintPlaylists(focusId) {
+    const box = part('pls'), f = document.activeElement;
+    const keep = focusId || (box.contains(f) ? f.dataset.pl || f.dataset.act : null);
+    box.innerHTML = html`${playlists.map(p => html`<button type="button" class="chip me-pl" data-pl="${p.id}" aria-pressed="${p.on}">${raw(p.on ? ICON.check : ICON.plus)}${p.name}</button>`)}<button type="button" class="chip me-pl-new" data-act="newpl" ${part('newpl').hidden ? '' : raw('hidden')}>${raw(ICON.plus)}New playlist</button>`;
+    if (keep) [...box.querySelectorAll('button:not([hidden])')].find(b => (b.dataset.pl || b.dataset.act) === keep)?.focus();
   }
 
   /* ---------- mutations ---------- */
@@ -161,7 +171,8 @@ export async function editMeta(slug, { title = '' } = {}) {
 
   on(body, 'click', '[data-untag]', (e, b) => removeTag(b.dataset.untag));
   on(body, 'click', '[data-addtag]', (e, b) => {
-    if (addTags([b.dataset.addtag])) { input.value = ''; paintSugg(); }
+    const keyboard = document.activeElement === b;   // taps never focus it (mousedown is cancelled below)
+    if (addTags([b.dataset.addtag])) { input.value = ''; paintSugg(); if (keyboard) input.focus(); }
   });
   // Keep the keyboard up when tapping a suggestion.
   on(body, 'mousedown', '[data-addtag], [data-untag]', e => e.preventDefault());
@@ -193,11 +204,11 @@ export async function editMeta(slug, { title = '' } = {}) {
     e.preventDefault();
     const form = e.currentTarget, field = form.querySelector('input');
     const name = field.value.trim().replace(/\s+/g, ' ');
-    if (!name) { form.hidden = true; paintPlaylists(); return; }
+    if (!name) { form.hidden = true; paintPlaylists('newpl'); return; }
     let id;
     if (!attempt(() => { id = createPlaylist(name); addToPlaylist(id, slug); })) return;
     playlists.push({ id, name, on: true });
-    field.value = ''; form.hidden = true; paintPlaylists();
+    field.value = ''; form.hidden = true; paintPlaylists(id);
   });
 
   paintRating(); paintProf(); paintTags(); paintPlaylists();

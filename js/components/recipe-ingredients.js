@@ -97,7 +97,7 @@ function footerHtml(total, done) {
   return html`
     <div class="rx-ing-foot">
       <span class="rx-count" data-ing-count>${done ? `${done} of ${total} ready` : `${total} ingredient${total === 1 ? '' : 's'}`}</span>
-      <button type="button" class="rx-link-btn" data-act="ing-reset" ${done ? '' : 'hidden'}>${icon('reset')} Reset</button>
+      <button type="button" class="rx-link-btn" data-act="ing-reset" aria-label="Reset checked ingredients" ${done ? '' : 'hidden'}>${icon('reset')} Reset</button>
     </div>`;
 }
 
@@ -148,7 +148,7 @@ export function bindIngredients(host, getRecipe, slug, { onScale } = {}) {
       const cur = Number(rxState(slug).factor) || 1;
       const f = el.dataset.factor ? Number(el.dataset.factor) : nextFactor(R(), cur, Number(el.dataset.delta));
       rxPatch(slug, { factor: f });
-      const keep = el.dataset.delta ? `[data-delta="${el.dataset.delta}"]` : null;
+      const keep = el.dataset.delta ? `[data-delta="${el.dataset.delta}"]` : `[data-factor="${el.dataset.factor}"]`;
       const box = el.closest('[data-ingredients]');
       repaint(el);
       if (keep) box?.querySelector(keep)?.focus({ preventScroll: true });
@@ -156,7 +156,9 @@ export function bindIngredients(host, getRecipe, slug, { onScale } = {}) {
     }),
     on(host, 'click', '[data-act="ing-reset"]', (e, el) => {
       rxPatch(slug, { checked: [] });
+      const box = el.closest('[data-ingredients]');
       repaint(el);
+      box?.querySelector('.rx-ing-input')?.focus({ preventScroll: true });   // the Reset button is gone now
     })
   ];
   return () => offs.forEach(off => off());

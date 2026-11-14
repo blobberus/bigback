@@ -190,7 +190,7 @@ function formHtml(st, recipe) {
         <textarea id="ed-ing" name="ingredients" class="input ed-lines" rows="7" data-grow placeholder="${ING_PLACEHOLDER}"
           autocapitalize="none" autocorrect="off" spellcheck="true" aria-describedby="ed-err-ingredients">${st.ingredients}</textarea>
         <p class="ed-err" id="ed-err-ingredients" data-err="ingredients" hidden></p>
-        <div class="ed-pv" data-preview="ingredients" aria-live="polite"></div>
+        <div class="ed-pv" data-preview="ingredients"></div>
       </section>
 
       <section class="ed-sec">
@@ -199,7 +199,7 @@ function formHtml(st, recipe) {
         <textarea id="ed-steps" name="steps" class="input ed-lines" rows="9" data-grow placeholder="${STEP_PLACEHOLDER}"
           autocapitalize="sentences" spellcheck="true" aria-describedby="ed-err-steps">${st.steps}</textarea>
         <p class="ed-err" id="ed-err-steps" data-err="steps" hidden></p>
-        <div class="ed-pv" data-preview="steps" aria-live="polite"></div>
+        <div class="ed-pv" data-preview="steps"></div>
       </section>
 
       <section class="ed-sec">
@@ -271,7 +271,7 @@ export function mountRecipeForm(root, { recipe = null } = {}) {
   /* previews */
   const paint = (name, list, render) => {
     $(`[data-preview="${name}"]`, form).innerHTML = render(list);
-    $(`[data-count="${name}"]`, form).textContent = list.length ? String(list.length) : '';
+    $(`[data-count="${name}"]`, form).innerHTML = list.length ? html`${list.length}<span class="sr-only"> ${name === 'steps' ? 'steps' : 'ingredients'} so far</span>` : '';
   };
   // In edit mode preview what will be saved: unchanged lines keep their stored fields / curated timers.
   const paintIng = () => {
@@ -289,7 +289,9 @@ export function mountRecipeForm(root, { recipe = null } = {}) {
     const existing = recipe?.image && !removeImage ? recipe.image : null;
     const img = heroUrl ? html`<img src="${heroUrl}" alt="New photo preview">`
       : existing ? html`<img src="${mediaUrl(existing)}" data-fallback="${rawUrl(existing)}" alt="Current photo">` : null;
-    $('[data-photo]', form).innerHTML = html`
+    const box = $('[data-photo]', form);
+    const hadFocus = box.contains(document.activeElement);
+    box.innerHTML = html`
       <label class="ed-photo-pick${img ? ' has-img' : ''}">
         <input type="file" accept="image/*" class="sr-only" data-hero aria-label="${img ? 'Change photo' : 'Add a photo'}">
         ${img || html`<span class="ed-photo-empty">${icon('camera')}<strong>Add a photo</strong><span>Take one or choose from your library</span></span>`}
@@ -303,6 +305,8 @@ export function mountRecipeForm(root, { recipe = null } = {}) {
           <span class="hint">The current photo will be removed when you save.</span>
           <button type="button" class="btn btn-ghost btn-sm" data-act="photo-restore">Undo</button>
         </div>` : ''}`;
+    // The button that was pressed (Remove / Undo) was just replaced: keep focus in the photo area.
+    if (hadFocus) (box.querySelector('.ed-photo-bar .btn') || box.querySelector('[data-hero]'))?.focus({ preventScroll: true });
   }
   function setHero(file) {
     if (heroUrl) URL.revokeObjectURL(heroUrl);
@@ -322,7 +326,12 @@ export function mountRecipeForm(root, { recipe = null } = {}) {
   const persistSoon = debounce(persistDraft, 500);
   function paintDraftBanner() {
     const el = $('[data-draft]', root);
-    if (!pendingDraft) { el.hidden = true; el.innerHTML = ''; return; }
+    if (!pendingDraft) {
+      const hadFocus = el.contains(document.activeElement);
+      el.hidden = true; el.innerHTML = '';
+      if (hadFocus) $('#view')?.focus({ preventScroll: true });   // Restore/Discard just vanished
+      return;
+    }
     el.hidden = false;
     el.innerHTML = html`
       <span class="ed-banner-ic">${icon('history')}</span>
