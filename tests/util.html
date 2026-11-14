@@ -43,6 +43,9 @@ eq('"to" / hyphen ranges, incl. a fractional upper bound', ['Braise 2 to 3 hours
 eq('word numbers and articles', ['Let it rest for a minute', 'Chill an hour', 'Steep five minutes', 'Microwave thirty seconds'].map(secs),
   [[[60, null]], [[3600, null]], [[300, null]], [[30, null]]]);
 eq('"forty-five minutes" is 45 minutes, not a 40→5 range', secs('Bake forty-five minutes'), [[2700, null]]);
+eq('compound word numbers (hyphen or space)', ['Roast twenty-five minutes', 'Braise thirty five minutes', 'Proof ninety minutes'].map(secs),
+  [[[1500, null]], [[2100, null]], [[5400, null]]]);
+eq('word range still works', secs('Simmer twenty to thirty minutes'), [[1200, 1800]]);
 eq('decimals (dot and comma)', ['Cook 1.5 hours', 'Blanch 2,5 min'].map(secs), [[[5400, null]], [[150, null]]]);
 eq('unicode fractions', ['Rest ½ hour', 'Let rise 1½ hours', '¾ hour in the fridge'].map(secs),
   [[[1800, null]], [[5400, null]], [[2700, null]]]);

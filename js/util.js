@@ -72,8 +72,9 @@ export function fmtClock(ms, { tenths = false } = {}) {
 
 const UNIT_SECONDS = { s: 1, sec: 1, secs: 1, second: 1, seconds: 1, m: 60, min: 60, mins: 60, minute: 60, minutes: 60, h: 3600, hr: 3600, hrs: 3600, hour: 3600, hours: 3600 };
 const FRACTIONS = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3 };
-const NUM = String.raw`(\d+(?:[.,]\d+)?(?:\s*[½¼¾⅓⅔])?|[½¼¾⅓⅔]|an?|one|two|three|four|five|six|ten|fifteen|twenty|thirty|forty-five|forty)`;
-const WORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, ten: 10, fifteen: 15, twenty: 20, thirty: 30, forty: 40, 'forty-five': 45 };
+const NUM = String.raw`(\d+(?:[.,]\d+)?(?:\s*[½¼¾⅓⅔])?|[½¼¾⅓⅔]|an?|(?:twenty|thirty|forty|fifty)(?:[-\s](?:one|two|three|four|five|six|seven|eight|nine))?|one|two|three|four|five|six|seven|eight|nine|ten|twelve|fifteen|ninety)`;
+const WORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+  twelve: 12, fifteen: 15, twenty: 20, thirty: 30, forty: 40, fifty: 50, ninety: 90 };
 // (?<!\w) rather than \b: \b never matches before a bare "½" (two non-word chars in a row)
 const DUR_RE = new RegExp(String.raw`(?<!\w)${NUM}(?:\s*(?:-|–|to)\s*${NUM})?\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)\b(?:\s*(?:and\s*)?${NUM}\s*(minutes?|mins?|m|seconds?|secs?)\b)?`, 'gi');
 
@@ -81,6 +82,8 @@ function toNum(t) {
   if (t == null) return NaN;
   t = t.toLowerCase().trim();
   if (t in WORDS) return WORDS[t];
+  const compound = t.match(/^([a-z]+)[-\s]+([a-z]+)$/); // "twenty-five" / "thirty five"
+  if (compound && compound[1] in WORDS && compound[2] in WORDS) return WORDS[compound[1]] + WORDS[compound[2]];
   let n = 0;
   const frac = t.match(/[½¼¾⅓⅔]/);
   if (frac) { n += FRACTIONS[frac[0]]; t = t.replace(frac[0], '').trim(); }
