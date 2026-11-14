@@ -31,7 +31,7 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 - [ ] Per-step note composer + general recipe notes; submit → journal commit; show history with status
 - [ ] Photo journal: upload photo + note, gallery grid, lightbox showing note
 - [ ] Tags / rating / proficiency editor on the recipe page; "Cooked it" counter
-- [ ] Cook mode: large text, one step at a time, swipe/next/prev
+- [x] Cook mode: large text, one step at a time, swipe/next/prev
 
 ## WS3 — Add & edit (`js/views/add.js`, `css/editor.css`)
 - [ ] Choice screen: Custom recipe vs Upload file/link
