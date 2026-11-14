@@ -14,6 +14,8 @@
  * WRITES (need a token → throw NotConnectedError otherwise). Each is one atomic commit.
  *   Library (optimistic + batched ~1.2s into one commit):
  *     setTags(slug, tags) setRating(slug, n|null) setProficiency(slug, n|null) markCooked(slug)
+ *     unmarkCooked(slug) → bool   undo this tab's latest markCooked(slug): cooked − 1 and the
+ *                                 previous lastCooked restored; false if there's nothing to undo
  *     createPlaylist(name)→id renamePlaylist(id,name) deletePlaylist(id)
  *     addToPlaylist(id, slug) removeFromPlaylist(id, slug)  flushLibrary()
  *   Recipes:  saveRecipe(recipe, { heroFile, isNew }) → slug      deleteRecipe(slug)
@@ -200,7 +202,30 @@ export const setTags = (slug, tags) => mutateLibrary(`tags ${name(slug)}`, lib =
 });
 export const setRating = (slug, n) => mutateLibrary(`rate ${name(slug)} ${n ?? '-'}/10`, lib => { ensure(lib, slug).rating = n == null ? null : Math.max(1, Math.min(10, Math.round(n))); });
 export const setProficiency = (slug, n) => mutateLibrary(`proficiency ${name(slug)} ${n ?? '-'}/5`, lib => { ensure(lib, slug).proficiency = n == null ? null : Math.max(1, Math.min(5, Math.round(n))); });
-export const markCooked = slug => { const at = nowIso(); mutateLibrary(`cooked ${name(slug)}`, lib => { const e = ensure(lib, slug); e.cooked = (e.cooked || 0) + 1; e.lastCooked = at; }); };
+// This tab's marks per slug (newest last) so unmarkCooked can put lastCooked back. `prev` is
+// re-captured every time the op runs, so after the commit it holds the repo's prior value.
+const cookMarks = new Map();
+export function markCooked(slug) {
+  const mark = { at: nowIso(), prev: null };
+  mutateLibrary(`cooked ${name(slug)}`, lib => {
+    const e = ensure(lib, slug);
+    mark.prev = e.lastCooked ?? null; e.cooked = (e.cooked || 0) + 1; e.lastCooked = mark.at;
+  });
+  if (!cookMarks.has(slug)) cookMarks.set(slug, []);
+  cookMarks.get(slug).push(mark);
+}
+export function unmarkCooked(slug) {
+  requireClient();
+  const mark = cookMarks.get(slug)?.pop();
+  if (!mark) return false;
+  // Only reverse a mark that actually landed and is still the latest cook.
+  mutateLibrary(`undo cooked ${name(slug)}`, lib => {
+    const e = lib.recipes[slug];
+    if (!e || e.lastCooked !== mark.at) return;
+    e.cooked = Math.max(0, (e.cooked || 0) - 1); e.lastCooked = mark.prev;
+  });
+  return true;
+}
 
 export function createPlaylist(plName) {
   const id = 'pl-' + Math.random().toString(36).slice(2, 6);

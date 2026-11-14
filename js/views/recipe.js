@@ -1,13 +1,13 @@
 /**
  * views/recipe.js — recipe page (#/r/<slug>).
- * Hero, title, summary, times, source → your meta + "I cooked this" → flavor profile →
+ * Hero, title, summary, times, source → your meta + "I cooked this" (toast with Undo) → flavor profile →
  * equipment → scaled, checkable ingredients → numbered steps (tap the number = done) with
  * timers and step notes → recipe notes → photo journal → changelog.
  * Re-renders on store changes to this recipe's files. Cooking state (checked, done, scale)
  * and half-typed notes live in sessionStorage (components/recipe-state.js), shared with cook mode.
  */
 import {
-  getRecipe, getLibrary, entryFor, getJournal, onChange, markCooked, addNote, deleteEntry,
+  getRecipe, getLibrary, entryFor, getJournal, onChange, markCooked, unmarkCooked, addNote, deleteEntry,
   mediaUrl, rawUrl, NotConnectedError
 } from '../store.js';
 import { setTopbar, on, toast, reportError, confirmSheet, busy } from '../ui.js';
@@ -27,6 +27,23 @@ const safeUrl = u => (/^https?:\/\//i.test(String(u || '')) ? u : null);
 const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
 const fileName = p => String(p).split('/').pop();
 const PAST_TITLE = 'rx-past-title';
+
+// Toast-styled notice with an "Undo" button. ui.js toast() has no action support yet;
+// swap this for it once it does.
+function undoToast(msg, onUndo, ms = 7000) {
+  let host = document.getElementById('toasts');
+  if (!host) { host = document.createElement('div'); host.id = 'toasts'; document.body.append(host); }
+  const t = document.createElement('div');
+  t.className = 'toast toast-ok rx-undo-toast';
+  t.setAttribute('role', 'status');
+  t.innerHTML = html`<span>${msg}</span><button type="button" class="rx-undo-btn">Undo</button>`;
+  let timer = 0;
+  const hide = () => { clearTimeout(timer); t.classList.remove('show'); setTimeout(() => t.remove(), 300); };
+  timer = setTimeout(hide, ms);
+  t.querySelector('button').addEventListener('click', () => { hide(); onUndo(); }, { once: true });
+  host.append(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+}
 
 export async function render(root, { slug }) {
   const mine = new Set([`recipes/${slug}.json`, `journal/${slug}.json`, 'data/library.json']);
@@ -326,7 +343,13 @@ export async function render(root, { slug }) {
     try {
       markCooked(slug);
       rxPatch(slug, { cookedAt: Date.now() });
-      toast('Logged — nice cooking', { type: 'ok' });
+      undoToast('Logged — nice cooking', () => {
+        try {
+          if (!unmarkCooked(slug)) return;
+          rxPatch(slug, { cookedAt: st.cookedAt });
+          toast('Cook removed from your log');
+        } catch (err) { reportError(err); }
+      });
     } catch (err) {
       reportError(err);
     }
