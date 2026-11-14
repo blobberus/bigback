@@ -58,9 +58,9 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 ## WS6 — Integration & polish (after WS1–5 merge)
 - [x] Merge branches, resolve conflicts, smoke-test (`python scripts/smoke.py`)
 - [x] README with phone setup (PAT creation, Pages enable, add-to-home-screen)
-- [ ] Accessibility pass (labels, focus, contrast, reduced motion)
+- [x] Accessibility pass (labels, focus, contrast, reduced motion)
 - [x] Empty states + offline banner + error toasts for failed commits
-- [ ] Dark mode check, safe-area insets, 360px width check
+- [x] Dark mode check, safe-area insets, 360px width check (`tests/layout.html`)
 
 ## WS7 — Follow-ups from workstream reports (2026-11-14)
 - [x] store: `unmarkCooked(slug)` (decrement, restore previous lastCooked) + "Undo" action in the toast after "I cooked this" (js/store.js, js/views/recipe.js)

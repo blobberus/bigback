@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>360px layout check · Bigback</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <style>
+    body { padding-bottom: 24px; }
+    .t-sum { font-weight: 700; margin: 0 0 12px; }
+    .t-sum.bad { color: var(--danger); } .t-sum.good { color: var(--ok); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    td { padding: 6px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+    td:first-child { width: 2.5em; font-weight: 800; }
+    tr.pass td:first-child { color: var(--ok); } tr.fail td:first-child { color: var(--danger); }
+    pre { margin: 4px 0 0; white-space: pre-wrap; word-break: break-word; font: .75rem/1.4 var(--font-mono); color: var(--ink-2); }
+    /* content-box: the frame's viewport is exactly 360px (less a classic scrollbar on desktop,
+       which only makes the check stricter than a phone's overlay scrollbar). */
+    #frames iframe { display: block; box-sizing: content-box; width: 360px; height: 780px; border: 1px solid var(--line); margin: 8px 0; }
+  </style>
+</head>
+<body>
+<!-- Run: python scripts/smoke.py tests/layout.html
+     Loads each route in a 360px-wide iframe (the narrowest common Android width) and fails
+     if the page scrolls sideways. Lists the widest offending elements when it does. -->
+<main id="view"><p class="muted">Running…</p></main>
+<div id="frames"></div>
+<script type="module">
+const WIDTH = 360;
+const ROUTES = ['#/', '#/r/crispy-skillet-chicken-thighs', '#/r/crispy-skillet-chicken-thighs/cook',
+  '#/add', '#/add/custom', '#/add/upload', '#/playlists', '#/settings'];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/** Resolve once the routed view has rendered (has children and isn't busy), or after a timeout. */
+function rendered(frame, ms = 4000) {
+  return new Promise(resolve => {
+    const t0 = performance.now();
+    (function poll() {
+      const v = frame.contentDocument?.getElementById('view');
+      if ((v && v.children.length && v.getAttribute('aria-busy') !== 'true') || performance.now() - t0 > ms) {
+        setTimeout(resolve, 150);   // let late paints (images, chips) settle
+      } else setTimeout(poll, 50);
+    })();
+  });
+}
+
+const describe = el => el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') +
+  (el.classList.length ? '.' + [...el.classList].join('.') : '');
+
+/** Elements that stick out past the right edge and aren't inside a clipping/scrolling box. */
+function offenders(doc, limit) {
+  const win = doc.defaultView, out = [];
+  for (const el of doc.body.querySelectorAll('*')) {
+    const r = el.getBoundingClientRect();
+    if (r.right <= limit + 0.5 || r.width === 0) continue;
+    let clipped = false;
+    for (let p = el.parentElement; p && p !== doc.body; p = p.parentElement) {
+      const ox = win.getComputedStyle(p).overflowX;
+      if (ox !== 'visible') { clipped = true; break; }
+    }
+    if (!clipped) out.push(`${describe(el)} → right ${Math.round(r.right)}px`);
+  }
+  return out.slice(0, 6);
+}
+
+/** Load `src` (or `srcdoc`) in a 360px frame and measure sideways overflow. */
+async function measure({ src, srcdoc, title }) {
+  const frame = document.createElement('iframe');
+  frame.title = title;
+  if (srcdoc) frame.srcdoc = srcdoc; else frame.src = src;
+  document.getElementById('frames').append(frame);
+  await new Promise(r => frame.addEventListener('load', r, { once: true }));
+  if (!srcdoc) await rendered(frame);
+  const doc = frame.contentDocument, root = doc.documentElement;
+  return { doc, vw: root.clientWidth, sw: root.scrollWidth };
+}
+
+async function check(route) {
+  const { doc, vw, sw } = await measure({ src: '../index.html' + route, title: route });
+  const ok = sw <= vw;
+  return { name: `${route} fits ${WIDTH}px`, ok, detail: ok ? `scrollWidth ${sw} ≤ ${vw}` : `scrollWidth ${sw} > ${vw}\n` + offenders(doc, vw).join('\n') };
+}
+
+/** Control: a page that is obviously too wide must be caught, or the passes above mean nothing. */
+async function control() {
+  const { doc, vw, sw } = await measure({ title: 'control', srcdoc: '<body style="margin:0"><div class="too-wide" style="width:500px;height:10px"></div></body>' });
+  const hits = offenders(doc, vw);
+  const ok = sw > vw && hits.some(h => h.startsWith('div.too-wide'));
+  return { name: 'control: a 500px element is detected', ok, detail: `scrollWidth ${sw} vs ${vw}; offenders: ${hits.join(', ') || 'none'}` };
+}
+
+const results = await Promise.all([control(), ...ROUTES.map(check)]);
+const failed = results.filter(r => !r.ok);
+failed.forEach(f => console.error(`FAIL ${f.name}: ${f.detail}`));
+document.getElementById('view').innerHTML =
+  `<h1>360px layout check</h1><p class="t-sum ${failed.length ? 'bad' : 'good'}">${results.length - failed.length} passed · ${failed.length} failed</p>` +
+  `<table>${results.map(r => `<tr class="${r.ok ? 'pass' : 'fail'}"><td>${r.ok ? 'ok' : 'FAIL'}</td><td>${esc(r.name)}<pre>${esc(r.detail)}</pre></td></tr>`).join('')}</table>`;
+</script>
+</body>
+</html>
