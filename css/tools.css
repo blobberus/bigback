@@ -14,8 +14,8 @@ body[data-view="cook"] { --tools-b: calc(var(--safe-b) + 96px); }   /* .ck-nav i
 
 #tools {
   position: fixed; z-index: 40; bottom: var(--tools-b);
-  left: calc(var(--tools-x) + env(safe-area-inset-left, 0px));
-  right: calc(var(--tools-x) + env(safe-area-inset-right, 0px));
+  left: calc(var(--tools-x) + var(--safe-l));
+  right: calc(var(--tools-x) + var(--safe-r));
   display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "tray sw";
   align-items: end; gap: 8px 10px; pointer-events: none;
 }

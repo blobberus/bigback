@@ -79,7 +79,14 @@ async function route() {
 }
 
 function applyTheme({ theme }) {
-  document.documentElement.dataset.theme = theme === 'auto' ? '' : theme;
+  const root = document.documentElement;
+  root.dataset.theme = theme === 'auto' ? '' : theme;
+  // Status bar / task-switcher colour follows a forced in-app theme, not just the OS setting.
+  const bg = getComputedStyle(root).getPropertyValue('--bg').trim();
+  $$('meta[name="theme-color"]').forEach(m => {
+    m.dataset.auto ??= m.content;
+    m.content = theme === 'auto' || !bg ? m.dataset.auto : bg;
+  });
 }
 
 function boot() {
