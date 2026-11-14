@@ -16,7 +16,8 @@
  *     returns the existing id (double-tap guard) and opens its pill.
  */
 import { html, fmtClock } from './util.js';
-import { on, toast } from './ui.js';
+import { on, sheet, toast } from './ui.js';
+import { getPrefs } from './prefs.js';
 
 const KEY = 'bb.timers';
 const subs = new Set();
@@ -72,7 +73,7 @@ function tick() {
   }
   if (finished.length) { save(); finished.forEach(t => onFinish(t)); }
   render(now);
-  onState(finished);
+  onState();
   emit();
   const running = timers.filter(isRunning);
   if (running.length) {
@@ -143,11 +144,198 @@ export function addTime(id, seconds = 60) {
   changed();
 }
 
-/* ---------- alarm hooks (filled in by the alarm section below) ---------- */
-function onStart() {}
-function onFinish() {}
-function onCancel() {}
-function onState() {}
+/* ---------- alarm: sound, vibration, notification, title flash, done sheet ---------- */
+const ASKED = 'bb.notifyAsked';
+let actx = null, ringT = 0, ringN = 0, alarm = null;
+let flash = { base: null, set: null, on: false };
+const pageNotes = new Map();        // id → Notification created from the page (fallback path)
+
+/** Called inside the startTimer tap: unlock audio for later + ask for notifications once. */
+function onStart() {
+  unlockAudio();
+  try {
+    if (!('Notification' in window) || Notification.permission !== 'default' || localStorage.getItem(ASKED)) return;
+    localStorage.setItem(ASKED, '1');
+    const p = Notification.requestPermission();      // non-blocking; the timer is already running
+    p?.catch?.(() => {});
+  } catch { /* never block a timer on this */ }
+}
+
+/** Create/resume the AudioContext. Only inside a user gesture, so iOS allows sound later. */
+function unlockAudio() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC || navigator.userActivation?.isActive === false) return;
+  try {
+    if (!actx) actx = new AC();
+    if (actx.state !== 'running') actx.resume?.()?.catch?.(() => {});
+    // A silent blip inside the gesture fully unlocks output on iOS Safari.
+    const o = actx.createOscillator(), g = actx.createGain();
+    g.gain.value = 0; o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + 0.02);
+  } catch { /* no audio on this device */ }
+}
+
+/** One "bip-bip-beep" phrase (~0.6 s). */
+function beep() {
+  if (!actx || actx.state !== 'running') return;
+  const t0 = actx.currentTime + 0.03;
+  [[0, 880], [0.2, 880], [0.4, 1175]].forEach(([dt, f]) => {
+    const o = actx.createOscillator(), g = actx.createGain(), t = t0 + dt;
+    o.type = 'triangle'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.32, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t + 0.2);
+  });
+}
+
+function buzz(pattern) {
+  if (!navigator.vibrate || navigator.userActivation?.hasBeenActive === false) return;
+  try { navigator.vibrate(pattern); } catch { /* unsupported */ }
+}
+
+function onFinish(t) {
+  buzz([220, 120, 220, 120, 480]);
+  notify(t);
+}
+
+function notify(t) {
+  try {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if (document.visibilityState === 'visible' && document.hasFocus()) return;  // the sheet + sound cover it
+    const title = `Done: ${t.label}`;
+    const opts = {
+      body: 'Your timer is up.', tag: `bb-timer-${t.id}`, renotify: true, requireInteraction: true,
+      icon: 'assets/icons/icon-192.png', badge: 'assets/icons/icon-192.png',
+      data: { url: t.slug ? `#/r/${t.slug}` : '' }
+    };
+    const viaPage = () => {
+      try {
+        const n = new Notification(title, opts);
+        n.onclick = () => { window.focus(); n.close(); };
+        pageNotes.set(t.id, n);
+      } catch { /* e.g. Android requires the service worker path */ }
+    };
+    const sw = navigator.serviceWorker;
+    if (sw?.controller) sw.getRegistration().then(r => (r ? r.showNotification(title, opts) : viaPage())).catch(viaPage);
+    else viaPage();
+  } catch { /* notifications are a bonus */ }
+}
+
+function onCancel(id) {
+  pageNotes.get(id)?.close(); pageNotes.delete(id);
+  navigator.serviceWorker?.getRegistration?.()
+    .then(r => r?.getNotifications({ tag: `bb-timer-${id}` }))
+    .then(ns => ns?.forEach(n => n.close()))
+    .catch(() => {});
+}
+
+/** Keep the ringing + sheet in step with "is anything done?" (also after a reload or another tab). */
+function onState() {
+  const done = timers.filter(t => t.done);
+  if (!done.length) {
+    stopRing();
+    if (alarm) { const a = alarm; alarm = null; a.close?.(null); }
+    return;
+  }
+  if (!ringT) { ringN = 0; ringStep(); ringT = setInterval(ringStep, 1000); }
+  if (alarm) paintAlarm(); else openAlarm();
+}
+
+function ringStep() {
+  const done = timers.filter(t => t.done);
+  if (!done.length) return stopRing();
+  // Title flash every second; a beep phrase + buzz every other second.
+  if (document.title !== flash.set) flash.base = document.title;
+  flash.on = !flash.on;
+  flash.set = flash.on ? `Done: ${done[0].label}${done.length > 1 ? ` (+${done.length - 1})` : ''}` : flash.base;
+  document.title = flash.set;
+  if (ringN++ % 2 === 0) {
+    if (getPrefs().sound) beep();
+    if (ringN > 1) buzz([220, 120, 220]);
+  }
+}
+
+function stopRing() {
+  if (!ringT) return;
+  clearInterval(ringT); ringT = 0;
+  if (flash.set != null && document.title === flash.set && flash.base != null) document.title = flash.base;
+  flash = { base: null, set: null, on: false };
+  buzz(0);
+}
+
+function openAlarm() {
+  const body = document.createElement('div');
+  body.className = 'tt-alarm-body';
+  const a = alarm = { body, sig: '', close: null, wrap: null };
+  on(body, 'click', '[data-alarm]', (e, el) => {
+    const id = el.dataset.id, act = el.dataset.alarm;
+    if (act === 'snooze') addTime(id, 60);
+    else if (act === 'dismiss') cancelTimer(id);
+    else if (act === 'all') timers.filter(t => t.done).map(t => t.id).forEach(cancelTimer);
+    else if (act === 'open') {
+      const slug = find(id)?.slug;
+      cancelTimer(id);
+      if (slug) location.hash = `#/r/${slug}`;
+    }
+  });
+  sheet({
+    body, className: 'tt-alarm', dismissable: false,
+    onOpen: (wrap, close) => { a.wrap = wrap; a.close = close; }
+  }).then(() => { if (alarm === a) alarm = null; });
+  paintAlarm();
+}
+
+const durLabel = s => {
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+  return [h && `${h} hr`, m && `${m} min`, r && `${r} sec`].filter(Boolean).join(' ');
+};
+const clock = ms => new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+function paintAlarm() {
+  if (!alarm) return;
+  const done = timers.filter(t => t.done);
+  const sig = done.map(t => t.id).join();
+  if (sig === alarm.sig) return;
+  const first = !alarm.sig;
+  alarm.sig = sig;
+  const one = done.length === 1 ? done[0] : null;
+  alarm.wrap?.querySelector('.sheet')?.setAttribute('aria-label', one ? `Timer done: ${one.label}` : `${done.length} timers done`);
+  alarm.body.innerHTML = one ? html`
+    <div class="tt-alarm-hero">
+      <div class="tt-bell" aria-hidden="true">${I.bell}</div>
+      <p class="tt-alarm-kicker">Timer done</p>
+      <h2 class="tt-alarm-title">${one.label}</h2>
+      <p class="tt-alarm-meta">${durLabel(one.seconds)} · finished ${clock(one.doneAt || Date.now())}</p>
+    </div>
+    <div class="tt-alarm-actions">
+      <button type="button" class="btn tt-alarm-btn" data-alarm="snooze" data-id="${one.id}">Snooze +1 min</button>
+      <button type="button" class="btn btn-primary tt-alarm-btn" data-alarm="dismiss" data-id="${one.id}" autofocus>Dismiss</button>
+    </div>
+    ${one.slug ? html`<button type="button" class="btn btn-ghost btn-block tt-alarm-open" data-alarm="open" data-id="${one.id}">Dismiss and open the recipe</button>` : ''}`
+  : html`
+    <div class="tt-alarm-hero">
+      <div class="tt-bell" aria-hidden="true">${I.bell}</div>
+      <p class="tt-alarm-kicker">Timers done</p>
+      <h2 class="tt-alarm-title">${done.length} timers finished</h2>
+    </div>
+    <ul class="tt-alarm-list">
+      ${done.map(t => html`<li>
+        <div class="tt-alarm-item"><strong>${t.label}</strong><small>finished ${clock(t.doneAt || Date.now())}</small></div>
+        <button type="button" class="btn btn-sm" data-alarm="snooze" data-id="${t.id}" aria-label="Snooze ${t.label} 1 minute">+1 min</button>
+        <button type="button" class="btn btn-sm btn-soft" data-alarm="dismiss" data-id="${t.id}" aria-label="Dismiss ${t.label}">Dismiss</button>
+      </li>`)}
+    </ul>
+    <div class="tt-alarm-actions"><button type="button" class="btn btn-primary tt-alarm-btn" data-alarm="all" autofocus>Dismiss all</button></div>`;
+  if (!first) alarm.body.querySelector('[autofocus]')?.focus({ preventScroll: true });
+}
+
+// Any tap re-arms audio (iOS suspends it in the background; a reload needs a fresh gesture).
+// pointerup/keydown (not pointerdown) are the events that grant user activation on touch.
+const rearm = () => { if (timers.length && actx?.state !== 'running') unlockAudio(); };
+document.addEventListener('pointerup', rearm, { capture: true, passive: true });
+document.addEventListener('keydown', rearm, { capture: true });
 
 /* ---------- tray UI ---------- */
 const I = {
@@ -175,7 +363,7 @@ function pill(t, now) {
   const isNew = !shown.has(t.id);
   const left = leftOf(t, now);
   return html`<div class="tt-pill is-${state}${isNew ? ' is-new' : ''}${!t.done && isRunning(t) && left <= 10000 ? ' is-soon' : ''}" data-id="${t.id}"${open ? ' data-open' : ''}>
-    <button type="button" class="tt-main" data-act="toggle" aria-expanded="${open}"${open ? html` aria-controls="tt-c-${t.id}"` : ''}>
+    <button type="button" class="tt-main" data-act="toggle" aria-expanded="${String(open)}"${open ? html` aria-controls="tt-c-${t.id}"` : ''}>
       ${ring(t, now)}
       <span class="tt-label">${t.label}</span>
       <span class="tt-left">${t.done ? 'Done' : fmtLeft(left)}</span>
@@ -241,7 +429,7 @@ function onTrayClick(e, el) {
   const act = el.dataset.act;
   if (act !== 'cancel') disarm();
   if (act === 'toggle') {
-    if (t.done) { onState([], true); return; }
+    if (t.done) { onState(); return; }
     openId = openId === id ? null : id;
     render();
   } else if (act === 'pause') pauseTimer(id);

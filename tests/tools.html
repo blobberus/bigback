@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kitchen tools test</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/tools.css">
+  <style>.pass { color: var(--ok); } .fail { color: var(--danger); font-weight: 700; }</style>
+</head>
+<body data-view="library">
+  <!-- Run: python scripts/smoke.py tests/tools.html  (add --dom to see each check) -->
+  <main id="view"><h1>Kitchen tools</h1><ol id="results" class="small"></ol></main>
+  <div id="tools"></div>
+  <div id="toasts" aria-live="polite"></div>
+  <script type="module">
+    // Clean slate before the modules read localStorage.
+    ['bb.timers', 'bb.stopwatch', 'bb.notifyAsked'].forEach(k => localStorage.removeItem(k));
+
+    const out = document.getElementById('results');
+    let fails = 0;
+    const check = (name, ok, detail = '') => {
+      const li = document.createElement('li');
+      li.className = ok ? 'pass' : 'fail';
+      li.textContent = `${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ' (' + detail + ')' : ''}`;
+      out.append(li);
+      if (!ok) { fails++; console.error('Error: tools check failed:', name, detail); }
+    };
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    const stored = k => JSON.parse(localStorage.getItem(k) || 'null');
+
+    const T = await import('../js/timers.js');
+    T.mount();
+
+    /* ---- timers ---- */
+    const seen = [];
+    const off = T.onTimers(list => seen.push(list.length));
+    const id = T.startTimer({ label: 'Sear chicken', seconds: 120, slug: 'crispy-skillet-chicken-thighs', stepId: 's2' });
+    let list = T.listTimers();
+    check('startTimer returns an id and lists it', typeof id === 'string' && list.length === 1 && list[0].id === id);
+    check('list item has contract fields', ['id', 'label', 'seconds', 'endAt', 'pausedLeft', 'slug', 'stepId', 'done'].every(k => k in list[0]));
+    check('onTimers fired', seen.length > 0 && seen.at(-1) === 1);
+    let s = stored('bb.timers');
+    check('persisted with endAt', Array.isArray(s) && s[0].id === id && typeof s[0].endAt === 'number' && s[0].pausedLeft === null);
+    check('tray pill rendered', !!document.querySelector(`#tools .tt-pill[data-id="${id}"]`));
+    check('double-tap guard returns same id', T.startTimer({ label: 'Sear chicken', seconds: 120, slug: 'crispy-skillet-chicken-thighs', stepId: 's2' }) === id && T.listTimers().length === 1);
+
+    T.pauseTimer(id);
+    s = stored('bb.timers')[0];
+    check('pause persists pausedLeft', s.endAt === null && s.pausedLeft > 118000 && s.pausedLeft <= 120000, `pausedLeft=${s.pausedLeft}`);
+    T.addTime(id, 60);
+    check('addTime while paused', T.listTimers()[0].pausedLeft > 178000);
+    T.resumeTimer(id);
+    s = stored('bb.timers')[0];
+    check('resume persists endAt', s.pausedLeft === null && s.endAt - Date.now() > 178000);
+
+    // A fresh module instance (as after a reload) reads the same state back.
+    const T2 = await import('../js/timers.js?reload=1');
+    const l2 = T2.listTimers();
+    check('state survives reload', l2.length === 1 && l2[0].id === id && l2[0].running && l2[0].left > 170000);
+
+    // The double-tap guard opened the pill; collapse + expand it again by tapping.
+    const main = () => document.querySelector(`.tt-pill[data-id="${id}"] .tt-main`);
+    check('guard opened the pill', main().getAttribute('aria-expanded') === 'true');
+    main().click();
+    check('tap collapses pill', main().getAttribute('aria-expanded') === 'false', main().outerHTML.slice(0, 160));
+    main().click();
+    check('pill expands with controls', !!document.querySelector(`.tt-pill[data-id="${id}"] [data-act="pause"]`) && !!document.querySelector('[data-act="go"]'));
+
+    // Short timer finishes → done + alarm sheet.
+    const quick = T.startTimer({ label: 'Rest', seconds: 1 });
+    await wait(1400);
+    const q = T.listTimers().find(t => t.id === quick);
+    check('short timer finishes', q && q.done === true && q.left === 0);
+    check('alarm sheet shown', !!document.querySelector('.sheet.tt-alarm [data-alarm="dismiss"]'));
+    check('done persisted', stored('bb.timers').find(t => t.id === quick)?.done === true);
+    document.querySelector('.sheet.tt-alarm [data-alarm="snooze"]').click();
+    const sn = T.listTimers().find(t => t.id === quick);
+    check('snooze restarts +1 min', sn && !sn.done && sn.left > 55000);
+    T.cancelTimer(quick);
+    T.cancelTimer(id);
+    check('cancel removes timers', T.listTimers().length === 0 && stored('bb.timers').length === 0);
+    off();
+    await wait(300);
+    check('alarm sheet closed', !document.querySelector('.sheet.tt-alarm'));
+
+    out.insertAdjacentHTML('beforeend', `<li><strong>${fails ? fails + ' check(s) did not pass' : 'All checks passed'}</strong></li>`);
+  </script>
+</body>
+</html>
