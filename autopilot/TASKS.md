@@ -6,14 +6,14 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 
 ## WS0 — Foundation (main session)
 - [x] CLAUDE.md, docs/SCHEMA.md, ledger, autopilot runner
-- [ ] App shell: index.html, css/base.css, js/app.js (hash router), js/config.js
-- [ ] js/util.js, js/ui.js helpers
-- [ ] js/github.js — read + atomic multi-file commit via Git Data API
-- [ ] js/store.js — data layer contract (index, recipe, library, journal, inbox writes)
-- [ ] scripts/build_index.py + scripts/validate.py + scripts/pending.py
-- [ ] Sample recipe + data/library.json seed
-- [ ] GitHub Pages deploy workflow (.github/workflows/pages.yml)
-- [ ] docs/ARCHITECTURE.md
+- [x] App shell: index.html, css/base.css, js/app.js (hash router), js/config.js
+- [x] js/util.js, js/ui.js helpers
+- [x] js/github.js — read + atomic multi-file commit via Git Data API
+- [x] js/store.js — data layer contract (index, recipe, library, journal, inbox writes)
+- [x] scripts/build_index.py + scripts/validate.py + scripts/smoke.py (headless Edge)
+- [x] Sample recipe + data/library.json seed
+- [x] GitHub Pages deploy workflow (.github/workflows/pages.yml)
+- [x] docs/ARCHITECTURE.md
 
 ## WS1 — Library view (`js/views/library.js`, `css/library.css`)
 - [ ] Recipe cards grid (image, title, time, rating, proficiency, tags) + pending inbox cards
