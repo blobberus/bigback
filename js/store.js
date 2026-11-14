@@ -58,13 +58,20 @@ function requireClient() { const c = client(); if (!c) throw new NotConnectedErr
 async function load(path, fallback, { force = false } = {}) {
   if (!force && mem.has(path)) return mem.get(path);
   let data;
+  const fromSite = async () => {
+    const r = await fetch(`${path}?t=${Date.now()}`, { cache: 'no-store' });
+    return r.ok ? r.json() : undefined;
+  };
   try {
     const c = client();
-    if (c) data = await c.readJson(path, undefined);
-    else {
-      const r = await fetch(`${path}?t=${Date.now()}`, { cache: 'no-store' });
-      data = r.ok ? await r.json() : undefined;
-    }
+    if (c) {
+      try { data = await c.readJson(path, undefined); }
+      catch (e) {                      // bad/expired token or API hiccup → public copy
+        console.warn('GitHub read failed, using site copy', path, e);
+        emit({ type: 'read-error', error: e, paths: [path] });
+        data = await fromSite();
+      }
+    } else data = await fromSite();
   } catch (e) {
     data = fromSnap(path);             // offline → last known copy
     if (data === undefined) { console.warn('load failed', path, e); }
@@ -168,6 +175,13 @@ export async function flushLibrary() {
       batch.forEach(b => b.fn(lib));
       return [json(P.library, lib)];
     });
+    // Edits queued while this commit was in flight: keep them visible locally.
+    if (queue.length) {
+      const lib = normLib(mem.get(P.library));
+      queue.forEach(q => q.fn(lib));
+      mem.set(P.library, lib); snap(P.library, lib);
+      emit({ type: 'library', paths: [P.library] });
+    }
   } catch (e) {
     await load(P.library, EMPTY_LIB, { force: true }).catch(() => {});
     emit({ type: 'library', paths: [P.library] });
@@ -218,15 +232,18 @@ export async function saveRecipe(recipe, { heroFile = null, isNew = false } = {}
   const r = clone(recipe);
   if (isNew || !r.slug) { r.slug = await uniqueSlug(slugify(r.title)); r.createdAt = nowIso(); r.status ||= 'custom'; }
   r.schemaVersion = 1; r.updatedAt = nowIso(); r.changelog ||= [];
-  let heroB64 = null;
+  let heroB64 = null, oldHero = null;
   if (heroFile) {
     const blob = await compressImage(heroFile);
     heroB64 = await blobToBase64(blob);
-    r.image = `media/${r.slug}/hero.jpg`;
+    // Unique name per upload so phones/CDN never show a cached old photo.
+    if (r.image && r.image.startsWith(`media/${r.slug}/`)) oldHero = r.image;
+    r.image = `media/${r.slug}/hero-${Date.now().toString(36)}.jpg`;
   }
-  await write(`${isNew ? 'Add custom recipe' : 'Edit recipe'}: ${r.title}`, async ({ readJson, json }) => {
+  await write(`${isNew ? 'Add custom recipe' : 'Edit recipe'}: ${r.title}`, async ({ read, readJson, json }) => {
     const files = [json(P.recipe(r.slug), r)];
     if (heroB64) files.push({ path: r.image, base64: heroB64 });
+    if (oldHero && oldHero !== r.image && await read(oldHero) != null) files.push({ path: oldHero, delete: true });
     const lib = normLib(await readJson(P.library, EMPTY_LIB));
     if (!lib.recipes[r.slug]) { lib.recipes[r.slug] = blankEntry(); files.push(json(P.library, lib)); }
     const j = await readJson(P.journal(r.slug), null);
