@@ -70,7 +70,7 @@
     const main = () => document.querySelector(`.tt-pill[data-id="${id}"] .tt-main`);
     check('guard opened the pill', main().getAttribute('aria-expanded') === 'true');
     main().click();
-    check('tap collapses pill', main().getAttribute('aria-expanded') === 'false', main().outerHTML.slice(0, 160));
+    check('tap collapses pill', main().getAttribute('aria-expanded') === 'false');
     main().click();
     check('pill expands with controls', !!document.querySelector(`.tt-pill[data-id="${id}"] [data-act="pause"]`) && !!document.querySelector('[data-act="go"]'));
 

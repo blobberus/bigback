@@ -1,15 +1,16 @@
 /* tools.css — kitchen tools (timer tray, alarm, stopwatch) + settings view.
    Tokens from base.css only. #tools is z 40 (above nav 30, below sheets 60 / toasts 70).
 
-   Layout: #tools is one fixed grid pinned above the bottom nav (lower in cook mode, where
-   the nav is hidden). Timer pills stack bottom-left, the stopwatch button sits bottom-right;
+   Layout: #tools is one fixed grid pinned above the bottom nav (in cook mode, above the
+   cook view's Prev/Next bar instead). Timer pills stack bottom-left, the stopwatch button sits bottom-right;
    when the stopwatch panel opens it takes the full row and the pills move above it, so the
    two never overlap. stopwatch.js publishes the stack height as --tools-h, which lifts the
    toasts above the tools and pads the page so nothing hides behind them.
    A view with its own bottom bar can raise the tools by overriding --tools-b on body. */
 
 :root { --tools-b: calc(var(--nav-h) + var(--safe-b) + 12px); --tools-x: 12px; }
-body[data-view="cook"] { --tools-b: calc(var(--safe-b) + 12px); }
+/* Cook mode hides the nav but has its own fixed Prev/Next bar (z 35): sit just above it. */
+body[data-view="cook"] { --tools-b: calc(var(--safe-b) + 96px); }   /* .ck-nav is ~85px tall */
 
 #tools {
   position: fixed; z-index: 40; bottom: var(--tools-b);
@@ -58,7 +59,7 @@ body { padding-bottom: calc(var(--tools-b) + var(--tools-h, 56px) + 16px); }
 .tt-left { flex: none; font-size: 1.05rem; font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
 
 .tt-pill.is-soon .tt-left { color: var(--accent); }
-.tt-pill.is-paused { background: var(--surface-2); box-shadow: none; }
+.tt-pill.is-paused { background: var(--surface-2); }
 .tt-pill.is-paused .tt-left { color: var(--muted); }
 .tt-pill.is-paused .tt-ring-fill { stroke: var(--muted); }
 .tt-pill.is-done { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); animation: tt-pulse 1.6s ease-in-out infinite; }

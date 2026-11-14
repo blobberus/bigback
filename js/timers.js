@@ -6,11 +6,16 @@
  *   listTimers() → [{ id, label, seconds, endAt, pausedLeft, slug, stepId, done }]
  *   onTimers(fn) → unsubscribe            fn(list) on every tick/state change
  *
+ * Units: `seconds` = total duration in SECONDS; `endAt` = epoch MILLISECONDS (null while
+ *   paused); `pausedLeft` = MILLISECONDS remaining while paused (null while running).
+ *
  * Notes (additive to the contract):
  *   - List items also carry `left` (ms remaining, live, ≥ 0) and `running` (bool).
- *   - Running timers persist `endAt` (epoch ms); paused ones persist `pausedLeft` (ms).
- *     Remaining time is always recomputed from Date.now() — nothing accumulates, so
+ *   - Remaining time is always recomputed from Date.now() — nothing accumulates, so
  *     reloads and phone sleep never lose time. Stored under localStorage 'bb.timers'.
+ *   - A finished timer (done: true) rings until dismissed (= cancelTimer) or snoozed
+ *     (= addTime(id, 60)); after 20 unanswered minutes it goes quiet but stays on screen.
+ *     Timers that finished more than 6 hours ago are dropped on load.
  *   - The tick only runs while a timer is counting, aligned to the soonest one's second.
  *   - startTimer() again with the same slug + stepId + label while that timer is live
  *     returns the existing id (double-tap guard) and opens its pill.
@@ -20,6 +25,8 @@ import { on, sheet, toast } from './ui.js';
 import { getPrefs } from './prefs.js';
 
 const KEY = 'bb.timers';
+const STALE_MS = 6 * 3600e3;      // drop timers that finished this long ago (app was closed)
+const QUIET_MS = 20 * 60e3;       // stop beeping after this long unanswered (sheet stays)
 const subs = new Set();
 let timers = load();
 let tray = null, openId = null, armedCancel = null, armT = 0, lastSig = '', tickT = 0;
@@ -29,7 +36,9 @@ const shown = new Set();          // ids already rendered (so only new pills ani
 function load() {
   try {
     const a = JSON.parse(localStorage.getItem(KEY) || '[]');
-    return Array.isArray(a) ? a.filter(t => t && t.id).map(t => ({
+    const now = Date.now();
+    const stale = t => (t.done ? +t.doneAt || 0 : t.pausedLeft == null ? +t.endAt || 0 : Infinity) < now - STALE_MS;
+    return Array.isArray(a) ? a.filter(t => t && t.id && !stale(t)).map(t => ({
       id: String(t.id), label: String(t.label || 'Timer'), seconds: Math.max(1, +t.seconds || 60),
       endAt: t.endAt == null ? null : +t.endAt, pausedLeft: t.pausedLeft == null ? null : +t.pausedLeft,
       slug: t.slug ?? null, stepId: t.stepId ?? null, done: !!t.done, doneAt: t.doneAt ?? null
@@ -251,7 +260,8 @@ function ringStep() {
   flash.on = !flash.on;
   flash.set = flash.on ? `Done: ${done[0].label}${done.length > 1 ? ` (+${done.length - 1})` : ''}` : flash.base;
   document.title = flash.set;
-  if (ringN++ % 2 === 0) {
+  const fresh = done.some(t => Date.now() - (t.doneAt || 0) < QUIET_MS);
+  if (ringN++ % 2 === 0 && fresh) {
     if (getPrefs().sound) beep();
     if (ringN > 1) buzz([220, 120, 220]);
   }
