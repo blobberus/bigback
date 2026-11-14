@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editor parser tests · Bigback</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <style>
+    body { padding-bottom: 24px; }
+    .t-sum { font-weight: 700; margin: 0 0 12px; }
+    .t-sum.bad { color: var(--danger); } .t-sum.good { color: var(--ok); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    td { padding: 6px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+    td:first-child { width: 2.5em; font-weight: 800; }
+    tr.pass td:first-child { color: var(--ok); } tr.fail td:first-child { color: var(--danger); }
+    pre { margin: 4px 0 0; white-space: pre-wrap; word-break: break-word; font: .75rem/1.4 var(--font-mono); color: var(--ink-2); }
+  </style>
+</head>
+<body>
+<main id="view"><p class="muted">Running…</p></main>
+<script type="module">
+import {
+  parseQty, normalizeUnit, parseIngredientLine, parseIngredients, formatIngredientLine, formatIngredients,
+  parseSteps, formatSteps, detectTimers, timerLabel, parseLines, linkType
+} from '../js/components/editor-parse.js';
+import { mergeIngredients, mergeSteps, matchItems, similarity, nextIdNumber } from '../js/components/editor-ids.js';
+
+const results = [];
+const canon = v => JSON.stringify(v, (k, x) => (x && typeof x === 'object' && !Array.isArray(x)
+  ? Object.fromEntries(Object.keys(x).sort().map(key => [key, x[key]])) : x));
+function eq(name, got, want) {
+  const ok = canon(got) === canon(want);
+  results.push({ name, ok, got, want });
+  // one line, and wording smoke.py recognizes ("failed"), so a failure fails the smoke run
+  if (!ok) console.error(`Test failed: ${name} | want ${canon(want)} | got ${canon(got)}`);
+}
+const ing = (qty, qtyMax, unit, item, note) => ({ qty, qtyMax, unit, item, note });
+const fields = i => ({ qty: i.qty, qtyMax: i.qtyMax, unit: i.unit, item: i.item, note: i.note });
+
+/* ---------- ingredient lines ---------- */
+eq('mixed number + comma note', parseIngredientLine('1 1/2 cups flour, sifted'), ing(1.5, null, 'cup', 'flour', 'sifted'));
+eq('unicode fraction attached', parseIngredientLine('1½ cups sugar'), ing(1.5, null, 'cup', 'sugar', null));
+eq('hyphen range + plural unit', parseIngredientLine('2-3 cloves garlic'), ing(2, 3, 'clove', 'garlic', null));
+eq('"to" range', parseIngredientLine('2 to 3 tbsp olive oil'), ing(2, 3, 'tbsp', 'olive oil', null));
+eq('bare unicode fraction', parseIngredientLine('½ tsp salt'), ing(0.5, null, 'tsp', 'salt', null));
+eq('to taste', parseIngredientLine('salt and pepper to taste'), ing(null, null, null, 'salt and pepper', 'to taste'));
+eq('can with size in parens', parseIngredientLine('1 (14 oz) can tomatoes'), ing(1, null, 'can', 'tomatoes', '14 oz'));
+eq('count with size adjective', parseIngredientLine('3 large eggs'), ing(3, null, null, 'large eggs', null));
+eq('zest of', parseIngredientLine('Zest of 1 lemon'), ing(1, null, null, 'lemon', 'zested'));
+eq('parenthetical note', parseIngredientLine('2 cups flour (sifted)'), ing(2, null, 'cup', 'flour', 'sifted'));
+eq('paren + comma notes in order', parseIngredientLine('1 cup (2 sticks) butter, softened'), ing(1, null, 'cup', 'butter', '2 sticks, softened'));
+eq('note keeps its own fractions', parseIngredientLine('4 sprigs fresh thyme, or ½ tsp dried'), ing(4, null, 'sprig', 'fresh thyme', 'or ½ tsp dried'));
+eq('compound adjective comma stays in item', parseIngredientLine('6 bone-in, skin-on chicken thighs, about 2.5 lb, patted very dry'),
+  ing(6, null, null, 'bone-in, skin-on chicken thighs', 'about 2.5 lb, patted very dry'));
+eq('"a pinch of" / "Pinch of"', [parseIngredientLine('a pinch of salt'), parseIngredientLine('Pinch of nutmeg')],
+  [ing(1, null, 'pinch', 'salt', null), ing(1, null, 'pinch', 'nutmeg', null)]);
+eq('attached metric + bullets', [parseIngredientLine('- 500g strong flour'), parseIngredientLine('• 250ml warm water')],
+  [ing(500, null, 'g', 'strong flour', null), ing(250, null, 'ml', 'warm water', null)]);
+eq('size number is not an amount', parseIngredientLine('1-inch piece ginger, grated'), ing(null, null, null, '1-inch piece ginger', 'grated'));
+eq('"6 cloves" with no item is the spice', parseIngredientLine('6 cloves'), ing(6, null, null, 'cloves', null));
+eq('parseQty word numbers', [parseQty('two onions'), parseQty('a few leaves'), parseQty('1-1/2 cups')],
+  [{ qty: 2, qtyMax: null, rest: 'onions' }, { qty: null, qtyMax: null, rest: 'a few leaves' }, { qty: 1.5, qtyMax: null, rest: 'cups' }]);
+
+/* ---------- units ---------- */
+const UNITS = {
+  teaspoons: 'tsp', t: 'tsp', 'Tbsp.': 'tbsp', T: 'tbsp', tablespoons: 'tbsp', cups: 'cup', c: 'cup', ounces: 'oz', 'oz.': 'oz',
+  'fl. oz.': 'fl oz', 'fluid ounces': 'fl oz', lbs: 'lb', pounds: 'lb', grams: 'g', kilos: 'kg', kg: 'kg', mL: 'ml', millilitres: 'ml',
+  litre: 'l', L: 'l', pinches: 'pinch', dashes: 'dash', cloves: 'clove', tins: 'can', sticks: 'stick', slices: 'slice', sprigs: 'sprig',
+  bunches: 'bunch', pcs: 'piece', package: 'pkg', pkgs: 'pkg', qt: 'quart', pints: 'pint', gal: 'gallon', large: null, eggs: null
+};
+eq('normalizeUnit aliases', Object.fromEntries(Object.keys(UNITS).map(k => [k, normalizeUnit(k)])), UNITS);
+eq('unit normalization in lines', ['8 fl oz cream', '2 Tablespoons honey', '1 T miso', '1 t vanilla', '2 lbs beef', '1 package yeast', '2 quarts stock']
+  .map(l => parseIngredientLine(l).unit), ['fl oz', 'tbsp', 'tbsp', 'tsp', 'lb', 'pkg', 'quart']);
+
+/* ---------- sections ---------- */
+eq('section headers (colon, ##, reset)',
+  parseIngredients('2 cups rice\nSauce:\n2 tbsp soy sauce\n\n## Garnish\n1 scallion, sliced\n---\nlime wedges').map(i => [i.section, i.item]),
+  [[null, 'rice'], ['Sauce', 'soy sauce'], ['Garnish', 'scallion'], [null, 'lime wedges']]);
+
+/* ---------- formatting / round trip ---------- */
+eq('formatIngredientLine', [
+  formatIngredientLine(ing(2, 3, 'clove', 'garlic', 'minced')), formatIngredientLine(ing(0.5, null, 'cup', 'stock', null)),
+  formatIngredientLine(ing(null, null, null, 'salt', 'to taste')), formatIngredientLine(ing(1.5, null, 'lb', 'chicken', null))
+], ['2-3 cloves garlic, minced', '½ cup stock', 'salt, to taste', '1½ lb chicken']);
+
+const sample = await (await fetch('../recipes/crispy-skillet-chicken-thighs.json', { cache: 'no-store' })).json();
+eq('sample ingredients round-trip through text', parseIngredients(formatIngredients(sample.ingredients)).map(i => ({ ...fields(i), section: i.section })),
+  sample.ingredients.map(i => ({ ...fields(i), section: i.section })));
+eq('sample steps round-trip through text', parseSteps(formatSteps(sample.steps)).map(s => [s.section, s.text, s.tip]),
+  sample.steps.map(s => [s.section, s.text, s.tip]));
+
+/* ---------- steps + timers ---------- */
+const st = parseSteps('Pat dry and season. Rest 15 minutes.\nTip: dry skin is crisp skin\n\nPan sauce:\n\nSimmer until reduced, about 3 minutes.');
+eq('paragraph steps: section, tip, timers', st, [
+  { section: null, text: 'Pat dry and season. Rest 15 minutes.', tip: 'dry skin is crisp skin', timers: [{ label: 'Rest', seconds: 900 }] },
+  { section: 'Pan sauce', text: 'Simmer until reduced, about 3 minutes.', tip: null, timers: [{ label: 'Simmer', seconds: 180 }] }
+]);
+eq('line steps, numbering stripped, range → low value',
+  parseSteps('1. Preheat the oven to 400°F\n2) Bake the cookies 10-12 minutes\nStep 3: Let cool 5 minutes').map(s => [s.text, s.timers]),
+  [['Preheat the oven to 400°F', []], ['Bake the cookies 10-12 minutes', [{ label: 'Bake cookies', seconds: 600 }]], ['Let cool 5 minutes', [{ label: 'Cool', seconds: 300 }]]]);
+eq('timer labels: object noun, multiple durations, fallback', [
+  detectTimers('Rest the chicken 5 minutes.', 6),
+  detectTimers('Simmer 20 minutes, then cover and bake 1 hour.', 2),
+  timerLabel('After 5 minutes it is done.', 6, 4)
+], [[{ label: 'Rest chicken', seconds: 300 }], [{ label: 'Simmer', seconds: 1200 }, { label: 'Bake', seconds: 3600 }], 'Step 4']);
+eq('parseLines strips bullets', parseLines('- 12-inch skillet\n\n* sheet pan \n'), ['12-inch skillet', 'sheet pan']);
+
+/* ---------- ids ---------- */
+const newSteps = mergeSteps(parseSteps('Boil water\nCook pasta 9 minutes\nDrain'), []);
+eq('new recipe ids are s1..sN / i1..iN', [newSteps.map(s => s.id), mergeIngredients(parseIngredients('1 lb pasta\nsalt'), []).map(i => i.id)],
+  [['s1', 's2', 's3'], ['i1', 'i2']]);
+
+const unchangedIng = mergeIngredients(parseIngredients(formatIngredients(sample.ingredients)), sample.ingredients);
+const unchangedSteps = mergeSteps(parseSteps(formatSteps(sample.steps)), sample.steps);
+eq('unchanged edit keeps every object verbatim (incl. curated timer labels)', [unchangedIng, unchangedSteps], [sample.ingredients, sample.steps]);
+
+const texts = sample.steps.map(s => s.text);
+const inserted = [...texts.slice(0, 2), 'Meanwhile, warm the plates in a low oven.', ...texts.slice(2)];
+eq('inserted step gets the next unused id', mergeSteps(parseSteps(inserted.join('\n\n')), sample.steps).map(s => s.id),
+  ['s1', 's2', 's7', 's3', 's4', 's5', 's6']);
+
+const delEdit = [texts[0], texts[1], texts[3].replace('1 minute', '2 minutes'), texts[4], texts[5], 'Serve with rice.'];
+const delEditOut = mergeSteps(parseSteps(delEdit.join('\n\n')), sample.steps);
+eq('delete s3 + edit s4: s4 kept, s3 never reused', delEditOut.map(s => s.id), ['s1', 's2', 's4', 's5', 's6', 's7']);
+eq('edited step re-detects timers', delEditOut[2].timers, [{ label: 'Stir', seconds: 120 }]);
+
+const s1edit = [texts[0].replace('Pat the thighs very dry', 'Pat the thighs completely dry'), ...texts.slice(1)];
+eq('small edit keeps id and curated timer label', mergeSteps(parseSteps(s1edit.join('\n\n')), sample.steps)[0].timers[0], { label: 'Dry brine', seconds: 900 });
+
+eq('reordered steps keep their ids', mergeSteps(parseSteps([texts[5], ...texts.slice(0, 5)].join('\n\n')), sample.steps).map(s => s.id),
+  ['s6', 's1', 's2', 's3', 's4', 's5']);
+eq('rewritten step in the same slot keeps its id',
+  mergeSteps(parseSteps([texts[0], 'Completely different words here.', texts[2]].join('\n\n')), sample.steps.slice(0, 3)).map(s => s.id), ['s1', 's2', 's3']);
+eq('reserved ids (journal stepIds) are never handed out', mergeSteps(parseSteps('Boil water\nAdd salt\nCook pasta'), newSteps.slice(0, 2), ['s9']).map(s => s.id),
+  ['s1', 's10', 's2']);
+
+const ingLines = sample.ingredients.map(formatIngredientLine);
+ingLines[1] = '3 tsp kosher salt, Diamond Crystal; use 1¼ tsp Morton';
+const ingEdit = mergeIngredients(parseIngredients([...ingLines.slice(0, 8), '1 tbsp chopped parsley'].join('\n')), sample.ingredients);
+eq('edited ingredient keeps id; removed i9 not reused', [ingEdit[1].id, ingEdit[1].qty, ingEdit.map(i => i.id).join(' ')],
+  ['i2', 3, 'i1 i2 i3 i4 i5 i6 i7 i8 i10']);
+
+eq('helpers: similarity, nextIdNumber, matchItems', [
+  similarity('1 tsp salt', '2 tsp salt') > 0.5, nextIdNumber(['s1', 's4', 'x9', 's2'], 's'), matchItems(['b', 'a'], ['a', 'b'])
+], [true, 5, [1, 0]]);
+
+/* ---------- links ---------- */
+eq('linkType', ['https://youtu.be/abc', 'www.youtube.com/watch?v=1', 'https://www.instagram.com/reel/xyz/', 'https://vm.tiktok.com/ZM/', 'https://smittenkitchen.com/x', 'not a url']
+  .map(linkType), ['youtube', 'youtube', 'instagram', 'tiktok', 'web', 'web']);
+
+/* ---------- render ---------- */
+const pass = results.filter(r => r.ok).length, fail = results.length - pass;
+const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+document.title = `${fail ? '✗' : '✓'} ${pass}/${results.length} · editor-parse`;
+document.getElementById('view').innerHTML = `
+  <h1>Editor parser tests</h1>
+  <p class="t-sum ${fail ? 'bad' : 'good'}">${pass} passed · ${fail} failed</p>
+  <table><tbody>${results.map(r => `<tr class="${r.ok ? 'pass' : 'fail'}"><td>${r.ok ? 'ok' : 'FAIL'}</td><td>${esc(r.name)}${r.ok ? '' :
+    `<pre>want ${esc(canon(r.want))}\ngot  ${esc(canon(r.got))}</pre>`}</td></tr>`).join('')}</tbody></table>`;
+</script>
+</body>
+</html>
