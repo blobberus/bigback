@@ -4,6 +4,8 @@
  *   toast('Saved', { type: 'ok'|'error'|'info', ms })
  *   sheet({ title, body, actions:[{ label, value, kind:'primary'|'danger'|'ghost' }] }) → Promise<value|null>
  *       body: html string/raw or Node. Resolves null on dismiss. sheet.el is available via onOpen(el).
+ *       Modal: role=dialog + aria-modal, named by its title (or `label`), background inert,
+ *       focus moved in / restored, Tab trapped, Escape closes the top sheet (if dismissable).
  *   confirmSheet(message, { ok:'Delete', danger:true }) → Promise<boolean>
  *   promptSheet(title, { value, placeholder, ok, multiline }) → Promise<string|null>
  *   busy(button, promise) — disables + spinner until promise settles
@@ -26,41 +28,91 @@ export function on(root, type, selector, fn, opts) {
   return () => root.removeEventListener(type, h, opts);
 }
 
+/* Toasts are announced by the #toasts container (index.html: aria-live="polite", present from
+   page load so screen readers register it). Errors also get role="alert" so they interrupt. */
 export function toast(msg, { type = 'info', ms = 2600 } = {}) {
   let host = $('#toasts');
-  if (!host) { host = document.createElement('div'); host.id = 'toasts'; document.body.append(host); }
+  if (!host) {
+    host = document.createElement('div'); host.id = 'toasts';
+    host.setAttribute('aria-live', 'polite'); document.body.append(host);
+  }
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
-  t.setAttribute('role', type === 'error' ? 'alert' : 'status');
+  if (type === 'error') t.setAttribute('role', 'alert');
   t.textContent = msg;
   host.append(t);
   requestAnimationFrame(() => t.classList.add('show'));
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, type === 'error' ? Math.max(ms, 5000) : ms);
 }
 
-export function sheet({ title = '', body = '', actions = [], onOpen, dismissable = true, className = '' } = {}) {
+/* ---------- sheets (modal dialogs) ----------
+   Open sheets stack (topmost last). While any is open, everything else in <body> except the
+   toasts is made inert, Tab cycles inside the top sheet, and only the top sheet reacts to
+   Escape. Focus moves in on open ([autofocus] or the sheet itself) and back on close. */
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
+const openSheets = [];
+let sheetSeq = 0;
+
+function syncInert() {
+  const top = openSheets[openSheets.length - 1];
+  for (const el of document.body.children) {
+    const block = !!top && el !== top && el.id !== 'toasts' && el.tagName !== 'SCRIPT';
+    if (block && !el.inert) { el.inert = true; el.dataset.sheetInert = ''; }
+    else if (!block && 'sheetInert' in el.dataset) { el.inert = false; delete el.dataset.sheetInert; }
+  }
+}
+
+function trapTab(e, box) {
+  const items = [...box.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null || el === document.activeElement);
+  if (!items.length) { e.preventDefault(); box.focus(); return; }
+  const first = items[0], last = items[items.length - 1], cur = document.activeElement;
+  if (e.shiftKey && (cur === first || cur === box || !box.contains(cur))) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && (cur === last || !box.contains(cur))) { e.preventDefault(); first.focus(); }
+}
+
+/**
+ * Optional extras (all backward compatible): label — accessible name when there is no title;
+ * role — 'dialog' (default) or 'alertdialog' for confirmations/alarms that need a response.
+ */
+export function sheet({ title = '', body = '', actions = [], onOpen, dismissable = true, className = '', label = '', role = 'dialog' } = {}) {
   return new Promise(resolve => {
     const prevFocus = document.activeElement;
+    const id = `sheet-${++sheetSeq}`;
     const wrap = document.createElement('div');
     wrap.className = 'sheet-backdrop';
+    const name = title ? `aria-labelledby="${id}-t"` : label ? `aria-label="${esc(label)}"` : '';
     wrap.innerHTML = `
-      <div class="sheet ${esc(className)}" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+      <div class="sheet ${esc(className)}" role="${role === 'alertdialog' ? 'alertdialog' : 'dialog'}" aria-modal="true" ${name} tabindex="-1">
         <div class="sheet-grip" aria-hidden="true"></div>
-        ${title ? `<h2 class="sheet-title">${esc(title)}</h2>` : ''}
+        ${title ? `<h2 class="sheet-title" id="${id}-t">${esc(title)}</h2>` : ''}
         <div class="sheet-body"></div>
         ${actions.length ? `<div class="sheet-actions">${actions.map((a, i) =>
           `<button type="button" class="btn ${a.kind === 'primary' ? 'btn-primary' : a.kind === 'danger' ? 'btn-danger' : 'btn-ghost'}" data-i="${i}">${esc(a.label)}</button>`).join('')}</div>` : ''}
       </div>`;
+    const box = wrap.querySelector('.sheet');
     const bodyEl = wrap.querySelector('.sheet-body');
     if (body instanceof Node) bodyEl.append(body); else bodyEl.innerHTML = toStr(body);
+    let closed = false;
     const close = v => {
+      if (closed) return;
+      closed = true;
       wrap.classList.remove('open');
+      wrap.style.pointerEvents = 'none';                 // taps fall through during the exit animation
       document.removeEventListener('keydown', onKey);
-      setTimeout(() => wrap.remove(), 220);
-      prevFocus?.focus?.();
+      openSheets.splice(openSheets.indexOf(wrap), 1);
+      syncInert();
+      wrap.inert = true;
+      setTimeout(() => wrap.remove(), reducedMotion() ? 0 : 220);
+      // Back to whatever opened the sheet; if a re-render removed it, to the page itself.
+      if (prevFocus?.isConnected) prevFocus.focus?.({ preventScroll: true });
+      else if (prevFocus && prevFocus !== document.body) document.getElementById('view')?.focus({ preventScroll: true });
       resolve(v);
     };
-    const onKey = e => { if (e.key === 'Escape' && dismissable) close(null); };
+    const onKey = e => {
+      if (openSheets[openSheets.length - 1] !== wrap) return;
+      if (e.key === 'Escape' && dismissable) { e.preventDefault(); close(null); }
+      else if (e.key === 'Tab') trapTab(e, box);
+    };
     wrap.addEventListener('click', e => {
       if (e.target === wrap && dismissable) return close(null);
       const b = e.target.closest('[data-i]');
@@ -72,24 +124,29 @@ export function sheet({ title = '', body = '', actions = [], onOpen, dismissable
     });
     document.addEventListener('keydown', onKey);
     document.body.append(wrap);
-    requestAnimationFrame(() => { wrap.classList.add('open'); (wrap.querySelector('[autofocus]') || wrap.querySelector('.sheet'))?.focus?.(); });
-    wrap.querySelector('.sheet').tabIndex = -1;
+    openSheets.push(wrap);
+    syncInert();
+    requestAnimationFrame(() => wrap.classList.add('open'));
     onOpen?.(wrap, close);
+    // Focus synchronously: iOS only raises the keyboard for focus() inside the opening tap.
+    if (!closed && !box.contains(document.activeElement)) (box.querySelector('[autofocus]') || box).focus({ preventScroll: true });
   });
 }
 
 export async function confirmSheet(message, { title = 'Are you sure?', ok = 'Confirm', danger = false } = {}) {
+  const id = `confirm-${++sheetSeq}`;
   const v = await sheet({
-    title, body: `<p>${esc(message)}</p>`,
-    actions: [{ label: 'Cancel', value: false }, { label: ok, value: true, kind: danger ? 'danger' : 'primary' }]
+    title, body: `<p id="${id}">${esc(message)}</p>`, role: 'alertdialog',
+    actions: [{ label: 'Cancel', value: false }, { label: ok, value: true, kind: danger ? 'danger' : 'primary' }],
+    onOpen: w => w.querySelector('.sheet').setAttribute('aria-describedby', id)
   });
   return v === true;
 }
 
 export async function promptSheet(title, { value = '', placeholder = '', ok = 'Save', multiline = false } = {}) {
   const field = multiline
-    ? `<textarea class="input" rows="4" placeholder="${esc(placeholder)}" autofocus>${esc(value)}</textarea>`
-    : `<input class="input" value="${esc(value)}" placeholder="${esc(placeholder)}" autofocus>`;
+    ? `<textarea class="input" rows="4" placeholder="${esc(placeholder)}" aria-label="${esc(title)}" autofocus>${esc(value)}</textarea>`
+    : `<input class="input" value="${esc(value)}" placeholder="${esc(placeholder)}" aria-label="${esc(title)}" autofocus>`;
   return sheet({
     title, body: field,
     actions: [{ label: 'Cancel', value: null }, { label: ok, kind: 'primary', value: w => w.querySelector('.input').value.trim() }],
