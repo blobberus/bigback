@@ -132,6 +132,38 @@
     check('onWakeLock returns unsubscribe', typeof off2 === 'function');
     off2();
 
+    /* ---- settings view (rendered off-screen; prefs restored afterwards) ---- */
+    const savedPrefs = localStorage.getItem('bb.prefs');
+    const P = await import('../js/prefs.js');
+    const box = document.createElement('div');
+    box.hidden = true;
+    document.body.append(box);
+    const cleanup = await (await import('../js/views/settings.js')).render(box, { query: new URLSearchParams() });
+    const $s = s => box.querySelector(s);
+    check('settings renders all sections', ['Kitchen', 'Appearance', 'GitHub sync', 'About'].every(t => box.textContent.includes(t)));
+    check('wake status text shown', $s('#st-wake').textContent.length > 3);
+    $s('[data-theme="dark"]').click();
+    check('theme segment sets prefs', P.getPrefs().theme === 'dark' && $s('[data-theme="dark"]').getAttribute('aria-pressed') === 'true');
+    $s('[data-theme="auto"]').click();
+    const snd = $s('input[data-pref="sound"]');
+    snd.click();
+    check('sound switch sets prefs', P.getPrefs().sound === snd.checked);
+    snd.click();
+    $s('[data-act="reveal"]').click();
+    check('token show/hide', $s('#st-token').type === 'text' && $s('[data-act="reveal"]').getAttribute('aria-pressed') === 'true');
+    $s('#st-token').value = '';
+    $s('#st-branch').value = 'main';
+    $s('form[data-form="gh"]').requestSubmit();
+    await wait(50);
+    check('save without token keeps reads working', P.getPrefs().token === '' && $s('.st-conn').dataset.state === 'off');
+    $s('[data-act="test"]').click();
+    const test = T.listTimers().find(t => t.label === 'Test alarm');
+    check('test alarm starts a 3s timer', !!test && test.seconds === 3);
+    if (test) T.cancelTimer(test.id);
+    cleanup?.();
+    box.remove();
+    if (savedPrefs == null) localStorage.removeItem('bb.prefs'); else localStorage.setItem('bb.prefs', savedPrefs);
+
     }
 
     async function swSuite() {
