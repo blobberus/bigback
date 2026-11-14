@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Bigback</title>
+  <rect width="512" height="512" rx="112" fill="#b4441e"/>
+  <g transform="translate(0 14)" fill="#f6f1e9">
+    <g fill="none" stroke="#f6f1e9" stroke-width="14" stroke-linecap="round" opacity=".72">
+      <path d="M204 150c-14-14 14-28 0-44"/>
+      <path d="M308 150c-14-14 14-28 0-44"/>
+    </g>
+    <rect x="230" y="166" width="52" height="28" rx="14"/>
+    <path d="M144 236c0-32 50-50 112-50s112 18 112 50z"/>
+    <rect x="118" y="228" width="276" height="24" rx="12"/>
+    <path d="M144 266h224v50c0 34-27 60-60 60H204c-33 0-60-26-60-60z"/>
+    <rect x="98" y="278" width="62" height="28" rx="14"/>
+    <rect x="352" y="278" width="62" height="28" rx="14"/>
+  </g>
+</svg>

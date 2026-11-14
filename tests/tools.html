@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kitchen tools test</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/tools.css">
+  <style>.pass { color: var(--ok); } .fail { color: var(--danger); font-weight: 700; }</style>
+</head>
+<body data-view="library">
+  <!-- Run: python scripts/smoke.py tests/tools.html "tests/tools.html?sw"  (add --dom to see each check) -->
+  <main id="view"><h1>Kitchen tools</h1><ol id="results" class="small"></ol></main>
+  <div id="tools"></div>
+  <div id="toasts" aria-live="polite"></div>
+  <script type="module">
+    // Clean slate before the modules read localStorage.
+    ['bb.timers', 'bb.stopwatch', 'bb.notifyAsked'].forEach(k => localStorage.removeItem(k));
+
+    const out = document.getElementById('results');
+    let fails = 0;
+    const check = (name, ok, detail = '') => {
+      const li = document.createElement('li');
+      li.className = ok ? 'pass' : 'fail';
+      li.textContent = `${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ' (' + detail + ')' : ''}`;
+      out.append(li);
+      if (!ok) { fails++; console.error('Error: tools check failed:', name, detail); }
+    };
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    const stored = k => JSON.parse(localStorage.getItem(k) || 'null');
+
+    // tests/tools.html → timers, stopwatch, wake lock.  tests/tools.html?sw → service worker
+    // (separate run: it needs real network time inside the smoke test's virtual-time budget).
+    if (new URLSearchParams(location.search).has('sw')) await swSuite(); else await toolsSuite();
+    out.insertAdjacentHTML('beforeend', `<li><strong>${fails ? fails + ' check(s) did not pass' : 'All checks passed'}</strong></li>`);
+    document.title = `${fails ? 'FAIL' : 'PASS'} ${out.children.length - 1} checks`;   // read by real-time runners
+
+    async function toolsSuite() {
+    const T = await import('../js/timers.js');
+    T.mount();
+
+    /* ---- timers ---- */
+    const seen = [];
+    const off = T.onTimers(list => seen.push(list.length));
+    const id = T.startTimer({ label: 'Sear chicken', seconds: 120, slug: 'crispy-skillet-chicken-thighs', stepId: 's2' });
+    let list = T.listTimers();
+    check('startTimer returns an id and lists it', typeof id === 'string' && list.length === 1 && list[0].id === id);
+    check('list item has contract fields', ['id', 'label', 'seconds', 'endAt', 'pausedLeft', 'slug', 'stepId', 'done'].every(k => k in list[0]));
+    check('onTimers fired', seen.length > 0 && seen.at(-1) === 1);
+    let s = stored('bb.timers');
+    check('persisted with endAt', Array.isArray(s) && s[0].id === id && typeof s[0].endAt === 'number' && s[0].pausedLeft === null);
+    check('tray pill rendered', !!document.querySelector(`#tools .tt-pill[data-id="${id}"]`));
+    check('double-tap guard returns same id', T.startTimer({ label: 'Sear chicken', seconds: 120, slug: 'crispy-skillet-chicken-thighs', stepId: 's2' }) === id && T.listTimers().length === 1);
+
+    T.pauseTimer(id);
+    s = stored('bb.timers')[0];
+    check('pause persists pausedLeft', s.endAt === null && s.pausedLeft > 118000 && s.pausedLeft <= 120000, `pausedLeft=${s.pausedLeft}`);
+    T.addTime(id, 60);
+    check('addTime while paused', T.listTimers()[0].pausedLeft > 178000);
+    T.resumeTimer(id);
+    s = stored('bb.timers')[0];
+    check('resume persists endAt', s.pausedLeft === null && s.endAt - Date.now() > 178000);
+
+    // A fresh module instance (as after a reload) reads the same state back.
+    const T2 = await import('../js/timers.js?reload=1');
+    const l2 = T2.listTimers();
+    check('state survives reload', l2.length === 1 && l2[0].id === id && l2[0].running && l2[0].left > 170000);
+
+    // The double-tap guard opened the pill; collapse + expand it again by tapping.
+    const main = () => document.querySelector(`.tt-pill[data-id="${id}"] .tt-main`);
+    check('guard opened the pill', main().getAttribute('aria-expanded') === 'true');
+    main().click();
+    check('tap collapses pill', main().getAttribute('aria-expanded') === 'false');
+    main().click();
+    check('pill expands with controls', !!document.querySelector(`.tt-pill[data-id="${id}"] [data-act="pause"]`) && !!document.querySelector('[data-act="go"]'));
+
+    // Short timer finishes → done + alarm sheet.
+    const quick = T.startTimer({ label: 'Rest', seconds: 1 });
+    await wait(1400);
+    const q = T.listTimers().find(t => t.id === quick);
+    check('short timer finishes', q && q.done === true && q.left === 0);
+    check('alarm sheet shown', !!document.querySelector('.sheet.tt-alarm [data-alarm="dismiss"]'));
+    check('done persisted', stored('bb.timers').find(t => t.id === quick)?.done === true);
+    document.querySelector('.sheet.tt-alarm [data-alarm="snooze"]').click();
+    const sn = T.listTimers().find(t => t.id === quick);
+    check('snooze restarts +1 min', sn && !sn.done && sn.left > 55000);
+    T.cancelTimer(quick);
+    T.cancelTimer(id);
+    check('cancel removes timers', T.listTimers().length === 0 && stored('bb.timers').length === 0);
+    off();
+    await wait(300);
+    check('alarm sheet closed', !document.querySelector('.sheet.tt-alarm'));
+
+    /* ---- stopwatch ---- */
+    const S = await import('../js/stopwatch.js');
+    S.mount();
+    const fab = document.querySelector('#tools .sw-fab');
+    check('stopwatch button mounted', !!fab && fab.getAttribute('aria-expanded') === 'false');
+    S.toggleStopwatch();
+    const panel = document.getElementById('sw-panel');
+    check('toggle opens panel', !panel.hidden && fab.getAttribute('aria-expanded') === 'true' && document.getElementById('tools').classList.contains('sw-open'));
+    document.querySelector('[data-sw="startpause"]').click();
+    let sw = stored('bb.stopwatch');
+    check('start persists running + startedAt', sw?.running === true && typeof sw.startedAt === 'number');
+    await wait(350);
+    document.querySelector('[data-sw="lap"]').click();
+    sw = stored('bb.stopwatch');
+    check('lap recorded', sw.laps.length === 1 && sw.laps[0] >= 300, `lap=${sw.laps[0]}`);
+    check('lap list rendered', document.querySelectorAll('.sw-laps li').length === 1);
+    await wait(150);
+    document.querySelector('[data-sw="startpause"]').click();
+    sw = stored('bb.stopwatch');
+    check('pause keeps accumulated', sw.running === false && sw.accumulated >= 450 && sw.startedAt === null, `acc=${sw.accumulated}`);
+    check('display shows tenths', /^\d+:\d\d\.\d$/.test(document.querySelector('.sw-display').textContent));
+    const S2 = await import('../js/stopwatch.js?reload=1');
+    check('stopwatch module reload is clean', typeof S2.toggleStopwatch === 'function');
+    S.toggleStopwatch();
+    await wait(250);
+    check('toggle collapses panel', panel.hidden && fab.getAttribute('aria-expanded') === 'false');
+    check('collapsed paused button shows time', getComputedStyle(document.querySelector('.sw-fab-time')).display !== 'none');
+    document.querySelector('[data-sw="reset"]').click();
+    sw = stored('bb.stopwatch');
+    check('reset clears state', sw.running === false && sw.accumulated === 0 && sw.laps.length === 0);
+    check('--tools-h published', /px$/.test(document.documentElement.style.getPropertyValue('--tools-h')));
+
+    /* ---- wake lock ---- */
+    const W = await import('../js/wakelock.js');
+    W.initWakeLock(); W.initWakeLock();          // idempotent
+    check('wake lock status valid', ['active', 'off', 'unsupported', 'error'].includes(W.wakeLockStatus()), W.wakeLockStatus());
+    check('wake lock off by default', W.wakeLockStatus() !== 'active');
+    const off2 = W.onWakeLock(() => {});
+    check('onWakeLock returns unsubscribe', typeof off2 === 'function');
+    off2();
+
+    /* ---- settings view (rendered off-screen; prefs restored afterwards) ---- */
+    const savedPrefs = localStorage.getItem('bb.prefs');
+    const P = await import('../js/prefs.js');
+    const box = document.createElement('div');
+    box.hidden = true;
+    document.body.append(box);
+    const cleanup = await (await import('../js/views/settings.js')).render(box, { query: new URLSearchParams() });
+    const $s = s => box.querySelector(s);
+    check('settings renders all sections', ['Kitchen', 'Appearance', 'GitHub sync', 'About'].every(t => box.textContent.includes(t)));
+    check('wake status text shown', $s('#st-wake').textContent.length > 3);
+    $s('[data-theme="dark"]').click();
+    check('theme segment sets prefs', P.getPrefs().theme === 'dark' && $s('[data-theme="dark"]').getAttribute('aria-pressed') === 'true');
+    $s('[data-theme="auto"]').click();
+    const snd = $s('input[data-pref="sound"]');
+    snd.click();
+    check('sound switch sets prefs', P.getPrefs().sound === snd.checked);
+    snd.click();
+    $s('[data-act="reveal"]').click();
+    check('token show/hide', $s('#st-token').type === 'text' && $s('[data-act="reveal"]').getAttribute('aria-pressed') === 'true');
+    $s('#st-token').value = '';
+    $s('#st-branch').value = 'main';
+    $s('form[data-form="gh"]').requestSubmit();
+    await wait(50);
+    check('save without token keeps reads working', P.getPrefs().token === '' && $s('.st-conn').dataset.state === 'off');
+    $s('[data-act="test"]').click();
+    const test = T.listTimers().find(t => t.label === 'Test alarm');
+    check('test alarm starts a 3s timer', !!test && test.seconds === 3);
+    if (test) T.cancelTimer(test.id);
+    cleanup?.();
+    box.remove();
+    if (savedPrefs == null) localStorage.removeItem('bb.prefs'); else localStorage.setItem('bb.prefs', savedPrefs);
+
+    }
+
+    async function swSuite() {
+    /* ---- service worker (localhost counts as a secure context) ----
+       Needs real time: headless virtual time (smoke.py) stalls worker installs, so there this
+       suite stops after "registered" without a summary line. It counts as passed only when the
+       "All checks passed" line (and the PASS title) appear, e.g. in a normal browser tab. */
+    out.insertAdjacentHTML('beforebegin', '<p class="muted small">Service worker suite. No summary line below means it was cut short (virtual time), not passed.</p>');
+    if ('serviceWorker' in navigator && window.isSecureContext) {
+      const timeout = (p, ms) => Promise.race([p, wait(ms).then(() => null)]);
+      const reg = await navigator.serviceWorker.register('../sw.js');
+      check('service worker registered', !!reg);
+      await timeout(navigator.serviceWorker.ready, 3000);
+      if (!navigator.serviceWorker.controller) {
+        await timeout(new Promise(r => navigator.serviceWorker.addEventListener('controllerchange', r, { once: true })), 2000);
+      }
+      check('service worker controls the page', !!navigator.serviceWorker.controller);
+      const names = await caches.keys();
+      check('shell cache created', names.some(n => n.startsWith('bb-shell-')), names.join(','));
+      const shell = await caches.open(names.find(n => n.startsWith('bb-shell-')) || 'none');
+      check('app shell precached', !!(await shell.match(new URL('../js/app.js', location.href).href)) && !!(await shell.match(new URL('../', location.href).href)));
+      const r = await fetch(`../recipes/index.json?t=${Date.now()}`, { cache: 'no-store' });
+      check('data request still served', r.ok && Array.isArray((await r.json()).recipes));
+      const data = await caches.open('bb-data-v1');
+      check('data cached without cache-buster', !!(await data.match(new URL('../recipes/index.json', location.href).href)));
+      const api = await caches.match('https://api.github.com/repos/x/y');
+      check('GitHub API never cached', !api);
+      await reg.unregister();
+      await Promise.all((await caches.keys()).filter(k => k.startsWith('bb-')).map(k => caches.delete(k)));
+    } else {
+      check('service worker test skipped (no secure context)', true);
+    }
+    }
+
+  </script>
+</body>
+</html>
