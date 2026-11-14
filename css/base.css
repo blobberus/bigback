@@ -53,6 +53,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   margin: 0; min-height: 100dvh; background: var(--bg); color: var(--ink);
   font: 16px/1.5 var(--font-body); -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;   /* long URLs / unbroken words wrap instead of widening a 360px screen */
   padding-bottom: calc(var(--nav-h) + var(--safe-b) + 8px);
   -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none;
 }
@@ -131,6 +132,11 @@ body.is-offline .offline-banner { display: block; }
 .btn-ghost { background: transparent; border-color: transparent; }
 .btn-soft { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
 .btn-sm { min-height: 34px; padding: 0 12px; font-size: .875rem; }
+/* Compact controls keep their look but get a ≥ 44px-tall invisible hit area (::before, since
+   .btn.is-busy uses ::after). Library chips use the same trick. */
+.btn-sm, .seg button, .chip { position: relative; }
+.btn-sm::before, .seg button::before, .chip::before { content: ""; position: absolute; inset: -5px 0; }
+.chip::before { inset: -6px 0; }
 .btn-block { display: flex; width: 100%; }
 .btn.is-busy { color: transparent !important; position: relative; }
 .btn.is-busy::after { content: ""; position: absolute; width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid currentColor; border-color: var(--line); border-top-color: var(--accent); animation: spin .7s linear infinite; }
@@ -178,8 +184,10 @@ textarea.input { min-height: 96px; resize: vertical; line-height: 1.45; }
 .chip {
   display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 12px; border-radius: 999px;
   border: 1px solid var(--line); background: var(--surface); font-size: .85rem; font-weight: 600; color: var(--ink-2);
-  cursor: pointer; white-space: nowrap; text-decoration: none;
+  cursor: pointer; white-space: nowrap; text-decoration: none; max-width: 100%;
 }
+/* Wrap user text (playlist names, tags) in .chip-text so an overlong one ellipsizes in the chip. */
+.chip-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .chip[aria-pressed="true"], .chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .chip-tag { min-height: 24px; padding: 0 9px; font-size: .75rem; background: var(--surface-2); border-color: transparent; cursor: default; }
 .badge { display: inline-flex; align-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-size: .7rem; font-weight: 800; }

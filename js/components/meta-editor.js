@@ -128,14 +128,14 @@ export async function editMeta(slug, { title = '' } = {}) {
     const typed = normTag(input.value);
     const pool = known.filter(t => !st.tags.includes(t) && (!typed || t.includes(typed)));
     const fresh = typed && !st.tags.includes(typed) && !known.includes(typed);
-    part('sugg').innerHTML = html`${fresh ? html`<button type="button" class="chip me-sugg-new" data-addtag="${typed}">${raw(ICON.plus)}Add “${typed}”</button>` : ''}${pool.slice(0, 12).map(t => html`<button type="button" class="chip" data-addtag="${t}">${raw(ICON.plus)}${t}</button>`)}`;
+    part('sugg').innerHTML = html`${fresh ? html`<button type="button" class="chip me-sugg-new" data-addtag="${typed}">${raw(ICON.plus)}<span class="chip-text">Add “${typed}”</span></button>` : ''}${pool.slice(0, 12).map(t => html`<button type="button" class="chip" data-addtag="${t}" aria-label="Add tag ${t}">${raw(ICON.plus)}<span class="chip-text">${t}</span></button>`)}`;
     part('sugg').hidden = !fresh && !pool.length;
   }
   /** Repaint the playlist chips; keyboard focus follows `focusId` (or the chip that had it). */
   function paintPlaylists(focusId) {
     const box = part('pls'), f = document.activeElement;
     const keep = focusId || (box.contains(f) ? f.dataset.pl || f.dataset.act : null);
-    box.innerHTML = html`${playlists.map(p => html`<button type="button" class="chip me-pl" data-pl="${p.id}" aria-pressed="${p.on}">${raw(p.on ? ICON.check : ICON.plus)}${p.name}</button>`)}<button type="button" class="chip me-pl-new" data-act="newpl" ${part('newpl').hidden ? '' : raw('hidden')}>${raw(ICON.plus)}New playlist</button>`;
+    box.innerHTML = html`${playlists.map(p => html`<button type="button" class="chip me-pl" data-pl="${p.id}" aria-pressed="${p.on}">${raw(p.on ? ICON.check : ICON.plus)}<span class="chip-text">${p.name}</span></button>`)}<button type="button" class="chip me-pl-new" data-act="newpl" ${part('newpl').hidden ? '' : raw('hidden')}>${raw(ICON.plus)}New playlist</button>`;
     if (keep) [...box.querySelectorAll('button:not([hidden])')].find(b => (b.dataset.pl || b.dataset.act) === keep)?.focus();
   }
 
