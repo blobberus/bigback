@@ -6,8 +6,8 @@
       "rating": 9,
       "proficiency": 4,
       "addedAt": "2026-11-14T10:00:00Z",
-      "cooked": 0,
-      "lastCooked": null
+      "cooked": 1,
+      "lastCooked": "2026-11-14T23:05:41Z"
     }
   },
   "playlists": []
