@@ -1,0 +1,15 @@
+# autopilot runtime
+autopilot/logs/
+autopilot/.lock
+
+# Claude Code local state
+.claude/worktrees/
+.claude/settings.local.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+__pycache__/
+*.pyc
