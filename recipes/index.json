@@ -1,0 +1,21 @@
+{
+  "recipes": [
+    {
+      "slug": "crispy-skillet-chicken-thighs",
+      "title": "Crispy Skillet Chicken Thighs with Lemon-Garlic Pan Sauce",
+      "summary": "Shatter-crisp skin, juicy meat, and a 3-minute pan sauce from the fond. Sample recipe — delete anytime.",
+      "image": null,
+      "time": {
+        "prep": 10,
+        "cook": 35,
+        "total": 45
+      },
+      "servings": 4,
+      "status": "built",
+      "sourceType": "custom",
+      "updatedAt": "2026-11-14T10:00:00Z",
+      "openNotes": 0
+    }
+  ],
+  "pending": []
+}
