@@ -67,7 +67,7 @@ async function load(path, fallback, { force = false } = {}) {
   try {
     const c = client();
     if (c) {
-      try { data = await c.readJson(path, undefined); }
+      try { data = (await c.readJson(path, null)) ?? undefined; }   // missing file → fallback below
       catch (e) {                      // bad/expired token or API hiccup → public copy
         console.warn('GitHub read failed, using site copy', path, e);
         emit({ type: 'read-error', error: e, paths: [path] });
