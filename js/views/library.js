@@ -22,7 +22,7 @@ import {
 } from '../store.js';
 import { setTopbar, on, stars, sheet, promptSheet, confirmSheet, toast, reportError } from '../ui.js';
 import { isConnected } from '../prefs.js';
-import { PROFICIENCY, editMeta } from '../components/meta-editor.js';
+import { PROFICIENCY, profLabel, editMeta } from '../components/meta-editor.js';
 
 /* ---------- shared display helpers ---------- */
 const svg = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
@@ -258,7 +258,7 @@ function card({ r, e, t }, pl) {
         <span class="rcard-meta">
           ${t ? html`<span class="rm-time">${raw(ICON.clock)}${fmtMinutes(t)}</span>` : ''}
           ${e.rating ? html`<span class="rm-rating">${e.rating}/10</span>` : html`<span class="rm-rating is-blank">Unrated</span>`}
-          ${e.proficiency ? html`<span class="rm-prof">${raw(stars(e.proficiency, 5))}</span>` : ''}
+          ${e.proficiency ? html`<span class="rm-prof">${raw(stars(e.proficiency, 5))}<span class="rm-prof-l">${profLabel(e.proficiency)}</span></span>` : ''}
         </span>
         ${tags.length || flags ? html`<span class="rcard-tags">
           ${r.status === 'custom' ? html`<span class="flag flag-build">Needs build</span>` : ''}

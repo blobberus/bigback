@@ -19,7 +19,7 @@
   --r-sm: 8px; --r: 14px; --r-lg: 22px;
   --shadow: 0 1px 2px rgb(36 31 26 / .06), 0 6px 20px rgb(36 31 26 / .07);
   --shadow-lg: 0 10px 40px rgb(36 31 26 / .18);
-  --nav-h: 64px; --top-h: 56px;
+  --nav-h: 50px; --top-h: 56px;
   /* Notch / home-indicator insets (index.html sets viewport-fit=cover). Fixed and sticky bars pad
      by these; left/right matter in landscape on notched phones. */
   --safe-b: env(safe-area-inset-bottom, 0px); --safe-t: env(safe-area-inset-top, 0px);
@@ -107,10 +107,10 @@ svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; 
   background: color-mix(in srgb, var(--surface) 92%, transparent);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line);
 }
-.bottomnav a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--muted); text-decoration: none; font-size: .72rem; font-weight: 600; }
-.bottomnav svg { width: 24px; height: 24px; }
+.bottomnav a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; color: var(--muted); text-decoration: none; font-size: .69rem; font-weight: 650; line-height: 1.15; }
+.bottomnav svg { width: 21px; height: 21px; }
 .bottomnav a[aria-current] { color: var(--accent); }
-.bottomnav .nav-add svg { width: 30px; height: 30px; padding: 4px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); }
+.bottomnav .nav-add svg { width: 23px; height: 23px; padding: 3px; border-radius: 7px; background: var(--accent); color: var(--accent-ink); }
 body[data-view="cook"] .bottomnav { display: none; }
 body[data-view="cook"] { padding-bottom: var(--safe-b); }
 
@@ -203,11 +203,15 @@ textarea.input { min-height: 96px; resize: vertical; line-height: 1.45; }
 .empty .btn { margin-top: 12px; }
 .section-title { font-family: var(--font-body); font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 24px 0 10px; }
 
-/* ---------- sheet (bottom drawer on phones, dialog on desktop) ---------- */
-.sheet-backdrop { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; background: rgb(20 16 12 / 0); transition: background .2s; }
+/* ---------- sheet (bottom drawer on phones, dialog on desktop) ----------
+   html.sheet-open: the page behind stays put. The backdrop takes no pan gestures (cursor:
+   pointer also makes iOS deliver the tap-outside click); the sheet scrolls inside itself only. */
+html.sheet-open, html.sheet-open body { overflow: hidden; }
+.sheet-backdrop { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; background: rgb(20 16 12 / 0); transition: background .2s; touch-action: none; cursor: pointer; overscroll-behavior: contain; }
 .sheet-backdrop.open { background: rgb(20 16 12 / .45); }
 .sheet {
   width: 100%; max-width: 560px; max-height: 88dvh; overflow: auto; outline: none;
+  cursor: auto; touch-action: pan-y; overscroll-behavior: contain;
   background: var(--surface); border-radius: var(--r-lg) var(--r-lg) 0 0; box-shadow: var(--shadow-lg);
   padding: 8px max(18px, var(--safe-r)) calc(18px + var(--safe-b)) max(18px, var(--safe-l));
   transform: translateY(100%); transition: transform .22s cubic-bezier(.2,.8,.2,1);

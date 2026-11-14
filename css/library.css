@@ -14,7 +14,9 @@
 .ms-rating { color: var(--ink); }
 .ms-blank { font-weight: 500; color: var(--muted); }
 .ms-more { font-weight: 600; color: var(--muted); font-size: .75rem; }
+.ms-prof { display: inline-flex; align-items: center; gap: 6px; }
 .ms-prof .meter { font-size: .8rem; }
+.ms-prof-l { font-weight: 650; color: var(--ink-2); }
 
 /* ---------- meta editor sheet ---------- */
 .meta-ed { display: grid; gap: 22px; padding-bottom: 2px; }
@@ -185,7 +187,11 @@
 .rm-time { display: inline-flex; align-items: center; gap: 4px; }
 .rm-time svg { width: 14px; height: 14px; color: var(--muted); }
 .rm-rating.is-blank { color: var(--muted); font-weight: 500; }
+.rm-prof { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.rcard-meta > .rm-prof { flex-basis: 100%; }               /* its own line: no stray "·" when it wraps */
+.rcard-meta > .rm-prof::before { content: none; }
 .rm-prof .meter { font-size: .72rem; letter-spacing: 1.5px; }
+.rm-prof-l { font-weight: 600; }
 .rcard-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
 .rcard-tags .chip-tag { min-height: 22px; }
 .flag {

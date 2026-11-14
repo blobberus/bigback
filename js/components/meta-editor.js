@@ -43,8 +43,8 @@ export function metaSummary(entry) {
   return html`<span class="meta-sum">${e.rating
     ? html`<span class="ms-item ms-rating">${e.rating}/10</span>`
     : html`<span class="ms-item ms-blank">Unrated</span>`}${e.proficiency
-    ? html`<span class="ms-item ms-prof" title="${profLabel(e.proficiency)}">${raw(stars(e.proficiency, 5))}</span>`
-    : ''}${tags.slice(0, 3).map(t => html`<span class="chip chip-tag">${t}</span>`)}${tags.length > 3
+    ? html`<span class="ms-item ms-prof">${raw(stars(e.proficiency, 5))}<span class="ms-prof-l">${profLabel(e.proficiency)}</span></span>`
+    : html`<span class="ms-item ms-blank">Proficiency not set</span>`}${tags.slice(0, 3).map(t => html`<span class="chip chip-tag">${t}</span>`)}${tags.length > 3
     ? html`<span class="ms-item ms-more">+${tags.length - 3}</span>` : ''}</span>`;
 }
 

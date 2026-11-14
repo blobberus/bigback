@@ -47,8 +47,10 @@ export function toast(msg, { type = 'info', ms = 2600 } = {}) {
 
 /* ---------- sheets (modal dialogs) ----------
    Open sheets stack (topmost last). While any is open, everything else in <body> except the
-   toasts is made inert, Tab cycles inside the top sheet, and only the top sheet reacts to
-   Escape. Focus moves in on open ([autofocus] or the sheet itself) and back on close. */
+   toasts is made inert, the page behind can't scroll (html.sheet-open), Tab cycles inside the
+   top sheet, and only the top sheet reacts to Escape. Focus moves in on open ([autofocus] or
+   the sheet itself) and back on close. Dismissable sheets also close on a tap outside or a
+   swipe down that starts at the top of the sheet's own scroll (phone layout). */
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
 const openSheets = [];
 let sheetSeq = 0;
@@ -60,6 +62,46 @@ function syncInert() {
     if (block && !el.inert) { el.inert = true; el.dataset.sheetInert = ''; }
     else if (!block && 'sheetInert' in el.dataset) { el.inert = false; delete el.dataset.sheetInert; }
   }
+}
+
+function syncScrollLock() {
+  document.documentElement.classList.toggle('sheet-open', openSheets.length > 0);
+}
+
+/** Drag the bottom sheet down to close it. Only from the top of its own scroll, so scrolling a
+ *  long sheet still works; a short pull springs back. */
+function swipeToClose(wrap, box, close) {
+  let y0 = 0, x0 = 0, t0 = 0, dy = 0, mode = null;           // null → undecided, 'drag' | 'skip'
+  const phone = () => !matchMedia('(min-width: 700px)').matches;
+  box.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    mode = e.touches.length !== 1 || !phone() || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) ? 'skip' : null;
+    y0 = t.clientY; x0 = t.clientX; t0 = Date.now(); dy = 0;
+  }, { passive: true });
+  box.addEventListener('touchmove', e => {
+    if (mode === 'skip') return;
+    const t = e.touches[0], d = t.clientY - y0, dx = t.clientX - x0;
+    if (mode === null) {
+      if (Math.abs(d) < 6 && Math.abs(dx) < 6) return;
+      mode = d > 0 && Math.abs(d) > Math.abs(dx) && box.scrollTop <= 0 ? 'drag' : 'skip';
+      if (mode === 'skip') return;
+      box.style.transition = 'none';
+    }
+    if (e.cancelable) e.preventDefault();                   // the sheet moves, not the page
+    dy = Math.max(0, d);
+    box.style.transform = `translateY(${dy}px)`;
+    wrap.style.backgroundColor = `rgb(20 16 12 / ${(0.45 * Math.max(0, 1 - dy / box.offsetHeight)).toFixed(3)})`;
+  }, { passive: false });
+  const end = () => {
+    if (mode !== 'drag') { mode = null; return; }
+    mode = null;
+    const fast = dy > 40 && dy / Math.max(1, Date.now() - t0) > 0.45;
+    // Clearing the inline styles lets the CSS transition carry the sheet on from where the finger left it.
+    box.style.transition = ''; box.style.transform = ''; wrap.style.backgroundColor = '';
+    if (fast || dy > Math.min(120, box.offsetHeight * 0.3)) close(null);
+  };
+  box.addEventListener('touchend', end);
+  box.addEventListener('touchcancel', end);
 }
 
 function trapTab(e, box) {
@@ -101,6 +143,7 @@ export function sheet({ title = '', body = '', actions = [], onOpen, dismissable
       document.removeEventListener('keydown', onKey);
       openSheets.splice(openSheets.indexOf(wrap), 1);
       syncInert();
+      syncScrollLock();
       wrap.inert = true;
       setTimeout(() => wrap.remove(), reducedMotion() ? 0 : 220);
       // Back to whatever opened the sheet; if a re-render removed it, to the page itself.
@@ -126,6 +169,8 @@ export function sheet({ title = '', body = '', actions = [], onOpen, dismissable
     document.body.append(wrap);
     openSheets.push(wrap);
     syncInert();
+    syncScrollLock();
+    if (dismissable) swipeToClose(wrap, box, close);
     requestAnimationFrame(() => wrap.classList.add('open'));
     onOpen?.(wrap, close);
     // Focus synchronously: iOS only raises the keyboard for focus() inside the opening tap.

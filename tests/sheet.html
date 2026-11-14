@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sheet gestures · Bigback</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <style>body { padding-bottom: 24px; } .tall { height: 2000px; } td { padding: 4px 8px; border-top: 1px solid var(--line); font-size: .85rem; }</style>
+</head>
+<body>
+<!-- Run: python scripts/smoke.py tests/sheet.html -->
+<main id="view"><p class="muted">Running…</p><div class="tall"></div></main>
+<!-- Animation frames need real time: this holds smoke.py's DOM dump until the release below. -->
+<img hidden alt="" src="/__smoke/hold">
+<script type="module">
+import { sheet } from '../js/ui.js';
+const results = [];
+const ok = (name, cond, detail = '') => { results.push({ name, ok: !!cond, detail }); if (!cond) console.error(`Test failed: ${name} ${detail}`); };
+const frame = () => new Promise(r => requestAnimationFrame(() => r()));
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const touch = (el, type, y, x = 200) => {
+  const t = new Touch({ identifier: 1, target: el, clientX: x, clientY: y });
+  const ev = new TouchEvent(type, { touches: type === 'touchend' ? [] : [t], changedTouches: [t], bubbles: true, cancelable: true });
+  el.dispatchEvent(ev);
+  return ev;
+};
+const open = (opts = {}) => {
+  let res = null;
+  const p = sheet({ title: 'Rating', body: `<div style="height:${opts.h || 200}px">body</div>`, actions: [{ label: 'Done', value: true }], ...opts }).then(v => { res = { v }; });
+  const wrap = document.querySelector('.sheet-backdrop:last-of-type'), box = wrap.querySelector('.sheet');
+  return { p, wrap, box, result: () => res };
+};
+
+try {
+  window.scrollTo(0, 300);
+  let s = open();
+  await frame(); await frame();
+  ok('open sheet locks the page behind', document.documentElement.classList.contains('sheet-open') && getComputedStyle(document.body).overflow === 'hidden');
+  ok('backdrop takes no pan gestures; sheet scrolls only itself', getComputedStyle(s.wrap).touchAction === 'none'
+    && getComputedStyle(s.box).overscrollBehaviorY === 'contain');
+
+  // short pull springs back
+  touch(s.box, 'touchstart', 500); touch(s.box, 'touchmove', 510); const mv = touch(s.box, 'touchmove', 530);
+  ok('pulling down moves the sheet (and not the page)', /translateY\(30px\)/.test(s.box.style.transform) && mv.defaultPrevented, s.box.style.transform);
+  await wait(300); touch(s.box, 'touchend', 530);
+  await wait(50);
+  ok('a short slow pull springs back', !s.result() && s.box.style.transform === '' && document.contains(s.wrap));
+
+  // long pull closes
+  touch(s.box, 'touchstart', 400); touch(s.box, 'touchmove', 420); touch(s.box, 'touchmove', 600); touch(s.box, 'touchend', 600);
+  await s.p;
+  ok('swiping down closes it', s.result() && s.result().v === null);
+  ok('closing unlocks the page', !document.documentElement.classList.contains('sheet-open'));
+
+  // quick flick closes
+  s = open(); await frame();
+  touch(s.box, 'touchstart', 400); touch(s.box, 'touchmove', 420); touch(s.box, 'touchmove', 470); touch(s.box, 'touchend', 470);
+  await s.p;
+  ok('a quick flick closes it', s.result()?.v === null);
+
+  // scrolled long sheet: pulling down scrolls the sheet instead
+  s = open({ h: 3000 }); await frame();
+  s.box.scrollTop = 200;
+  touch(s.box, 'touchstart', 400); touch(s.box, 'touchmove', 420); const mv2 = touch(s.box, 'touchmove', 600); touch(s.box, 'touchend', 600);
+  await wait(50);
+  ok('mid-scroll, a pull scrolls the sheet rather than closing it', !s.result() && !mv2.defaultPrevented && s.box.style.transform === '');
+  ok('upward drag never drags the sheet', (() => { s.box.scrollTop = 0; touch(s.box, 'touchstart', 400); touch(s.box, 'touchmove', 380); const e = touch(s.box, 'touchmove', 300); touch(s.box, 'touchend', 300); return !e.defaultPrevented && s.box.style.transform === ''; })());
+
+  // tap outside
+  s.wrap.click();
+  await s.p;
+  ok('tapping outside closes it', s.result()?.v === null);
+
+  // not dismissable: no swipe, no tap outside
+  s = open({ dismissable: false }); await frame();
+  touch(s.box, 'touchstart', 400); touch(s.box, 'touchmove', 420); touch(s.box, 'touchmove', 650); touch(s.box, 'touchend', 650);
+  s.wrap.click();
+  await wait(50);
+  ok('sheets that need an answer ignore swipes and outside taps', !s.result() && document.contains(s.wrap));
+  s.box.querySelector('[data-i]').click();
+  await s.p;
+  ok('…and close from their buttons', s.result()?.v === true && !document.documentElement.classList.contains('sheet-open'));
+} catch (e) {
+  ok('suite threw', false, String(e?.stack || e));
+}
+const failed = results.filter(r => !r.ok).length;
+document.querySelector('#view').innerHTML = `<p><strong>${results.length - failed}/${results.length} passed</strong></p><table>${results.map(r =>
+  `<tr><td>${r.ok ? '✓' : '✗'}</td><td>${r.name}${r.detail && !r.ok ? ` — ${r.detail}` : ''}</td></tr>`).join('')}</table>`;
+fetch('/__smoke/release').catch(() => {});
+</script>
+</body>
+</html>
