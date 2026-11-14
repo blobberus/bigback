@@ -31,7 +31,8 @@ const SHELL = [
   'js/timers.js', 'js/stopwatch.js', 'js/wakelock.js',
   'js/views/library.js', 'js/views/playlists.js', 'js/views/recipe.js', 'js/views/cook.js',
   'js/views/add.js', 'js/views/pending.js', 'js/views/settings.js',
-  'js/components/meta-editor.js',
+  'js/components/meta-editor.js', 'js/components/recipe-icons.js', 'js/components/recipe-ingredients.js',
+  'js/components/recipe-journal.js', 'js/components/recipe-state.js', 'js/components/recipe-steps.js',
   'assets/icons/icon.svg', 'assets/icons/icon-180.png', 'assets/icons/icon-192.png',
   'assets/icons/icon-512.png', 'assets/icons/maskable-512.png'
 ];
