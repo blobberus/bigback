@@ -172,8 +172,7 @@ def main():
 
     if slug not in lib["recipes"]:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        lib["recipes"][slug] = {"tags": [], "rating": None, "proficiency": None,
-                                "addedAt": now, "cooked": 0, "lastCooked": None}
+        lib["recipes"][slug] = {"tags": [], "rating": None, "proficiency": None, "addedAt": now}
         write_json(lpath, lib)
         print(f"library: added blank entry for {slug}")
     else:

@@ -67,14 +67,10 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 .rx-you-row { display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 6px 7px 6px 16px; }
 .rx-you-row + .rx-you-row { border-top: 1px solid var(--line); }
 .rx-you-meta { flex: 1; min-width: 0; }
-.rx-you-cooked { flex: 1; min-width: 0; font-size: .95rem; color: var(--ink-2); }
+.rx-you-cooked { flex: 1; min-width: 0; margin: 0; padding: 4px 9px 4px 0; font-size: .95rem; font-weight: 650; color: var(--ink-2); }
+.rx-you-cooked small { display: block; margin-top: 1px; font-size: .8rem; font-weight: 500; color: var(--muted); }
 .rx-you-btn { flex: none; padding: 0 14px; font-size: .9rem; }
 .rx-you-btn .rx-ic { width: 17px; height: 17px; }
-.rx-undo-toast { display: flex; align-items: center; gap: 12px; padding-block: 4px; padding-right: 4px; }
-.rx-undo-btn {
-  flex: none; min-height: var(--tap); padding: 0 14px; border: 0; border-radius: var(--r-sm);
-  background: color-mix(in srgb, currentColor 18%, transparent); color: inherit; font: inherit; font-weight: 800; cursor: pointer;
-}
 
 /* ---------- collapsibles ---------- */
 .rx-details { margin-top: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
@@ -350,6 +346,8 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 }
 .rx-opt { margin-left: 4px; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--muted); }
 .rx-up .sheet-actions .btn { flex: 1; }
+.rx-up-date { max-width: 220px; }
+.rx-up-hint { display: block; margin-top: 5px; font-size: .8rem; color: var(--muted); }
 .rx-up-status { display: grid; gap: 8px; margin-top: 4px; font-size: .9rem; color: var(--ink-2); }
 .rx-up-bar { display: block; height: 4px; border-radius: 2px; background: var(--surface-2); overflow: hidden; }
 .rx-up-bar span { display: block; width: 40%; height: 100%; border-radius: inherit; background: var(--accent); animation: rx-indet 1.1s ease-in-out infinite; }
@@ -428,7 +426,6 @@ body[data-view="cook"]:not(.ck-plain) #view { padding-top: 0; padding-bottom: 0;
 .ck-done-sub { margin: 0 0 16px; color: var(--ink-2); }
 .ck-done-actions { display: grid; gap: 10px; }
 .ck-done-actions .btn { min-height: 54px; font-size: 1.02rem; }
-.ck-logged { background: transparent; border-color: var(--accent-2); color: var(--ok); }
 
 .ck-nav {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 35;

@@ -76,6 +76,7 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 - [x] Ingredient names in steps link to their amount (bubble above the word); ingredient amounts, including ones in notes, open a US + metric breakdown (js/components/recipe-mentions.js, js/units.js, tests/ingredients.html)
 - [x] Token vault (token restored by the site password); Home Screen app auto-updates (sw.js VERSION stamped per code change, reload on controllerchange)
 - [x] Sheets: swipe down / tap outside to close, page behind locked (js/ui.js, tests/sheet.html); proficiency labelled on cards + recipe page; shorter bottom menu (50px)
+- [x] No "I cooked this" button: the cook log is the days with journal photos; photos carry `cookedOn` (EXIF date or picked) (js/components/recipe-journal.js, js/util.js takenOn)
 
 ## Polish backlog (only if all above done and commit target not met)
 - Shopping list from selected recipes; unit toggle (US/metric); print view;

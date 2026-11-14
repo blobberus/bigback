@@ -101,13 +101,16 @@ def open_notes(rs):
                 n["stepState"] = "gone" if cur is None else ("changed" if snap and snap.strip() != cur.strip() else "same")
             notes.append(n)
         le = lib.get(slug) or {}
+        # Cook log = distinct days with a journal photo (same rule as the app's cookLog).
+        cooks = {e.get("cookedOn") or (e.get("createdAt") or "")[:10]
+                 for e in j.get("entries") or [] if e.get("kind") == "photo" and e.get("photo")} - {""}
         groups.append({
             "slug": slug,
             "title": (r or {}).get("title") or slug,
             "exists": r is not None,
             "rating": le.get("rating"),
             "proficiency": le.get("proficiency"),
-            "cooked": le.get("cooked") or 0,
+            "cooked": len(cooks),
             "notes": notes,
         })
     return groups

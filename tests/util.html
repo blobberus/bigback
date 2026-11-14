@@ -20,7 +20,8 @@
 <!-- Run: python scripts/smoke.py tests/util.html -->
 <main id="view"><p class="muted">Running…</p></main>
 <script type="module">
-import { parseDurations, fmtQty, scaleQty, slugify } from '../js/util.js';
+import { parseDurations, fmtQty, scaleQty, slugify, localDay, takenOn } from '../js/util.js';
+import { cookLog, cookedLine, photoDay } from '../js/components/recipe-journal.js';
 
 const results = [];
 const canon = v => JSON.stringify(v, (k, x) => (x && typeof x === 'object' && !Array.isArray(x)
@@ -87,6 +88,54 @@ eq('nothing usable → "recipe"', ['', null, undefined, '!!!', '麻婆豆腐'].m
 const LONG = ['Weeknight Chicken Tikka Masala with Garlic Butter Naan plus Rice', 'Grandmas Sunday Lasagna with Three Cheeses and Slow Simmered Meat Sauce'];
 eq('long titles: ≤ 60 chars, valid kebab-case (no trailing hyphen)', LONG.map(t => { const s = slugify(t); return [s, s.length <= 60 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s)]; }),
   [['weeknight-chicken-tikka-masala-with-garlic-butter-naan-plus', true], ['grandmas-sunday-lasagna-with-three-cheeses-and-slow-simmered', true]]);
+
+/* ---------- takenOn: the photo's own date (EXIF) ---------- */
+// A minimal JPEG: SOI, APP1 "Exif" with a TIFF block (IFD0 → Exif IFD), then SOS.
+function exifJpeg({ le = false, original = null, dateTime = null } = {}) {
+  const buf = new ArrayBuffer(208), v = new DataView(buf), t = 12;
+  const u16 = (p, x) => v.setUint16(t + p, x, le), u32 = (p, x) => v.setUint32(t + p, x, le);
+  const str = (p, s) => { [...s].forEach((c, i) => v.setUint8(t + p + i, c.charCodeAt(0))); v.setUint8(t + p + s.length, 0); };
+  v.setUint16(0, 0xFFD8); v.setUint16(2, 0xFFE1); v.setUint16(4, 198); v.setUint32(6, 0x45786966);
+  v.setUint16(t, le ? 0x4949 : 0x4D4D); u16(2, 42); u32(4, 8);
+  const ifd0 = [];
+  if (dateTime) ifd0.push([0x0132, 2, 20, 120]);
+  if (original) ifd0.push([0x8769, 4, 1, 60]);
+  u16(8, ifd0.length);
+  ifd0.forEach(([tag, type, n, val], k) => { const at = 10 + k * 12; u16(at, tag); u16(at + 2, type); u32(at + 4, n); u32(at + 8, val); });
+  if (dateTime) str(120, dateTime);
+  if (original) { u16(60, 1); u16(62, 0x9003); u16(64, 2); u32(66, 20); u32(70, 150); str(150, original); }
+  v.setUint16(202, 0xFFDA);
+  return new Blob([buf], { type: 'image/jpeg' });
+}
+const jfif = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0]);
+const png = new Blob([new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0])], { type: 'image/png' });
+eq('EXIF date taken: big-endian, little-endian, DateTimeOriginal over DateTime, IFD0 fallback, after a JFIF segment', await Promise.all([
+  takenOn(exifJpeg({ original: '2026:10:03 18:42:11' })),
+  takenOn(exifJpeg({ le: true, original: '2025:12:31 23:59:59', dateTime: '2026:01:05 08:00:00' })),
+  takenOn(exifJpeg({ le: true, dateTime: '2026:07:04 12:00:00' })),
+  takenOn(new Blob([jfif, (await exifJpeg({ original: '2026:09:09 09:09:09' }).arrayBuffer()).slice(2)]))
+]), ['2026-10-03', '2025-12-31', '2026-07-04', '2026-09-09']);
+eq('no usable date → null (no EXIF, zeroed clock, PNG, empty, truncated)', await Promise.all([
+  takenOn(exifJpeg()), takenOn(exifJpeg({ original: '0000:00:00 00:00:00' })), takenOn(png), takenOn(new Blob([])),
+  takenOn(exifJpeg({ original: '2026:10:03 18:42:11' }).slice(0, 40))
+]), [null, null, null, null, null]);
+eq('localDay is the phone\'s own calendar day', localDay(new Date(2026, 0, 5, 23, 30)), '2026-01-05');
+
+/* ---------- cook log: days with journal photos ---------- */
+const at = '2026-11-12T15:00:00Z';
+const J = [
+  { id: 'p1', kind: 'photo', photo: 'media/x/journal/p1.jpg', cookedOn: '2026-11-10', createdAt: '2026-11-13T01:00:00Z' },
+  { id: 'p2', kind: 'photo', photo: 'media/x/journal/p2.jpg', cookedOn: '2026-11-10', createdAt: '2026-11-13T01:05:00Z' },
+  { id: 'p3', kind: 'photo', photo: 'media/x/journal/p3.jpg', createdAt: at },
+  { id: 'p4', kind: 'photo', photo: 'media/x/journal/p4.jpg', cookedOn: 'yesterday', createdAt: at },
+  { id: 'n1', kind: 'note', photo: null, text: 'Too salty', createdAt: '2026-11-14T10:00:00Z' },
+  { id: 'p5', kind: 'photo', photo: null, createdAt: '2026-11-14T10:00:00Z' }
+];
+eq('photoDay: cookedOn, else the upload\'s local day (bad cookedOn ignored)', J.slice(0, 4).map(photoDay),
+  ['2026-11-10', '2026-11-10', localDay(new Date(at)), localDay(new Date(at))]);
+eq('cookLog: one cook per day with a photo; notes and photo-less entries ignored', cookLog(J), { count: 2, last: localDay(new Date(at)) });
+eq('cookedLine', [cookedLine([]), cookedLine(undefined), cookedLine(J.slice(0, 2)).replace(/last .*/, 'last …')],
+  ['Not cooked yet', 'Not cooked yet', 'Cooked 1× · last …']);
 
 /* ---------- render ---------- */
 const pass = results.filter(r => r.ok).length, fail = results.length - pass;

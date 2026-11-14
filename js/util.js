@@ -1,9 +1,9 @@
 /**
  * util.js — pure helpers shared by every view. No DOM state, no network.
  *
- * Exports: esc, html, raw, slugify, uid, nowIso, today, fmtMinutes, fmtClock,
+ * Exports: esc, html, raw, slugify, uid, nowIso, today, localDay, fmtMinutes, fmtClock,
  *          parseDurations, fmtQty, scaleQty, debounce, clamp,
- *          blobToBase64, textToBase64, compressImage, fileExt
+ *          blobToBase64, textToBase64, compressImage, takenOn, fileExt
  */
 
 /** HTML-escape any value. */
@@ -49,6 +49,9 @@ export function uid(prefix) {
 
 export const nowIso = () => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
 export const today = () => nowIso().slice(0, 10);
+/** "YYYY-MM-DD" in the phone's own time zone (today() is UTC). */
+export const localDay = (d = new Date()) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 export const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 
 /** 95 → "1 hr 35 min" */
@@ -156,6 +159,36 @@ export function textToBase64(str) {
   let bin = '';
   for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   return btoa(bin);
+}
+
+/**
+ * The day a JPEG was taken, from its EXIF DateTimeOriginal (camera-local time) or DateTime:
+ * "YYYY-MM-DD", or null (no EXIF, HEIC/PNG, stripped metadata, unreadable).
+ */
+export async function takenOn(file) {
+  try {
+    const b = new DataView(await file.slice(0, 256 * 1024).arrayBuffer());
+    if (b.getUint16(0) !== 0xFFD8) return null;
+    for (let o = 2; o + 10 <= b.byteLength;) {
+      const marker = b.getUint16(o);
+      if ((marker & 0xFF00) !== 0xFF00 || marker === 0xFFDA) return null;   // not a marker / image data starts
+      if (marker === 0xFFE1 && b.getUint32(o + 4) === 0x45786966) return exifDay(b, o + 10);   // "Exif"
+      o += 2 + b.getUint16(o + 2);
+    }
+  } catch { /* truncated or odd file */ }
+  return null;
+}
+function exifDay(b, t) {
+  const le = b.getUint16(t) === 0x4949;                                   // "II" = little-endian
+  const u16 = p => b.getUint16(t + p, le), u32 = p => b.getUint32(t + p, le);
+  const ifd = at => { const tags = {}; for (let k = 0, n = u16(at); k < n; k++) tags[u16(at + 2 + k * 12)] = at + 2 + k * 12; return tags; };
+  const str = e => { const n = u32(e + 4), at = n > 4 ? u32(e + 8) : e + 8; let s = ''; for (let i = 0; i < n - 1; i++) s += String.fromCharCode(b.getUint8(t + at + i)); return s; };
+  const ifd0 = ifd(u32(4));
+  let when = '';
+  if (ifd0[0x8769]) { const ex = ifd(u32(ifd0[0x8769] + 8)); if (ex[0x9003] || ex[0x9004]) when = str(ex[0x9003] || ex[0x9004]); }
+  if (!when && ifd0[0x0132]) when = str(ifd0[0x0132]);
+  const m = when.match(/^(\d{4}):(\d{2}):(\d{2})/);
+  return m && +m[1] > 1990 ? `${m[1]}-${m[2]}-${m[3]}` : null;
 }
 
 /**

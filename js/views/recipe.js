@@ -1,16 +1,16 @@
 /**
  * views/recipe.js — recipe page (#/r/<slug>).
- * Hero, title, summary, times, source → your meta + "I cooked this" (toast with Undo) → flavor profile →
+ * Hero, title, summary, times, source → your meta + cooking log (days with journal photos) → flavor profile →
  * equipment → scaled, checkable ingredients → numbered steps (tap the number = done) with
  * timers and step notes → recipe notes → photo journal → changelog.
  * Re-renders on store changes to this recipe's files. Cooking state (checked, done, scale)
  * and half-typed notes live in sessionStorage (components/recipe-state.js), shared with cook mode.
  */
 import {
-  getRecipe, getLibrary, entryFor, getJournal, onChange, markCooked, unmarkCooked, addNote,
+  getRecipe, getLibrary, entryFor, getJournal, onChange, addNote,
   mediaUrl, rawUrl, NotConnectedError
 } from '../store.js';
-import { setTopbar, on, toast, reportError, confirmSheet, busy } from '../ui.js';
+import { setTopbar, on, toast, reportError, busy } from '../ui.js';
 import { html, fmtMinutes } from '../util.js';
 import { editMeta, metaSummary } from '../components/meta-editor.js';
 import { icon } from '../components/recipe-icons.js';
@@ -19,7 +19,7 @@ import { ingredientsHtml, bindIngredients } from '../components/recipe-ingredien
 import { groupBySection, stepTextHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
 import { mentionMatcher, bindMentions } from '../components/recipe-mentions.js';
 import {
-  fmtDate, cookedLine, noteListHtml, composerHtml, connectHint, photoGridHtml, photoThumbsHtml,
+  fmtDate, cookLog, cookedLine, noteListHtml, composerHtml, connectHint, photoGridHtml, photoThumbsHtml,
   openPhotoUploader, openLightbox, confirmDeleteNote
 } from '../components/recipe-journal.js';
 import { isConnected } from '../prefs.js';
@@ -28,23 +28,6 @@ const safeUrl = u => (/^https?:\/\//i.test(String(u || '')) ? u : null);
 const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
 const fileName = p => String(p).split('/').pop();
 const PAST_TITLE = 'rx-past-title';
-
-// Toast-styled notice with an "Undo" button. ui.js toast() has no action support yet;
-// swap this for it once it does.
-function undoToast(msg, onUndo, ms = 7000) {
-  let host = document.getElementById('toasts');
-  if (!host) { host = document.createElement('div'); host.id = 'toasts'; document.body.append(host); }
-  const t = document.createElement('div');
-  t.className = 'toast toast-ok rx-undo-toast';
-  t.setAttribute('role', 'status');
-  t.innerHTML = html`<span>${msg}</span><button type="button" class="rx-undo-btn">Undo</button>`;
-  let timer = 0;
-  const hide = () => { clearTimeout(timer); t.classList.remove('show'); setTimeout(() => t.remove(), 300); };
-  timer = setTimeout(hide, ms);
-  t.querySelector('button').addEventListener('click', () => { hide(); onUndo(); }, { once: true });
-  host.append(t);
-  requestAnimationFrame(() => t.classList.add('show'));
-}
 
 export async function render(root, { slug }) {
   const mine = new Set([`recipes/${slug}.json`, `journal/${slug}.json`, 'data/library.json']);
@@ -133,7 +116,7 @@ export async function render(root, { slug }) {
         ${r.status === 'custom' ? html`
           <p class="rx-notice">${icon('spark')}<span>Typed by you — Claude will add a flavor profile and timers next time you say “update the site”.</span></p>` : ''}
         ${cookButton(r)}
-        ${youCard(entry)}
+        ${youCard(entry, photos)}
         ${r.profile ? details('profile', html`Flavor profile &amp; deliverables`, html`<p>${r.profile}</p>`) : ''}
         ${(r.equipment || []).length ? html`
           <section class="rx-section" aria-labelledby="rx-h-equip">
@@ -207,7 +190,8 @@ export async function render(root, { slug }) {
       i ? html`<span class="rx-dot" aria-hidden="true">·</span>${b}` : b)}</span></p>`;
   }
 
-  function youCard(entry) {
+  function youCard(entry, photos) {
+    const cooked = cookLog(photos).count;
     return html`
       <section class="rx-you" aria-label="Your rating, tags and cooking log">
         <div class="rx-you-row">
@@ -215,8 +199,9 @@ export async function render(root, { slug }) {
           <button type="button" class="btn btn-ghost rx-you-btn" data-act="meta">${icon('edit')} Edit</button>
         </div>
         <div class="rx-you-row">
-          <span class="rx-you-cooked">${cookedLine(entry)}</span>
-          <button type="button" class="btn btn-soft rx-you-btn" data-act="cooked">${icon('check')} I cooked this</button>
+          <p class="rx-you-cooked">${cookedLine(photos)}<small>${cooked
+            ? 'Each day with a photo in the journal counts as a cook.'
+            : 'Add a photo to the journal when you make it, and the day is logged.'}</small></p>
         </div>
       </section>`;
   }
@@ -287,7 +272,6 @@ export async function render(root, { slug }) {
       case 'meta':
         try { await editMeta(slug, { title: r.title }); } catch (err) { reportError(err); }
         break;
-      case 'cooked': return logCooked();
       case 'step-done': {
         const id = el.dataset.id;
         const st = rxPatch(slug, s => ({ ...s, done: toggleId(s.done, id) }));
@@ -332,27 +316,6 @@ export async function render(root, { slug }) {
         break;
       }
       default:
-    }
-  }
-
-  async function logCooked() {
-    const st = rxState(slug);
-    if (st.cookedAt && Date.now() - st.cookedAt < 12 * 3600e3) {
-      const again = await confirmSheet('You already logged a cook of this recipe today.', { title: 'Log another cook?', ok: 'Log it' });
-      if (!again) return;
-    }
-    try {
-      markCooked(slug);
-      rxPatch(slug, { cookedAt: Date.now() });
-      undoToast('Logged — nice cooking', () => {
-        try {
-          if (!unmarkCooked(slug)) return;
-          rxPatch(slug, { cookedAt: st.cookedAt });
-          toast('Cook removed from your log');
-        } catch (err) { reportError(err); }
-      });
-    } catch (err) {
-      reportError(err);
     }
   }
 

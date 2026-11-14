@@ -1,13 +1,13 @@
 /**
  * components/recipe-state.js — per-recipe cooking state for this tab (sessionStorage),
  * shared by the recipe page and cook mode.
- *   rxState(slug) → { checked:[ingId], done:[stepId], factor, step, drafts:{key:text}, open:{key:true}, cookedAt }
+ *   rxState(slug) → { checked:[ingId], done:[stepId], factor, step, drafts:{key:text}, open:{key:true} }
  *   rxPatch(slug, patch | fn(state) → state) → new state (persisted)
  *   setDraft(slug, key, text)    remember a half-typed note (key = 'recipe' or a step id)
  *   toggleId(list, id, on?) → new list
  */
 const KEY = slug => `bb.rx:${slug}`;
-const defaults = () => ({ checked: [], done: [], factor: 1, step: null, drafts: {}, open: {}, cookedAt: null });
+const defaults = () => ({ checked: [], done: [], factor: 1, step: null, drafts: {}, open: {} });
 
 export function rxState(slug) {
   try {

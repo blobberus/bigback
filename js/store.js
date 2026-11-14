@@ -14,14 +14,14 @@
  *
  * WRITES (need a token → throw NotConnectedError otherwise). Each is one atomic commit.
  *   Library (optimistic + batched ~1.2s into one commit):
- *     setTags(slug, tags) setRating(slug, n|null) setProficiency(slug, n|null) markCooked(slug)
- *     unmarkCooked(slug) → bool   undo this tab's latest markCooked(slug): cooked − 1 and the
- *                                 previous lastCooked restored; false if there's nothing to undo
+ *     setTags(slug, tags) setRating(slug, n|null) setProficiency(slug, n|null)
  *     createPlaylist(name)→id renamePlaylist(id,name) deletePlaylist(id)
  *     addToPlaylist(id, slug) removeFromPlaylist(id, slug)  flushLibrary()
  *   Recipes:  saveRecipe(recipe, { heroFile, isNew }) → slug      deleteRecipe(slug)
  *   Inbox:    uploadToInbox({ kind, title, url, text, hint, files }) → id    deletePending(id)
- *   Journal:  addNote(slug, { scope, stepId, stepText, text })  addPhoto(slug, file, { text, scope, stepId, stepText })
+ *   Journal:  addNote(slug, { scope, stepId, stepText, text })
+ *             addPhoto(slug, file, { text, scope, stepId, stepText, cookedOn })   cookedOn "YYYY-MM-DD"
+ *               (default today): the cook log ("Cooked 3×") counts the days photos were cooked on
  *             deleteEntry(slug, entryId)
  *   Password: saveLock(config | null, { message })   set/replace data/lock.json, or delete it (no password)
  *
@@ -30,7 +30,7 @@
 import { GitHub, toJsonText } from './github.js';
 import { getPrefs } from './prefs.js';
 import { rawBase } from './config.js';
-import { nowIso, uid, slugify, blobToBase64, compressImage, fileExt, debounce } from './util.js';
+import { nowIso, localDay, uid, slugify, blobToBase64, compressImage, fileExt, debounce } from './util.js';
 
 export class NotConnectedError extends Error {
   constructor() { super('Connect GitHub in Settings to save changes.'); this.name = 'NotConnectedError'; }
@@ -106,7 +106,7 @@ function normLib(lib) {
   lib.schemaVersion ||= 1; lib.recipes ||= {}; lib.playlists ||= [];
   return lib;
 }
-export const blankEntry = () => ({ tags: [], rating: null, proficiency: null, addedAt: nowIso(), cooked: 0, lastCooked: null });
+export const blankEntry = () => ({ tags: [], rating: null, proficiency: null, addedAt: nowIso() });
 export function entryFor(lib, slug) {
   const e = lib?.recipes?.[slug];
   return { ...blankEntry(), addedAt: null, ...(e || {}), tags: [...(e?.tags || [])] };
@@ -215,31 +215,6 @@ export const setTags = (slug, tags) => mutateLibrary(`tags ${name(slug)}`, lib =
 });
 export const setRating = (slug, n) => mutateLibrary(`rate ${name(slug)} ${n ?? '-'}/10`, lib => { ensure(lib, slug).rating = n == null ? null : Math.max(1, Math.min(10, Math.round(n))); });
 export const setProficiency = (slug, n) => mutateLibrary(`proficiency ${name(slug)} ${n ?? '-'}/5`, lib => { ensure(lib, slug).proficiency = n == null ? null : Math.max(1, Math.min(5, Math.round(n))); });
-// This tab's marks per slug (newest last) so unmarkCooked can put lastCooked back. `prev` is
-// re-captured every time the op runs, so after the commit it holds the repo's prior value.
-const cookMarks = new Map();
-export function markCooked(slug) {
-  const mark = { at: nowIso(), prev: null };
-  mutateLibrary(`cooked ${name(slug)}`, lib => {
-    const e = ensure(lib, slug);
-    mark.prev = e.lastCooked ?? null; e.cooked = (e.cooked || 0) + 1; e.lastCooked = mark.at;
-  });
-  if (!cookMarks.has(slug)) cookMarks.set(slug, []);
-  cookMarks.get(slug).push(mark);
-}
-export function unmarkCooked(slug) {
-  requireClient();
-  const mark = cookMarks.get(slug)?.pop();
-  if (!mark) return false;
-  // Only reverse a mark that actually landed and is still the latest cook.
-  mutateLibrary(`undo cooked ${name(slug)}`, lib => {
-    const e = lib.recipes[slug];
-    if (!e || e.lastCooked !== mark.at) return;
-    e.cooked = Math.max(0, (e.cooked || 0) - 1); e.lastCooked = mark.prev;
-  });
-  return true;
-}
-
 export function createPlaylist(plName) {
   const id = 'pl-' + Math.random().toString(36).slice(2, 6);
   const at = nowIso();
@@ -380,7 +355,8 @@ export async function addPhoto(slug, file, opts = {}) {
   const blob = await compressImage(file);
   const ext = blob === file ? (fileExt(file.name) || 'jpg') : 'jpg';
   const path = `media/${slug}/journal/${id}.${ext}`;
-  const e = { id, kind: 'photo', ...entryBase(opts), photo: path };
+  const cookedOn = /^\d{4}-\d{2}-\d{2}$/.test(opts.cookedOn || '') ? opts.cookedOn : localDay();
+  const e = { id, kind: 'photo', ...entryBase(opts), photo: path, cookedOn };
   await writeJournal(slug, `Photo on ${name(slug)}`, j => j.entries.push(e), [{ path, base64: await blobToBase64(blob) }]);
   return e;
 }

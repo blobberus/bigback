@@ -3,28 +3,25 @@
  * Full screen, one step at a time: progress, large text, the step's timers (+ durations
  * detected in the text), Back/Next in the thumb zone, swipe left/right and ←/→ keys.
  * "Ingredients" opens a sheet with the scaled list (checked state shared with the recipe
- * page). The last step offers "mark as cooked" and a note shortcut. The current step is
+ * page). The last step offers a photo (which logs the cook) and a note. The current step is
  * remembered per slug in sessionStorage (components/recipe-state.js), and so are half-typed
  * notes: closing the note sheet keeps the draft (per step, or 'recipe'), shared with the
  * recipe page's composers; a successful save clears it.
  */
-import { getRecipe, getLibrary, entryFor, onChange, markCooked, addNote, NotConnectedError } from '../store.js';
-import { setTopbar, on, sheet, toast, reportError, confirmSheet, busy } from '../ui.js';
-import { html, clamp } from '../util.js';
+import { getRecipe, getJournal, onChange, addNote, NotConnectedError } from '../store.js';
+import { setTopbar, on, sheet, toast, reportError, busy } from '../ui.js';
+import { html, clamp, localDay } from '../util.js';
 import { isConnected } from '../prefs.js';
 import { icon } from '../components/recipe-icons.js';
 import { rxState, rxPatch, setDraft, toggleId } from '../components/recipe-state.js';
 import { ingredientsHtml, bindIngredients } from '../components/recipe-ingredients.js';
 import { stepTextHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
 import { mentionMatcher, bindMentions } from '../components/recipe-mentions.js';
-import { cookedLine, clip } from '../components/recipe-journal.js';
-
-const RECENT = 12 * 3600e3;   // one "I cooked this" per session-ish
+import { cookedLine, cookLog, clip, openPhotoUploader } from '../components/recipe-journal.js';
 
 export async function render(root, { slug }) {
   const back = `#/r/${slug}`;
-  let [recipe, lib] = await Promise.all([getRecipe(slug), getLibrary()]);
-  let entry = entryFor(lib, slug);
+  let [recipe, journal] = await Promise.all([getRecipe(slug), getJournal(slug)]);
 
   if (!recipe || !(recipe.steps || []).length) {
     setTopbar({ title: recipe ? recipe.title : 'Recipe not found', back: recipe ? back : '#/' });
@@ -85,17 +82,17 @@ export async function render(root, { slug }) {
   }
 
   function doneCard() {
-    const logged = rxState(slug).cookedAt && Date.now() - rxState(slug).cookedAt < RECENT;
+    const entries = journal?.entries || [];
+    const logged = cookLog(entries).last === localDay();
     return html`
       <section class="ck-done" aria-label="Finished">
-        <h2 class="ck-done-title">${logged ? 'Logged — enjoy it' : 'Done — mark as cooked?'}</h2>
-        <p class="ck-done-sub">${cookedLine(entry)}</p>
+        <h2 class="ck-done-title">${logged ? 'Logged — enjoy it' : 'Done — enjoy it'}</h2>
+        <p class="ck-done-sub">${cookedLine(entries)}${logged ? '' : '. A photo logs today’s cook.'}</p>
         <div class="ck-done-actions">
-          ${logged
-            ? html`<button type="button" class="btn ck-logged" data-act="cooked">${icon('check')} Cooked today</button>`
-            : html`<button type="button" class="btn btn-primary" data-act="cooked">${icon('check')} Mark as cooked</button>`}
+          <button type="button" class="btn ${logged ? '' : 'btn-primary'}" data-act="photo">${icon('camera')} ${logged ? 'Add another photo' : 'Add a photo'}</button>
           <button type="button" class="btn" data-act="recipe-note">${icon('note')} Add a note</button>
         </div>
+        <input type="file" accept="image/*" class="sr-only" data-photo-input tabindex="-1" aria-hidden="true">
       </section>`;
   }
 
@@ -179,20 +176,12 @@ export async function render(root, { slug }) {
     return done;
   }
 
-  async function logCooked() {
-    const st = rxState(slug);
-    if (st.cookedAt && Date.now() - st.cookedAt < RECENT) {
-      const again = await confirmSheet('You already logged a cook of this recipe today.', { title: 'Log another cook?', ok: 'Log it' });
-      if (!again) return;
-    }
-    try {
-      markCooked(slug);
-      rxPatch(slug, { cookedAt: Date.now() });
-      toast('Logged — nice cooking', { type: 'ok' });
-      paint();
-    } catch (err) {
-      reportError(err);
-    }
+  async function onPhotoPicked(e, input) {
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (file.type && !/^image\//.test(file.type)) { toast('That file isn’t an image.', { type: 'error' }); return; }
+    await openPhotoUploader({ slug, recipe, file });
   }
 
   /* ---------- input ---------- */
@@ -203,7 +192,9 @@ export async function render(root, { slug }) {
       case 'ingredients': return openIngredients();
       case 'step-note': return writeNote(steps[i]);
       case 'recipe-note': return writeNote(null);
-      case 'cooked': return logCooked();
+      case 'photo':
+        if (!isConnected()) return reportError(new NotConnectedError());
+        return root.querySelector('[data-photo-input]')?.click();
       default:
     }
   };
@@ -234,16 +225,17 @@ export async function render(root, { slug }) {
     timers,
     bindMentions(root, () => recipe, slug),
     on(root, 'click', '[data-act]', onClick),
+    on(root, 'change', 'input[data-photo-input]', onPhotoPicked),
     onChange(async ev => {
-      if (!ev.paths?.some(p => p === `recipes/${slug}.json` || p === 'data/library.json')) return;
-      const [r, l] = await Promise.all([getRecipe(slug), getLibrary()]);
+      if (!ev.paths?.some(p => p === `recipes/${slug}.json` || p === `journal/${slug}.json`)) return;
+      const [r, j] = await Promise.all([getRecipe(slug), getJournal(slug)]);
       if (r?.steps?.length) {
         const id = steps[i]?.id;
         recipe = r;
         const k = r.steps.findIndex(s => s.id === id);
         if (k > -1) i = k;
       }
-      entry = entryFor(l, slug);
+      journal = j;
       paint();
     })
   ];

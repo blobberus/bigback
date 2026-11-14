@@ -92,8 +92,8 @@ Blocked: <title or url> — <what's needed>
 Omit empty lines. The details live in each note's resolution and the recipe changelog.
 
 ## Hard rules
-- Never change user-owned data in `data/library.json` (tags, rating, proficiency, cooked,
-  lastCooked, playlists). The only write allowed is `finalize_inbox.py` adding a blank
+- Never change user-owned data in `data/library.json` (tags, rating, proficiency,
+  playlists). The only write allowed is `finalize_inbox.py` adding a blank
   entry for a new recipe.
 - Journal: never delete entries or edit `text`/`photo`/`stepText`/`createdAt`; change only
   `status`, `resolution`, `resolvedAt`, and only through `resolve_note.py`.

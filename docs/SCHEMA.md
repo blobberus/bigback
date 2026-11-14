@@ -63,9 +63,9 @@ should have a timer entry (the UI also auto-detects durations in text as a fallb
       "tags": [],               // blank by default
       "rating": null,           // 1–10 or null (= "Unrated" filter category)
       "proficiency": null,      // 1–5 or null (= "Not set")
-      "addedAt": "2026-11-14T10:00:00Z",
-      "cooked": 0,              // times cooked
-      "lastCooked": null
+      "addedAt": "2026-11-14T10:00:00Z"
+      // older entries may still carry "cooked"/"lastCooked": unused. The cook log is the
+      // days with journal photos (journal entry `cookedOn`).
     }
   },
   "playlists": [
@@ -111,6 +111,8 @@ Home Screen app). Changing the password re-encrypts it; Disconnect in Settings t
       "stepText": "snapshot of the step text when the note was written",
       "text": "Too salty — halve the soy sauce.",
       "photo": null,            // kind=photo: "media/<slug>/journal/<id>.jpg"
+      "cookedOn": "2026-11-14", // kind=photo: day it was cooked (the photo's EXIF date or picked; default
+                                //   the upload day). "Cooked 3× · last Nov 14" counts distinct cookedOn days.
       "createdAt": "…",
       "status": "open",         // open → applied (recipe changed) | kept (personal note, no change)
       "resolution": null,       // model's one-line explanation of what it did

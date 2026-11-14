@@ -1,7 +1,9 @@
 /**
  * components/recipe-journal.js — notes + photo journal pieces for the recipe page and cook mode.
  *   fmtDate(iso) → "Nov 14" (year added when not this year)    clip(text, n) → one-line excerpt
- *   cookedLine(entry) → "Cooked 3× · last Nov 14" | "Not cooked yet"
+ *   photoDay(photo) → "YYYY-MM-DD" it was cooked (cookedOn, else the upload's local day)
+ *   cookLog(entries) → { count, last }   distinct photoDays of the journal's photos
+ *   cookedLine(entries) → "Cooked 3× · last Nov 14" | "Not cooked yet"
  *   statusPill(entry) → html     open: "Waiting for update" · applied: "Applied" · kept: "Kept as note"
  *   noteListHtml(notes, { steps, showStep }) → html   newest first, with status + resolution;
  *       every note (open, applied or kept) has a delete trigger [data-act="note-delete"][data-id]
@@ -10,10 +12,11 @@
  *   connectHint(what) → html     "Connect GitHub in Settings to save notes" (only when !isConnected())
  *   photoGridHtml(photos) / photoThumbsHtml(photos) → html   triggers: [data-act="photo-open"][data-id]
  *   openPhotoUploader({ slug, recipe, file, stepId }) → Promise<entry|null>   sheet with preview,
- *       optional note + "Which step?" → store.addPhoto; busy state while compressing/uploading
- *   openLightbox({ slug, entry, recipe }) → Promise<void>   full image, note, date, step, Delete
+ *       "Cooked on" (the photo's own date, else today), optional note + "Which step?" →
+ *       store.addPhoto; busy state while compressing/uploading
+ *   openLightbox({ slug, entry, recipe }) → Promise<void>   full image, note, cooked date, step, Delete
  */
-import { html, raw } from '../util.js';
+import { html, raw, localDay, takenOn } from '../util.js';
 import { sheet, confirmSheet, toast, reportError, busy } from '../ui.js';
 import { isConnected } from '../prefs.js';
 import { addPhoto, deleteEntry, mediaUrl, rawUrl, NotConnectedError } from '../store.js';
@@ -29,11 +32,22 @@ export function fmtDate(iso) {
   return d.toLocaleDateString(undefined, opts);
 }
 
-export function cookedLine(entry) {
-  const n = entry?.cooked || 0;
-  if (!n) return 'Not cooked yet';
-  const last = fmtDate(entry.lastCooked);
-  return `Cooked ${n}×${last ? ` · last ${last}` : ''}`;
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+export function photoDay(p) {
+  if (DAY.test(p?.cookedOn || '')) return p.cookedOn;
+  const d = p?.createdAt ? new Date(p.createdAt) : null;
+  return d && !isNaN(d) ? localDay(d) : '';
+}
+
+/** Every day with a journal photo counts as one cook. */
+export function cookLog(entries = []) {
+  const days = [...new Set(entries.filter(e => e?.kind === 'photo' && e.photo).map(photoDay).filter(Boolean))].sort();
+  return { count: days.length, last: days.at(-1) || null };
+}
+
+export function cookedLine(entries) {
+  const { count, last } = cookLog(entries);
+  return count ? `Cooked ${count}× · last ${fmtDate(last)}` : 'Not cooked yet';
 }
 
 const STATUS = {
@@ -116,11 +130,11 @@ export function composerHtml(key, { draft = '', placeholder = 'Add a note…', c
 const img = (path, alt = '', extra = '') =>
   html`<img src="${mediaUrl(path)}" data-fallback="${rawUrl(path)}" alt="${alt}" ${extra ? raw(extra) : ''}>`;
 
-const byNewest = list => [...list].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+const byNewest = list => [...list].sort((a, b) => photoDay(b).localeCompare(photoDay(a)) || String(b.createdAt).localeCompare(String(a.createdAt)));
 
 export function photoGridHtml(photos) {
   return html`<ul class="rx-photos">${byNewest(photos).map(p => html`
-    <li><button type="button" class="rx-photo" data-act="photo-open" data-id="${p.id}" aria-label="Open photo from ${fmtDate(p.createdAt)}${p.text ? `: ${clip(p.text, 60)}` : ''}">
+    <li><button type="button" class="rx-photo" data-act="photo-open" data-id="${p.id}" aria-label="Open photo from ${fmtDate(photoDay(p))}${p.text ? `: ${clip(p.text, 60)}` : ''}">
       ${img(p.photo, '', 'loading="lazy" decoding="async"')}
       ${p.text ? html`<span class="rx-photo-note" aria-hidden="true">${icon('note')}</span>` : ''}
     </button></li>`)}</ul>`;
@@ -129,7 +143,7 @@ export function photoGridHtml(photos) {
 export function photoThumbsHtml(photos) {
   if (!photos.length) return '';
   return html`<div class="rx-thumbs">${byNewest(photos).map(p => html`
-    <button type="button" class="rx-thumb" data-act="photo-open" data-id="${p.id}" aria-label="Open step photo from ${fmtDate(p.createdAt)}">
+    <button type="button" class="rx-thumb" data-act="photo-open" data-id="${p.id}" aria-label="Open step photo from ${fmtDate(photoDay(p))}">
       ${img(p.photo, '', 'loading="lazy" decoding="async"')}
     </button>`)}</div>`;
 }
@@ -137,9 +151,15 @@ export function photoThumbsHtml(photos) {
 export function openPhotoUploader({ slug, recipe, file, stepId = '' }) {
   const url = URL.createObjectURL(file);
   const steps = recipe.steps || [];
+  const today = localDay();
   const body = html`
     <div class="rx-up">
       <img class="rx-up-preview" src="${url}" alt="Selected photo">
+      <div class="field">
+        <label for="rx-up-date">Cooked on</label>
+        <input id="rx-up-date" class="input rx-up-date" type="date" value="${today}" max="${today}" aria-describedby="rx-up-date-hint">
+        <small id="rx-up-date-hint" class="rx-up-hint">Dates your cooking log. Change it for an older photo.</small>
+      </div>
       <div class="field">
         <label for="rx-up-note">Note <span class="rx-opt">optional</span></label>
         <textarea id="rx-up-note" class="input" rows="3" placeholder="How did it turn out? Anything to change?"></textarea>
@@ -161,6 +181,15 @@ export function openPhotoUploader({ slug, recipe, file, stepId = '' }) {
     title: 'Add to photo journal', body, className: 'rx-up-sheet',
     onOpen(wrap, close) {
       const status = wrap.querySelector('.rx-up-status');
+      const date = wrap.querySelector('#rx-up-date');
+      let picked = false;
+      date.addEventListener('input', () => { picked = true; });
+      // An older photo from the camera roll: prefill the day it was taken.
+      takenOn(file).then(d => {
+        if (!d || picked || d > today || d === today) return;
+        date.value = d;
+        wrap.querySelector('#rx-up-date-hint').textContent = 'From the photo. Change it if you cooked on a different day.';
+      });
       wrap.addEventListener('click', async e => {
         const b = e.target.closest('[data-up]');
         if (!b) return;
@@ -169,10 +198,11 @@ export function openPhotoUploader({ slug, recipe, file, stepId = '' }) {
         const text = wrap.querySelector('#rx-up-note').value.trim();
         const sid = wrap.querySelector('#rx-up-step').value || null;
         const step = steps.find(s => s.id === sid);
+        const cookedOn = /^\d{4}-\d{2}-\d{2}$/.test(date.value) && date.value <= today ? date.value : today;
         status.hidden = false;
         wrap.querySelector('[data-up="cancel"]').disabled = true;
         try {
-          const entry = await busy(b, addPhoto(slug, file, { text, stepId: sid, stepText: step?.text || null }));
+          const entry = await busy(b, addPhoto(slug, file, { text, stepId: sid, stepText: step?.text || null, cookedOn }));
           toast('Photo added to the journal', { type: 'ok' });
           close(entry);
         } catch (err) {
@@ -194,7 +224,7 @@ export async function openLightbox({ slug, entry, recipe }) {
       <figcaption>
         ${entry.text ? html`<p class="rx-lb-text">${entry.text}</p>` : ''}
         <p class="rx-lb-meta">
-          <span>${fmtDate(entry.createdAt)}</span>
+          <span>Cooked ${fmtDate(photoDay(entry))}</span>
           ${ref ? html`<span aria-hidden="true">·</span><span>${ref}</span>` : ''}
           ${entry.text ? statusPill(entry) : ''}
         </p>

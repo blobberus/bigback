@@ -169,6 +169,8 @@ def main():
                 warn(where, f"{e.get('id')}: stepId {e.get('stepId')} no longer exists")
             if e.get("photo") and not (ROOT / e["photo"]).exists():
                 warn(where, f"{e.get('id')}: photo not found {e['photo']}")
+            if e.get("cookedOn") is not None and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(e["cookedOn"])):
+                err(where, f"{e.get('id')}: cookedOn must be YYYY-MM-DD")
 
     for p in sorted((ROOT / "inbox").glob("*/item.json")):
         it = load(p) or {}
