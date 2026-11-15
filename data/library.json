@@ -70,7 +70,8 @@
       "id": "pl-yin5",
       "name": "Steak",
       "recipes": [
-        "reverse-sear-steak-chimichurri"
+        "reverse-sear-steak-chimichurri",
+        "steak-and-scallop-linguine"
       ],
       "createdAt": "2026-11-15T09:26:07Z"
     }
