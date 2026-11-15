@@ -101,14 +101,15 @@ self.addEventListener('fetch', event => {
 const stripSearch = url => { const u = new URL(url); u.search = ''; u.hash = ''; return u.href; };
 const cacheable = r => r && r.ok && (r.type === 'basic' || r.type === 'default');
 
-/** Shell: this version's cache. A file that isn't in it (skipped at install) is fetched and kept.
+/** Shell: this version's cache. A file that isn't in it (skipped at install) is fetched and kept;
+ *  'no-cache' so Pages' 10-minute HTTP max-age can't hand back a previous deploy's copy.
  *  `fetchable` is a URL or a non-navigate Request. */
 async function fromShell(event, fetchable, key) {
   const cache = await caches.open(SHELL_CACHE);
   const hit = await cache.match(key, { ignoreSearch: true });
   if (hit) return hit;
   try {
-    const res = await fetch(fetchable);
+    const res = await fetch(new Request(fetchable, { cache: 'no-cache' }));
     if (cacheable(res)) event.waitUntil(cache.put(key, res.clone()));
     return res;
   } catch {

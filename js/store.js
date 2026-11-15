@@ -121,7 +121,10 @@ function revalidate(path) {
   const n = writes.get(path);
   fetchLive(path).then(data => {
     if (writes.get(path) !== n) return;                  // a local write is newer
-    if (data === undefined) data = clone(fallbacks.get(path));
+    if (data === undefined) {
+      if (!fallbacks.has(path)) return;                  // only ever written here (e.g. an inbox item)
+      data = clone(fallbacks.get(path));
+    }
     if (JSON.stringify(data) === seen.get(path)) return;
     keep(path, data);
     emit({ type: 'refresh', paths: [path] });
