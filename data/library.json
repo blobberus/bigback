@@ -60,7 +60,10 @@
     {
       "id": "pl-fobb",
       "name": "Fried Rice",
-      "recipes": [],
+      "recipes": [
+        "kimchi-spam-fried-rice",
+        "lobster-shrimp-fried-rice"
+      ],
       "createdAt": "2026-11-15T09:25:17Z"
     }
   ]
