@@ -56,5 +56,12 @@
       "addedAt": "2026-11-15T01:18:01Z"
     }
   },
-  "playlists": []
+  "playlists": [
+    {
+      "id": "pl-fobb",
+      "name": "Fried Rice",
+      "recipes": [],
+      "createdAt": "2026-11-15T09:25:17Z"
+    }
+  ]
 }
