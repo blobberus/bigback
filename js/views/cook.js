@@ -9,6 +9,8 @@
  * recipe page's composers; a successful save clears it.
  * A render that is still loading when you move on paints and binds nothing (the router drops
  * the cleanup of a render it has already left).
+ * Exit (×), Finish and Esc go back to the recipe page you came from (history.back(), so its ←
+ * still leads to your list; components/back-nav.js), else open #/r/<slug>.
  */
 import { getRecipe, getJournal, onChange, addNote, NotConnectedError } from '../store.js';
 import { setTopbar, on, sheet, toast, reportError, busy } from '../ui.js';
@@ -20,6 +22,7 @@ import { ingredientsHtml, bindIngredients } from '../components/recipe-ingredien
 import { stepTextHtml, tempsHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
 import { mentionMatcher, bindMentions } from '../components/recipe-mentions.js';
 import { cookedLine, cookLog, clip, openPhotoUploader } from '../components/recipe-journal.js';
+import { backTarget, goBack } from '../components/back-nav.js';
 
 let renders = 0;   // newest render of this view
 
@@ -27,6 +30,7 @@ export async function render(root, { slug }) {
   const back = `#/r/${slug}`;
   const me = ++renders, path = location.hash.split('?')[0];
   const stale = () => me !== renders || location.hash.split('?')[0] !== path;
+  const from = backTarget(h => h.split('?')[0] === back);
   let [recipe, journal] = await Promise.all([getRecipe(slug), getJournal(slug)]);
   if (stale()) return;
 
@@ -224,7 +228,7 @@ export async function render(root, { slug }) {
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) return;
     if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); go(1); }
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(-1); }
-    else if (e.key === 'Escape') location.hash = back;
+    else if (e.key === 'Escape') { if (from) history.back(); else location.hash = back; }
   };
 
   const timers = bindTimers(root, slug);
@@ -232,6 +236,7 @@ export async function render(root, { slug }) {
     timers,
     bindMentions(root, () => recipe, slug),
     on(root, 'click', '[data-act]', onClick),
+    on(root, 'click', `a[href="${back}"]`, e => goBack(e, from)),   // × and Finish
     on(root, 'change', 'input[data-photo-input]', onPhotoPicked),
     onChange(async ev => {
       if (!ev.paths?.some(p => p === `recipes/${slug}.json` || p === `journal/${slug}.json`)) return;

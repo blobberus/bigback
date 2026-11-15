@@ -89,6 +89,65 @@ try {
     const n = a.d.querySelectorAll('.filter-sheet').length;
     ok('Recipes → Playlists → Recipes during a slow first load: one set of handlers (one Filters sheet per tap)', n === 1, `${n} sheets`);
   }
+
+  /* ---------- the topbar ← and cook mode's exits go back where you came from ---------- */
+  const topBack = a => a.d.getElementById('topbar-back');
+  {
+    const a = await app('#/?q=chicken');
+    const len = a.w.history.length;
+    a.$('.rcard-link').click();
+    await until(() => a.$('.rx'));
+    ok('a recipe opened from a search: ← points at that search', topBack(a).getAttribute('href') === '#/?q=chicken', topBack(a).getAttribute('href'));
+    topBack(a).click();
+    await until(() => a.$('.lib'));
+    await wait(100);
+    ok('…and tapping it comes back to the search (same entry, no new one)',
+      a.w.location.hash === '#/?q=chicken' && a.$('.search-input').value === 'chicken' && a.w.history.length === len + 1,
+      `${a.w.location.hash} · input "${a.$('.search-input')?.value}" · history +${a.w.history.length - len}`);
+
+    a.$('.rcard-link').click();
+    await until(() => a.$('.rx-cook-btn'));
+    a.$('.rx-cook-btn').click();
+    await until(() => a.$('.ck'));
+    a.$('.ck-exit').click();
+    await until(() => a.$('.rx'));
+    await wait(100);
+    ok('cook mode × goes back to the recipe page it came from (no new entry)', a.w.history.length === len + 2, `history +${a.w.history.length - len}`);
+    topBack(a).click();
+    await until(() => a.$('.lib'));
+    ok('…whose ← still leads to the search', a.w.location.hash === '#/?q=chicken' && a.$('.search-input').value === 'chicken', a.w.location.hash);
+  }
+  {
+    const a = await app('#/');
+    a.w.scrollTo(0, 400);
+    await wait(400);                       // library.js saves the position 160 ms after scrolling stops
+    const y = a.w.scrollY;
+    [...a.view().querySelectorAll('.rcard-link')].find(l => l.getBoundingClientRect().top > 200).click();
+    await until(() => a.$('.rx'));
+    topBack(a).click();
+    await until(() => a.$('.lib'));
+    await wait(200);
+    ok('← from a recipe puts the list back where you scrolled it', y > 300 && Math.abs(a.w.scrollY - y) < 2, `left at ${y}, back at ${a.w.scrollY}`);
+  }
+  {
+    const lib = await (await fetch('../data/library.json', { cache: 'no-store' })).json();
+    const pl = (lib.playlists || []).find(p => p.recipes?.length);
+    if (pl) {
+      const a = await app(`#/playlist/${pl.id}`);
+      a.$('.rcard-link').click();
+      await until(() => a.$('.rx'));
+      topBack(a).click();
+      await until(() => a.$('.lib'));
+      ok('← from a recipe opened in a playlist goes back to the playlist (not all Recipes)', a.w.location.hash === `#/playlist/${pl.id}`, a.w.location.hash);
+    } else ok('playlist case skipped: no playlist with recipes', true);
+  }
+  {
+    const a = await app('#/r/tteokguk');
+    ok('a recipe opened directly (deep link): ← is the Recipes list', topBack(a).getAttribute('href') === '#/', topBack(a).getAttribute('href'));
+    topBack(a).click();
+    await until(() => a.$('.lib'));
+    ok('…and tapping it opens the list', a.w.location.hash === '#/', a.w.location.hash);
+  }
 } catch (e) {
   ok('test page ran', false, String(e.stack || e));
 }

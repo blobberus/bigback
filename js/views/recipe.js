@@ -7,6 +7,8 @@
  * and half-typed notes live in sessionStorage (components/recipe-state.js), shared with cook mode.
  * A render that is still loading when you move on (Back, another recipe) paints nothing and binds
  * nothing: the router drops the cleanup of a render it has already left.
+ * The topbar ← returns to the list or playlist the recipe was opened from (search, filters and
+ * scroll intact; components/back-nav.js), else to #/.
  */
 import {
   getRecipe, getLibrary, entryFor, getJournal, onChange, addNote,
@@ -25,11 +27,14 @@ import {
   openPhotoUploader, openLightbox, confirmDeleteNote
 } from '../components/recipe-journal.js';
 import { isConnected } from '../prefs.js';
+import { backTarget, goBack } from '../components/back-nav.js';
 
 const safeUrl = u => (/^https?:\/\//i.test(String(u || '')) ? u : null);
 const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
 const fileName = p => String(p).split('/').pop();
 const PAST_TITLE = 'rx-past-title';
+/** The Recipes list (#/, #/?q=…) or a playlist (#/playlist/<id>…). */
+const isList = h => /^(?:playlist\/[\w-]+)?$/.test(h.replace(/^#\/?/, '').split('?')[0]);
 let renders = 0;            // newest render of this view
 
 export async function render(root, { slug }) {
@@ -37,6 +42,7 @@ export async function render(root, { slug }) {
   const openDetails = new Set();
   const me = ++renders, path = location.hash.split('?')[0];
   const stale = () => me !== renders || location.hash.split('?')[0] !== path;
+  const from = backTarget(isList), back = from || '#/';
   let data = null;          // { recipe, entry, journal }
   let seq = 0;
   let io = null;
@@ -50,7 +56,7 @@ export async function render(root, { slug }) {
     data = { recipe, entry: entryFor(lib, slug), journal };
     if (!recipe) return paintMissing();
     setTopbar({
-      title: recipe.title || 'Recipe', back: '#/',
+      title: recipe.title || 'Recipe', back,
       actions: html`
         <a class="icon-btn" href="#/r/${slug}/cook" aria-label="Cook mode" title="Cook mode">${icon('flame')}</a>
         <a class="icon-btn" href="#/edit/${slug}" aria-label="Edit recipe" title="Edit recipe">${icon('edit')}</a>`
@@ -63,7 +69,7 @@ export async function render(root, { slug }) {
   }
 
   function paintMissing() {
-    setTopbar({ title: 'Recipe not found', back: '#/' });
+    setTopbar({ title: 'Recipe not found', back });
     document.body.classList.add(PAST_TITLE);
     root.innerHTML = html`
       <div class="empty rx-missing">
@@ -386,6 +392,7 @@ export async function render(root, { slug }) {
       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); el.form?.requestSubmit(); }
     }),
     on(root, 'change', 'input[data-photo-input]', onPhotoPicked),
+    on(document, 'click', '#topbar-back', e => goBack(e, from)),
     onChange(ev => { if (ev.paths?.some(p => mine.has(p))) paint().catch(reportError); })
   ];
   root.addEventListener('toggle', onToggle, true);

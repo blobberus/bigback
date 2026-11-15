@@ -32,7 +32,7 @@ const SHELL = [
   'js/timers.js', 'js/stopwatch.js', 'js/wakelock.js', 'js/units.js',
   'js/views/library.js', 'js/views/playlists.js', 'js/views/recipe.js', 'js/views/cook.js',
   'js/views/add.js', 'js/views/pending.js', 'js/views/settings.js', 'js/views/convert.js',
-  'js/components/meta-editor.js', 'js/components/recipe-icons.js', 'js/components/recipe-ingredients.js',
+  'js/components/meta-editor.js', 'js/components/back-nav.js', 'js/components/recipe-icons.js', 'js/components/recipe-ingredients.js',
   'js/components/recipe-journal.js', 'js/components/recipe-mentions.js', 'js/components/recipe-state.js', 'js/components/recipe-steps.js',
   'js/components/editor-drafts.js', 'js/components/editor-form.js', 'js/components/editor-icons.js',
   'js/components/editor-ids.js', 'js/components/editor-parse.js', 'js/components/editor-upload.js',

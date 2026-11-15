@@ -27,6 +27,7 @@ Push to main ──▶ .github/workflows/pages.yml (validate, rebuild index, dep
 | `wakelock.js` | Screen Wake Lock manager | WS4 |
 | `units.js` | US ⇄ metric breakdown for an ingredient amount (`breakdown(ing, factor)`); temperatures in text (`findTemps`, `tempDetails`: °C/°F, oven dial, fan, convection); the converter page's tables and math (`CONVERTERS`, `convertUnit`, `parseAmount`, `fmtAmount`, `kitchenHint`) | core |
 | `components/recipe-mentions.js` | ingredient names in steps → tap shows the amount (`mentionMatcher`, `bindMentions`) | WS2 |
+| `components/back-nav.js` | in-app ← = history.back() to the page you came from (list → recipe → cook keep search, filters, scroll) | WS2 |
 | `views/library.js` | list, search, filters, sort, playlist view | WS1 |
 | `views/playlists.js` | playlist management | WS1 |
 | `views/recipe.js` | recipe page, notes, photo journal, rating/tags | WS2 |

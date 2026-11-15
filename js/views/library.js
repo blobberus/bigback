@@ -23,6 +23,7 @@ import {
 import { setTopbar, on, stars, sheet, promptSheet, confirmSheet, toast, reportError } from '../ui.js';
 import { isConnected } from '../prefs.js';
 import { PROFICIENCY, profLabel, editMeta } from '../components/meta-editor.js';
+import '../components/back-nav.js';   // watches list → recipe, so the recipe's ← comes back to this entry
 
 /* ---------- shared display helpers ---------- */
 const svg = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
