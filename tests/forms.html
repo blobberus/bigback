@@ -256,6 +256,8 @@ for (const [k, v] of Object.entries(saved)) { if (v == null) localStorage.remove
 const failed = results.filter(r => !r.ok).length;
 document.querySelector('#view').innerHTML = `<p><strong>${results.length - failed}/${results.length} passed</strong></p><table>${results.map(r =>
   `<tr><td>${r.ok ? '✓' : '✗'}</td><td>${r.name}${r.detail && !r.ok ? ` — ${r.detail}` : ''}</td></tr>`).join('')}</table>`;
+if (failed) console.error(`Test failed: ${failed} of ${results.length} form checks`);
+await wait(200);                                            // let the browser log flush before the DOM dump ends it
 fetch('/__smoke/release').catch(() => {});
 </script>
 </body>
