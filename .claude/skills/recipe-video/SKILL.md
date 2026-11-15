@@ -54,7 +54,8 @@ Then follow `.claude/skills/recipe-ingest/SKILL.md` as usual, with:
 - `source`: `type` instagram | tiktok | youtube | web, `url` = the link, `author` = `@handle`
   (or channel), `files` = [] (nothing is archived: the video, frames and transcript stay in the
   scratchpad and are never committed).
-- `image`: null. The cover is the creator's photo; the repo and site are public.
+- `image`: never the cover or a frame (the creator's photos; the repo and site are public). Use an
+  openly licensed photo via `recipe-ingest/commons.py` as that skill describes, else null.
 - changelog: say what it was built from ("Built from the reel's caption, narration and on-screen
   text; amounts for X and Y eyeballed").
 

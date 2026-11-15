@@ -52,8 +52,13 @@ inventing a dish isn't.
 - **source**: `type` = pdf | image | youtube | instagram | tiktok | web | text (custom only
   for user-typed); `url` = the link; `author` = person / channel / site / book; `files` =
   the item's inbox paths (`finalize_inbox.py` rewrites them to `sources/<slug>/`).
-- **image**: null — unless the upload includes a photo of the *finished dish*: copy it
-  (don't move) to `media/<slug>/hero.jpg` and point to that.
+- **image**: the upload's own photo of the *finished dish* (the user's, or a PDF's dish photo):
+  copy it (don't move) to `media/<slug>/hero.jpg` and point to that. Otherwise find an openly
+  licensed photo of the dish: `python .claude/skills/recipe-ingest/commons.py search "<dish>"`,
+  Read the contact sheet, pick one that looks like *this* recipe (same dish, plated, appetizing),
+  then `commons.py use <slug> "File:<title>"`. It saves the hero and sets `imageCredit`, which the
+  page shows on the photo. Nothing fitting → `image: null`, no credit. Never copy the source
+  site's or creator's photos: they're copyrighted and the repo is public.
 - **servings** number (from the source; else estimate from quantities) · **yield** free
   text or null ("one 9x13-inch pan", "24 cookies").
 - **time** minutes `{prep, cook, total}`; total = start to table incl. passive time

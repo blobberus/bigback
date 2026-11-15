@@ -13,7 +13,12 @@
     ],
     "author": "Maangchi"
   },
-  "image": null,
+  "image": "media/tteokguk/hero.jpg",
+  "imageCredit": {
+    "author": "soscs",
+    "license": "CC0",
+    "url": "https://commons.wikimedia.org/wiki/File:Tteokguk.jpg"
+  },
   "servings": 3,
   "yield": "2–3 large bowls",
   "time": {

@@ -111,7 +111,6 @@ export function relTime(iso) {
   if (days < 7) return `${days} days ago`;
   return new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
-const hostOf = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return ''; } };
 
 /* ---------- state <-> hash query ---------- */
 const SORTS = { recent: 'Recently added', title: 'Title A–Z', rating: 'Rating', prof: 'Proficiency', time: 'Total time' };
@@ -335,32 +334,12 @@ function filterBody(s, lib, f) {
     ${group('Status', chip('needs', '', 'Needs enrichment', f.needs), 'Custom recipes you typed in that Claude hasn’t polished yet.')}`;
 }
 
-const KIND = { file: ['File', ICON.file], link: ['Link', ICON.link], text: ['Text', ICON.text] };
-function pendingStrip(items) {
-  const list = [...items].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
-  return html`<section class="pending" aria-labelledby="pending-h">
-    <div class="pending-head">
-      <h2 class="pending-title" id="pending-h">Waiting to be built <span class="pending-n">${list.length}</span></h2>
-      <p class="pending-hint">Tell Claude “update the site” to turn ${list.length === 1 ? 'it' : 'these'} into ${list.length === 1 ? 'a recipe' : 'recipes'}.</p>
-    </div>
-    <ul class="pending-list">${list.map(p => {
-      const [label, icon] = KIND[p.kind] || KIND.file;
-      const host = hostOf(p.url);
-      return html`<li><a class="ptile" href="#/pending/${p.id}">
-        <span class="ptile-icon">${raw(icon)}</span>
-        <span class="ptile-title">${p.title || host || 'Untitled upload'}</span>
-        <span class="ptile-meta">${[label, p.title && host, relTime(p.createdAt)].filter(Boolean).join(' · ')}</span>
-      </a></li>`;
-    })}</ul>
-  </section>`;
-}
-
 function emptyLibrary(hasPending) {
   return html`<div class="empty lib-empty">
     <span class="lib-empty-art">${raw(ICON.book)}</span>
     <h2>${hasPending ? 'Your first recipes are on the way' : 'Your recipe vault is empty'}</h2>
     <p>${hasPending
-      ? 'Uploads above become recipes after the next “update the site”. Meanwhile, add another.'
+      ? 'Your uploads (listed on the Add page) become recipes after the next “update the site”. Meanwhile, add another.'
       : 'Type in a family favorite, or upload a PDF, photo or link and Claude will build it into a recipe.'}</p>
     <a class="btn btn-primary" href="#/add">${raw(ICON.plus)}Add a recipe</a>
   </div>`;
@@ -408,7 +387,6 @@ export async function render(root, params) {
       </button>
     </div>
     <div data-part="plhead"></div>
-    <div data-part="pending"></div>
     <div class="qchips" data-part="chips" role="group" aria-label="Quick filters"></div>
     <div class="lib-count" data-part="count">
       <p class="lib-count-n" aria-live="polite"></p>
@@ -453,7 +431,7 @@ export async function render(root, params) {
     topbar();
     if (plId && !pl) {                                   // deleted (maybe on another device)
       ['bar', 'chips', 'count', 'plhead'].forEach(n => { part(n).hidden = true; });
-      ['list', 'pending', 'foot'].forEach(n => put(n, ''));
+      ['list', 'foot'].forEach(n => put(n, ''));
       put('empty', missingPlaylist());
       return;
     }
@@ -471,7 +449,6 @@ export async function render(root, params) {
     fbtn.setAttribute('aria-label', nf ? `Filters, ${nf} active` : 'Filters');
     part('nf').hidden = !nf;
     part('nf').textContent = nf || '';
-    put('pending', !plId && !narrowed && idx.pending.length ? pendingStrip(idx.pending) : '');
     part('chips').hidden = !put('chips', any ? quickChips(s, lib, f) : '');
     part('count').hidden = !any;
     countEl.textContent = narrowed ? `${shown.length} of ${plural(rows.length, 'recipe')}` : plural(rows.length, 'recipe');

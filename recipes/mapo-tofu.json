@@ -13,7 +13,12 @@
     ],
     "author": "Elle, Cooker Ru"
   },
-  "image": null,
+  "image": "media/mapo-tofu/hero.jpg",
+  "imageCredit": {
+    "author": "Sichuanfoodlover",
+    "license": "CC BY-SA 4.0",
+    "url": "https://commons.wikimedia.org/wiki/File:Authentic_Mapo_Tofu.jpg"
+  },
   "servings": 1,
   "yield": "about 1½ cups",
   "time": {

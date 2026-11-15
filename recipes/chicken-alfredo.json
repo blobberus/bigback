@@ -13,7 +13,12 @@
     ],
     "author": "Belly Full; chicken cooked with your broth technique"
   },
-  "image": null,
+  "image": "media/chicken-alfredo/hero.jpg",
+  "imageCredit": {
+    "author": "Kim Scarborough from Chicago, IL",
+    "license": "CC BY-SA 2.0",
+    "url": "https://commons.wikimedia.org/wiki/File:Fettuccini_alfredo_with_grilled_chicken_(Medici)_(53448852).jpg"
+  },
   "servings": 6,
   "yield": "6 bowls of fettuccine topped with sliced chicken",
   "time": {

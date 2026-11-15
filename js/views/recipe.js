@@ -161,7 +161,10 @@ export async function render(root, { slug }) {
 
   function hero(r) {
     if (r.image) {
-      return html`<figure class="rx-hero"><img src="${mediaUrl(r.image)}" data-fallback="${rawUrl(r.image)}" alt="${r.title}" decoding="async"></figure>`;
+      const c = r.imageCredit, href = safeUrl(c?.url);
+      const credit = c?.author ? `Photo: ${c.author}${c.license ? ` · ${c.license}` : ''}` : '';
+      return html`<figure class="rx-hero"><img src="${mediaUrl(r.image)}" data-fallback="${rawUrl(r.image)}" alt="${r.title}" decoding="async">${credit
+        ? html`<figcaption class="rx-credit">${href ? html`<a href="${href}" target="_blank" rel="noopener noreferrer">${credit}</a>` : credit}</figcaption>` : ''}</figure>`;
     }
     return html`<div class="rx-hero rx-hero-ph" aria-hidden="true">${icon('pan')}</div>`;
   }

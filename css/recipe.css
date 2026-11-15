@@ -13,7 +13,15 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
   margin: calc(-1 * var(--gap)) calc(-1 * var(--gap)) 0; aspect-ratio: 4 / 3; max-height: 56vh;
   overflow: hidden; background: var(--surface-2);
 }
+.rx-hero { position: relative; }
 .rx-hero img { width: 100%; height: 100%; object-fit: cover; }
+/* stock-photo credit (CC licenses ask for it); small, over the corner of the photo */
+.rx-credit {
+  position: absolute; right: 8px; bottom: 8px; max-width: calc(100% - 16px); padding: 2px 8px; border-radius: 999px;
+  background: rgb(20 16 12 / .55); color: #fff; font-size: .68rem; line-height: 1.5;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rx-credit a { color: inherit; text-decoration: none; }
 .rx-hero-ph {
   aspect-ratio: auto; height: 132px; display: grid; place-items: center; color: var(--accent);
   background:
@@ -48,7 +56,8 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
   flex: none; width: 52px; font-size: .68rem; font-weight: 800; letter-spacing: .09em;
   text-transform: uppercase; color: var(--muted);
 }
-.rx-source-bits { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: center; }
+.rx-source-bits { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: center; flex: 1; min-width: 0; }
+.rx-source-bits > * { min-width: 0; overflow-wrap: anywhere; }   /* long authors / file names wrap instead of running off-screen */
 .rx-source a { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; font-weight: 600; }
 .rx-source .rx-ic { width: 15px; height: 15px; }
 .rx-dot { color: var(--muted); }
