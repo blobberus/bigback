@@ -36,7 +36,7 @@ export const setRecipe = r => { recipe = r; };
 export const getPending = (...a) => call('getPending', pending, a);
 export const getRecipe = (...a) => call('getRecipe', recipe, a);
 export const getJournal = async slug => ({ slug, entries: [] });
-export const getIndex = async () => ({ recipes: [], pending: [] });
+export const getIndex = (...a) => call('getIndex', { recipes: [], pending: [] }, a);
 export const onChange = () => () => {};
 export const mediaUrl = p => (p ? `../${p}` : '');
 export const rawUrl = mediaUrl;

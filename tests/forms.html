@@ -244,6 +244,8 @@ try {
   ok('…and so does the edit form', JSON.stringify(await leaveWhileLoading('#/edit/test-dish', 'getRecipe',
     () => addView.render(sandbox, { mode: 'edit', slug: 'test-dish' }))) === '[true,false]');
   localStorage.removeItem('bb.draft:edit:test-dish');
+  ok('…and so does the Add page', JSON.stringify(await leaveWhileLoading('#/add', 'getIndex',
+    () => addView.render(sandbox, { mode: 'choose' }))) === '[true,false]');
 } catch (e) {
   ok('fake-store suite threw', false, String(e?.stack || e));
 }

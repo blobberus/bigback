@@ -85,6 +85,9 @@ async function renderChooser(root) {
           </ul>` : ''}
       </div>`;
   };
-  paint(await getIndex().catch(() => null));
+  const here = location.hash;
+  const idx = await getIndex().catch(() => null);
+  if (location.hash !== here) return;              // left while it loaded: #view is the next page's now
+  paint(idx);
   return onChange(ev => { if (ev.type === 'write' || ev.paths?.includes('recipes/index.json')) getIndex().then(paint, () => {}); });
 }
