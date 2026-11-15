@@ -96,17 +96,8 @@ function applyTheme({ theme }) {
 async function boot() {
   applyTheme(getPrefs());
   onPrefs(applyTheme);
-  if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    // Home Screen apps resume from memory without a page load, so the browser never checks
-    // for a new version on its own; check whenever the app comes back to the foreground.
-    navigator.serviceWorker.register('sw.js').then(reg => {
-      let last = Date.now();
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState !== 'visible' || Date.now() - last < 30000) return;
-        last = Date.now();
-        reg.update().catch(() => {});
-      });
-    }).catch(() => {});
+  const useSW = 'serviceWorker' in navigator && location.protocol === 'https:';
+  if (useSW) {
     // A new deploy's service worker took over: this page is still running the old code, and its
     // next lazy imports would come from the new cache (old + new modules mixed). Reload once —
     // timers, the stopwatch, checked ingredients and drafts all survive it.
@@ -123,12 +114,15 @@ async function boot() {
     }
   }
 
+  // Fetch the first view's code while the lock check runs; route() then reuses the module.
+  import(`./views/${parse().view}.js`).catch(() => {});
+
   // Site password (data/lock.json): nothing renders until it's unlocked or this device is remembered.
   document.documentElement.classList.add('is-gating');
   await unlockGate();
 
   window.addEventListener('hashchange', route);
-  route();
+  const firstView = route();
 
   // Home Screen apps resume from memory: after a while away, re-check the files on screen
   // (they repaint only if something changed, e.g. a recipe built since).
@@ -162,10 +156,24 @@ async function boot() {
   window.addEventListener('offline', () => { offline(); toast('Offline — showing saved copies'); });
   offline();
 
-  // Kitchen tools are global — mounted once, survive navigation.
-  for (const [file, fn] of [['./timers.js', 'mount'], ['./stopwatch.js', 'mount'], ['./wakelock.js', 'initWakeLock']]) {
-    import(file).then(m => m[fn]?.()).catch(e => console.error(file, e));
-  }
+  // After the first view is up (or 4 s at most), so they don't compete with it for the network.
+  Promise.race([firstView, new Promise(r => setTimeout(r, 4000))]).then(() => {
+    // Kitchen tools are global — mounted once, survive navigation.
+    for (const [file, fn] of [['./timers.js', 'mount'], ['./stopwatch.js', 'mount'], ['./wakelock.js', 'initWakeLock']]) {
+      import(file).then(m => m[fn]?.()).catch(e => console.error(file, e));
+    }
+    // First visit: the install downloads the whole shell, which is no longer on this page's way.
+    // Later launches: the browser checks sw.js on its own; Home Screen apps resume from memory
+    // without a page load, so also check whenever the app comes back to the foreground.
+    if (useSW) navigator.serviceWorker.register('sw.js').then(reg => {
+      let last = Date.now();
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible' || Date.now() - last < 30000) return;
+        last = Date.now();
+        reg.update().catch(() => {});
+      });
+    }).catch(() => {});
+  });
 }
 
 boot();
