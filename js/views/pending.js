@@ -1,8 +1,8 @@
 /**
  * views/pending.js — #/pending/<id>: an inbox upload waiting for "update the site" (WS3).
  * Shows what was sent (link, files, pasted text, note for the builder), the builder's
- * `blocked` reason when it couldn't extract a recipe, and a delete button.
- * Missing item → "Already built (or removed)".
+ * `blocked` reason when it couldn't extract a recipe, and a delete button (afterwards it leaves
+ * the page, unless you already have). Missing item → "Already built (or removed)".
  */
 import { setTopbar, on, busy, confirmSheet, toast, reportError } from '../ui.js';
 import { html } from '../util.js';
@@ -126,14 +126,16 @@ export async function render(root, { id } = {}) {
   if (!item) return notFound(root);
   root.innerHTML = itemHtml(item);
 
-  return on(root, 'click', '[data-act="delete"]', async (e, btn) => {
+  let alive = true;
+  const off = on(root, 'click', '[data-act="delete"]', async (e, btn) => {
     const ok = await confirmSheet('The upload and its files leave the inbox and won’t be built into a recipe.',
       { title: 'Delete this upload?', ok: 'Delete', danger: true });
     if (!ok) return;
     try {
       await busy(btn, deletePending(id));
       toast('Upload deleted', { type: 'ok' });
-      location.hash = '#/';
+      if (alive) location.hash = '#/';               // moved on while it deleted → stay where you are
     } catch (err) { reportError(err); }
   });
+  return () => { alive = false; off(); };
 }

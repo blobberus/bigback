@@ -7,6 +7,8 @@
  *                   stepIds are reserved so a removed step's id is never handed out again).
  *   Ingredients/steps are fast textareas with a live parsed preview (editor-parse.js).
  *   Drafts autosave per form (editor-drafts.js) and are offered back on return.
+ *   Saved → opens the recipe; deleted → the list. If you've moved to another page while it was
+ *   writing, only the toast shows (a delete still leaves the deleted recipe's own page).
  */
 import { html, fmtMinutes, debounce, parseDurations } from '../util.js';
 import { $, $$, on, toast, busy, confirmSheet, reportError, scrollToEl } from '../ui.js';
@@ -242,7 +244,7 @@ export function mountRecipeForm(root, { recipe = null } = {}) {
   const key = recipe ? draftKey.edit(recipe.slug) : draftKey.new;
   const initial = stateFrom(recipe);
   let totalAuto = initial.totalAuto, heroFile = null, heroUrl = null, removeImage = false;
-  let saved = false, touched = false;
+  let saved = false, touched = false, alive = true;
   let pendingDraft = loadDraft(key);
   if (pendingDraft && sameState(pendingDraft, initial)) { clearDraft(key); pendingDraft = null; }
 
@@ -388,7 +390,7 @@ export function mountRecipeForm(root, { recipe = null } = {}) {
       const slug = await busy(btn, doSave(s));
       saved = true; clearDraft(key);
       toast(recipe ? 'Changes saved' : 'Recipe saved', { type: 'ok' });
-      location.hash = `#/r/${slug}`;
+      if (alive) location.hash = `#/r/${slug}`;      // moved on while it saved → stay where you are
     } catch (e) {
       touched = true; persistDraft();
       reportError(e);
@@ -402,7 +404,8 @@ export function mountRecipeForm(root, { recipe = null } = {}) {
       await busy(btn, deleteRecipe(recipe.slug));
       saved = true; clearDraft(key);
       toast('Recipe deleted', { type: 'ok' });
-      location.hash = '#/';
+      // Leave the form (or the deleted recipe's own page); anywhere else, stay put.
+      if (alive || new RegExp(`^#/r/${recipe.slug}(?:/|$)`).test(location.hash)) location.hash = '#/';
     } catch (e) { reportError(e); }
   }
 
@@ -454,6 +457,7 @@ export function mountRecipeForm(root, { recipe = null } = {}) {
   requestAnimationFrame(growAll);
 
   return () => {
+    alive = false;
     offs.forEach(off => off());
     document.removeEventListener('visibilitychange', onHide);
     persistSoon.flush();

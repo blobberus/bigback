@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Add / edit / upload forms · Bigback</title>
+  <!-- Modules imported by this page get a fake store (the app in the iframes keeps the real one). -->
+  <script type="importmap">{ "imports": { "../js/store.js": "./fixtures/fake-store.js" } }</script>
   <link rel="stylesheet" href="../css/base.css">
   <style>
     body { padding-bottom: 24px; }
@@ -14,7 +16,8 @@
 <body>
 <!-- Run: python scripts/smoke.py tests/forms.html
      Loads the real app in phone-width iframes (no token: reads only, never writes) and checks
-     the forms the way a phone user meets them. Needs real time for the frames to settle. -->
+     the forms the way a phone user meets them. Then mounts the forms on this page against
+     tests/fixtures/fake-store.js to finish saves and uploads. Needs real time. -->
 <main id="view"><p class="muted">Running…</p></main>
 <div id="frames"></div>
 <img hidden alt="" src="/__smoke/hold">
@@ -74,6 +77,104 @@ try {
 } catch (e) {
   ok('suite threw', false, String(e?.stack || e));
 }
+
+/* ---- the forms on this page, against the fake store (all iframes are gone by now) ---- */
+const prefsBefore = localStorage.getItem('bb.prefs');
+const sandbox = document.createElement('div');
+document.body.append(sandbox);
+const frame = () => new Promise(r => requestAnimationFrame(() => r()));
+const type = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+const toastText = () => document.getElementById('toasts')?.textContent || '';
+const confirmTop = () => [...document.querySelectorAll('.sheet-backdrop')].at(-1)?.querySelector('[data-i="1"]')?.click();
+const hashIs = h => history.replaceState(null, '', h);
+try {
+  const S = await import('../js/store.js');
+  ok('this page runs on the fake store', Array.isArray(S.calls));
+  const { mountUploadForm } = await import('../js/components/editor-upload.js');
+  const { mountRecipeForm } = await import('../js/components/editor-form.js');
+  const pendingView = await import('../js/views/pending.js');
+
+  /* work that finishes after you've moved to another page leaves that page alone */
+  const sendText = async () => {
+    const off = mountUploadForm(sandbox);
+    await frame();
+    sandbox.querySelector('[data-mode="text"]').click();
+    type(sandbox.querySelector('#up-text'), '2 cups flour\n\nMix and bake 30 minutes.');
+    S.hold('uploadToInbox');
+    sandbox.querySelector('[data-form]').requestSubmit();
+    await wait(20);
+    return off;
+  };
+  let off = await sendText();
+  off();                                                  // the router's cleanup: you tapped Recipes
+  sandbox.innerHTML = '<p id="elsewhere">Recipes list</p>';
+  S.release('uploadToInbox'); await wait(30);
+  ok('an upload that lands after you left doesn’t take over the page you went to', !!sandbox.querySelector('#elsewhere') && !sandbox.querySelector('.up-done'), sandbox.textContent.replace(/\s+/g, ' ').trim().slice(0, 60));
+  ok('…it still says it arrived and drops the draft', /Sent to your inbox/.test(toastText()) && !localStorage.getItem('bb.draft:upload'));
+  off = await sendText();
+  S.release('uploadToInbox'); await wait(30);
+  ok('staying on the form shows the “In your inbox” page', !!sandbox.querySelector('.up-done'));
+  off(); sandbox.innerHTML = '';
+
+  try {
+    localStorage.setItem('bb.prefs', JSON.stringify({ ...JSON.parse(prefsBefore || '{}'), token: 'test-not-a-token' }));   // fake store: never sent anywhere
+    const saveNew = async () => {
+      localStorage.removeItem('bb.draft:new');
+      const offForm = mountRecipeForm(sandbox, { recipe: null });
+      type(sandbox.querySelector('#ed-title'), 'Test toast');
+      type(sandbox.querySelector('#ed-ing'), '2 slices bread\n1 tbsp butter');
+      type(sandbox.querySelector('#ed-steps'), 'Toast the bread for 3 minutes.\n\nButter it.');
+      S.hold('saveRecipe');
+      sandbox.querySelector('[data-form]').requestSubmit();
+      await wait(20);
+      return offForm;
+    };
+    hashIs('#/add/custom');
+    off = await saveNew();
+    off(); hashIs('#/convert');                             // left for Convert while it saved
+    S.release('saveRecipe'); await wait(30);
+    ok('a save that finishes after you left doesn’t pull you back', location.hash === '#/convert' && /Recipe saved/.test(toastText()), location.hash);
+    hashIs('#/add/custom');
+    off = await saveNew();
+    S.release('saveRecipe'); await wait(30);
+    ok('staying on the form opens the saved recipe', location.hash === '#/r/test-recipe', location.hash);
+    off(); sandbox.innerHTML = '';
+  } finally {
+    if (prefsBefore == null) localStorage.removeItem('bb.prefs'); else localStorage.setItem('bb.prefs', prefsBefore);
+  }
+
+  const recipe = { slug: 'test-dish', title: 'Test dish', status: 'custom', image: 'media/test-dish/hero.jpg', time: {},
+    ingredients: [{ id: 'i1', qty: 2, qtyMax: null, unit: null, item: 'eggs', note: null, section: null }],
+    steps: [{ id: 's1', section: null, text: 'Boil the eggs for 8 minutes.', timers: [], tip: null }] };
+  const deleteAndLeave = async to => {
+    hashIs('#/edit/test-dish');
+    const offForm = mountRecipeForm(sandbox, { recipe });
+    S.hold('deleteRecipe');
+    sandbox.querySelector('[data-act="delete"]').click(); await frame();
+    confirmTop(); await wait(20);
+    offForm(); hashIs(to);
+    S.release('deleteRecipe'); await wait(30);
+    sandbox.innerHTML = '';
+    return location.hash;
+  };
+  ok('a delete that finishes after you left keeps you where you went', await deleteAndLeave('#/settings') === '#/settings');
+  ok('…unless that’s the deleted recipe’s own page', await deleteAndLeave('#/r/test-dish') === '#/');
+
+  S.setPending({ id: 'test-up', kind: 'text', title: 'Ramen', text: 'ramen', files: [], createdAt: new Date().toISOString() });
+  hashIs('#/pending/test-up');
+  const offPending = await pendingView.render(sandbox, { id: 'test-up' });
+  S.hold('deletePending');
+  sandbox.querySelector('[data-act="delete"]').click(); await frame();
+  confirmTop(); await wait(20);
+  offPending(); hashIs('#/playlists');
+  S.release('deletePending'); await wait(30);
+  ok('deleting an upload, then leaving: you stay on the new page', location.hash === '#/playlists', location.hash);
+  sandbox.innerHTML = '';
+} catch (e) {
+  ok('fake-store suite threw', false, String(e?.stack || e));
+}
+history.replaceState(null, '', location.pathname + location.search);
+await wait(300);                                            // sheets finish closing
 
 for (const [k, v] of Object.entries(saved)) { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); }
 const failed = results.filter(r => !r.ok).length;

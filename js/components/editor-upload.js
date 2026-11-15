@@ -2,7 +2,8 @@
  * components/editor-upload.js — the #/add/upload form (WS3): File | Link | Text → inbox.
  *   mountUploadForm(root) → cleanup()
  * Sends store.uploadToInbox({ kind, title, url, text, hint, files }) and swaps to a success
- * state linking to #/pending/<id>. Text fields + mode autosave (files can't be stored).
+ * state linking to #/pending/<id> (only a toast if you've moved to another page meanwhile).
+ * Text fields + mode autosave (files can't be stored).
  *   normalizeUrl(s) → "https://…" | null     (accepts bare domains and share text with a link)
  */
 import { html, debounce } from '../util.js';
@@ -126,7 +127,7 @@ export function mountUploadForm(root) {
   const saved = loadDraft(draftKey.upload) || {};
   let mode = ['file', 'link', 'text'].includes(saved.mode) ? saved.mode : 'file';
   let files = [];            // [{ file, url }]  url = object URL for image thumbnails
-  let form = null;
+  let form = null, alive = true;
 
   const field = n => form?.elements.namedItem(n);
   const grow = ta => { ta.style.height = 'auto'; ta.style.height = `${ta.scrollHeight + 2}px`; };
@@ -215,6 +216,8 @@ export function mountUploadForm(root) {
       const id = await busy(btn, uploadToInbox(payload));
       clearDraft(draftKey.upload);
       revokeAll(); files = [];
+      // Left while it uploaded (#view now holds another page): just say it arrived.
+      if (!alive) { toast('Sent to your inbox', { type: 'ok' }); return; }
       const type = mode === 'link' ? linkType(payload.url) : null;
       const label = payload.title || (type ? `Your ${type === 'web' ? '' : LINK_LABEL[type] + ' '}link`
         : mode === 'text' ? 'Your pasted recipe' : payload.files.length > 1 ? `${payload.files.length} files` : payload.files[0].name);
@@ -280,6 +283,7 @@ export function mountUploadForm(root) {
 
   renderForm(saved);
   return () => {
+    alive = false;
     offs.forEach(off => off());
     document.removeEventListener('visibilitychange', onHide);
     persistSoon.flush();
