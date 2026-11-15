@@ -14,7 +14,7 @@
 <!-- Animation frames need real time: this holds smoke.py's DOM dump until the release below. -->
 <img hidden alt="" src="/__smoke/hold">
 <script type="module">
-import { sheet } from '../js/ui.js';
+import { sheet, promptSheet } from '../js/ui.js';
 const results = [];
 const ok = (name, cond, detail = '') => { results.push({ name, ok: !!cond, detail }); if (!cond) console.error(`Test failed: ${name} ${detail}`); };
 const frame = () => new Promise(r => requestAnimationFrame(() => r()));
@@ -108,6 +108,21 @@ try {
     && foot.getBoundingClientRect().bottom <= s.box.getBoundingClientRect().bottom + 1
     && foot.getBoundingClientRect().top < s.box.getBoundingClientRect().bottom - 30);
   s.wrap.click(); await s.p;
+
+  // prompt: Enter saves, but not the Enter that confirms an IME candidate (Japanese, Chinese…)
+  let named = null;
+  const pp = promptSheet('New playlist').then(v => { named = { v }; });
+  const pin = [...document.querySelectorAll('.sheet .input')].at(-1);
+  pin.value = 'きょうの';
+  pin.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true }));
+  pin.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 229, bubbles: true }));    // Safari's flavour
+  await wait(20);
+  ok('Enter while an IME is composing doesn’t save the prompt', !named);
+  pin.value = '今日の夕食';
+  pin.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  await pp;
+  ok('…the next Enter does', named?.v === '今日の夕食', JSON.stringify(named));
+  await wait(250);
 
   // keyboard up on a page (no sheet): the bottom nav steps aside instead of sliding around
   const nav = document.createElement('nav'); nav.className = 'bottomnav'; document.body.append(nav);

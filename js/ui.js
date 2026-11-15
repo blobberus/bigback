@@ -9,7 +9,7 @@
  *       Stays above the phone's on-screen keyboard (html.kb-open marks the keyboard being up). A sticky footer (see .picker-sheet in
  *       library.css) keeps the action buttons on screen in long sheets.
  *   confirmSheet(message, { ok:'Delete', danger:true }) → Promise<boolean>
- *   promptSheet(title, { value, placeholder, ok, multiline }) → Promise<string|null>
+ *   promptSheet(title, { value, placeholder, ok, multiline }) → Promise<string|null>   (Enter saves, except mid-IME)
  *   busy(button, promise) — disables + spinner until promise settles
  *   stars(n, max) → html string (read-only ●○ meter)
  *   reducedMotion() → bool    scrollToEl(el, block='center') — smooth only when motion is welcome
@@ -239,7 +239,8 @@ export async function promptSheet(title, { value = '', placeholder = '', ok = 'S
     actions: [{ label: 'Cancel', value: null }, { label: ok, kind: 'primary', value: w => w.querySelector('.input').value.trim() }],
     onOpen: (w, close) => {
       const inp = w.querySelector('.input');
-      if (!multiline) inp.addEventListener('keydown', e => { if (e.key === 'Enter') close(inp.value.trim()); });
+      // Not the Enter that picks an IME candidate (Japanese, Chinese…): Safari reports that one as keyCode 229.
+      if (!multiline) inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) close(inp.value.trim()); });
     }
   });
 }
