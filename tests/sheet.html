@@ -78,6 +78,7 @@ try {
   s.wrap.click();
   await wait(50);
   ok('sheets that need an answer ignore swipes and outside taps', !s.result() && document.contains(s.wrap));
+  ok('…and show no swipe grip (it would promise a swipe that does nothing)', !s.box.querySelector('.sheet-grip'));
   s.box.querySelector('[data-i]').click();
   await s.p;
   ok('…and close from their buttons', s.result()?.v === true && !document.documentElement.classList.contains('sheet-open'));

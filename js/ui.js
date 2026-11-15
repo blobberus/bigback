@@ -166,8 +166,8 @@ export function sheet({ title = '', body = '', actions = [], onOpen, dismissable
     wrap.className = 'sheet-backdrop';
     const name = title ? `aria-labelledby="${id}-t"` : label ? `aria-label="${esc(label)}"` : '';
     wrap.innerHTML = `
-      <div class="sheet ${esc(className)}" role="${role === 'alertdialog' ? 'alertdialog' : 'dialog'}" aria-modal="true" ${name} tabindex="-1">
-        <div class="sheet-grip" aria-hidden="true"></div>
+      <div class="sheet${dismissable ? '' : ' sheet-fixed'} ${esc(className)}" role="${role === 'alertdialog' ? 'alertdialog' : 'dialog'}" aria-modal="true" ${name} tabindex="-1">
+        ${dismissable ? '<div class="sheet-grip" aria-hidden="true"></div>' : ''}
         ${title ? `<h2 class="sheet-title" id="${id}-t">${esc(title)}</h2>` : ''}
         <div class="sheet-body"></div>
         ${actions.length ? `<div class="sheet-actions">${actions.map((a, i) =>
