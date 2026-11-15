@@ -27,7 +27,7 @@ import { unlockGate, makeLock, remember, forgetDevice } from '../js/lock.js';
 const results = [];
 function ok(name, cond, detail = '') {
   results.push({ name, ok: !!cond, detail });
-  if (!cond) console.error(`Test failed: ${name} ${detail}`);
+  if (!cond) console.error(`Test failed: ${name} ${String(detail).replace(/\s+/g, ' ')}`);
 }
 const tick = (ms = 0) => new Promise(r => setTimeout(r, ms));
 const when = (test, ms = 3000) => new Promise(res => {

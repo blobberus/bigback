@@ -73,7 +73,12 @@ async function route() {
     root.innerHTML = '';
     root.scrollTop = 0; window.scrollTo(0, 0);
     const c = await mod.render(root, params);
-    if (my === seq) { cleanup = typeof c === 'function' ? c : null; announceRoute(); }
+    if (my !== seq) {                             // finished after the user moved on: undo its
+      try { if (typeof c === 'function') c(); } catch (e) { console.error(e); }   // listeners + subscriptions
+      return;
+    }
+    cleanup = typeof c === 'function' ? c : null;
+    announceRoute();
   } catch (e) {
     console.error(e);
     if (my === seq) root.innerHTML = `<div class="empty"><p>Couldn't open this page.</p><p class="muted small">${String(e.message || e).replace(/</g, '&lt;')}</p><a class="btn" href="#/">Back to recipes</a></div>`;

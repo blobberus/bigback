@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>router tests · Bigback</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <style>
+    body { padding-bottom: 24px; }
+    .t-sum { font-weight: 700; margin: 0 0 12px; }
+    .t-sum.bad { color: var(--danger); } .t-sum.good { color: var(--ok); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    td { padding: 6px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+    td:first-child { width: 2.5em; font-weight: 800; }
+    tr.pass td:first-child { color: var(--ok); } tr.fail td:first-child { color: var(--danger); }
+  </style>
+</head>
+<body>
+<!-- Run: python scripts/smoke.py tests/route.html
+     Boots the real app.js with a stubbed fetch: the first route's data is held back while the
+     user navigates on, so the router has to clean up a view that finishes rendering too late. -->
+<header class="topbar">
+  <a id="topbar-back" class="icon-btn" href="#/" aria-label="Back" hidden></a>
+  <h1 id="topbar-title">Bigback</h1>
+  <div id="topbar-actions"></div>
+</header>
+<main id="view" tabindex="-1"><p class="muted">Running…</p></main>
+<div id="tools"></div>
+<div id="toasts" aria-live="polite"></div>
+<div id="route-announcer" class="sr-only" aria-live="polite"></div>
+<nav class="bottomnav"><a href="#/" data-nav="library">Recipes</a><a href="#/convert" data-nav="convert">Convert</a></nav>
+<img hidden alt="" src="/__smoke/hold">
+<script type="module">
+const results = [];
+function ok(name, cond, detail = '') {
+  results.push({ name, ok: !!cond, detail });
+  if (!cond) console.error(`Test failed: ${name} ${String(detail).replace(/\s+/g, ' ')}`);
+}
+const tick = (ms = 0) => new Promise(r => setTimeout(r, ms));
+const when = (test, ms = 5000) => new Promise(res => {
+  const t0 = Date.now();
+  (function poll() { if (test()) res(true); else if (Date.now() - t0 > ms) res(false); else setTimeout(poll, 10); })();
+});
+
+// Everything this page touches in storage is put back at the end.
+const saved = Object.fromEntries(Object.keys(localStorage).filter(k => k.startsWith('bb.')).map(k => [k, localStorage.getItem(k)]));
+const restore = () => {
+  Object.keys(localStorage).filter(k => k.startsWith('bb.')).forEach(k => localStorage.removeItem(k));
+  Object.entries(saved).forEach(([k, v]) => localStorage.setItem(k, v));
+};
+
+/* ---------- fetch stub: reads wait until the test answers them; no password ---------- */
+const realFetch = window.fetch.bind(window);
+const waiting = new Map(), calls = [];
+const pathOf = url => String(url).split('?')[0].replace(/^.*?\/(?=(recipes|data|journal|inbox)\/)/, '').replace(/^\//, '');
+window.fetch = url => {
+  const p = pathOf(url);
+  calls.push(p);
+  if (p === 'data/lock.json') return Promise.resolve(new Response('', { status: 404 }));
+  return new Promise((res, rej) => { if (!waiting.has(p)) waiting.set(p, []); waiting.get(p).push({ res, rej }); });
+};
+const answer = (path, status, body) => {
+  const w = waiting.get(path)?.shift();
+  if (w) w.res(new Response(body === undefined ? '' : JSON.stringify(body), { status }));
+  return !!w;
+};
+const RECIPE = {
+  slug: 't-slow', title: 'Slow Soup', summary: 'test', servings: 2, time: {},
+  ingredients: [{ id: 'i1', item: 'water', qty: 1, unit: 'cup' }], steps: [{ id: 's1', text: 'Boil the water.' }]
+};
+
+try {
+  localStorage.setItem('bb.prefs', JSON.stringify({ ...JSON.parse(saved['bb.prefs'] || '{}'), token: '' }));
+  ['recipes/t-slow.json', 'journal/t-slow.json'].forEach(p => localStorage.removeItem('bb.cache:' + p));
+  location.hash = '#/r/t-slow';
+  const store = await import('../js/store.js');
+  await import('../js/app.js');
+
+  ok('the recipe view is waiting for its data', await when(() => calls.includes('recipes/t-slow.json')));
+  location.hash = '#/convert';
+  ok('navigating on renders the next view', await when(() => document.body.dataset.view === 'convert' && !document.querySelector('#view').hasAttribute('aria-busy') && document.querySelector('#view').children.length));
+
+  // The recipe's data arrives: its render (now stale) finishes and hands back a cleanup.
+  answer('recipes/t-slow.json', 200, RECIPE);
+  answer('journal/t-slow.json', 404);
+  answer('data/library.json', 200, { schemaVersion: 1, recipes: {}, playlists: [] });
+  await tick(150);
+
+  // Later the recipe changes in the repo: a leaked subscription would repaint the old recipe view.
+  document.querySelector('#view').innerHTML = '<p id="sentinel">current view</p>';
+  const n = calls.filter(c => c === 'recipes/t-slow.json').length;
+  store.revalidateAll();
+  ok('the refresh asks for the recipe again', await when(() => calls.filter(c => c === 'recipes/t-slow.json').length > n));
+  answer('recipes/t-slow.json', 200, { ...RECIPE, title: 'Slow Soup, revised' });
+  await tick(150);
+  ok('a view that finished after the user moved on is cleaned up (no repaint from it)',
+    !!document.querySelector('#view #sentinel') && !document.querySelector('#view .rx-title'),
+    document.querySelector('#view').innerHTML.slice(0, 120));
+} catch (e) {
+  ok('suite threw', false, String(e?.stack || e));
+} finally {
+  restore();
+}
+
+window.fetch = realFetch;
+window.addEventListener('hashchange', e => e.stopImmediatePropagation(), true);   // keep the router off the results
+const failed = results.filter(r => !r.ok).length;
+document.querySelector('#view').innerHTML = `
+  <p class="t-sum ${failed ? 'bad' : 'good'}">${results.length - failed}/${results.length} passed</p>
+  <table>${results.map(r => `<tr class="${r.ok ? 'pass' : 'fail'}"><td>${r.ok ? '✓' : '✗'}</td><td>${r.name.replace(/</g, '&lt;')}${r.detail && !r.ok ? `<br><small>${r.detail.replace(/</g, '&lt;')}</small>` : ''}</td></tr>`).join('')}</table>`;
+fetch('/__smoke/release').catch(() => {});
+</script>
+</body>
+</html>
