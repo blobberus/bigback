@@ -5,11 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Library order · Bigback</title>
   <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/library.css">
   <style>td { padding: 4px 8px; border-top: 1px solid var(--line); font-size: .85rem; }</style>
 </head>
 <body>
 <!-- Run: python scripts/smoke.py tests/library.html -->
 <main id="view"><p class="muted">Running…</p></main>
+<!-- Smooth scrolling needs real time: this holds smoke.py's DOM dump until the release below. -->
+<img hidden alt="" src="/__smoke/hold">
 <script type="module">
 import { orderRows } from '../js/views/library.js';
 import { entryFor } from '../js/store.js';
@@ -59,9 +62,46 @@ try {
   f.remove();
 } catch (e) { eq('app frame ran', String(e), ''); }
 
+/* ---------- the list view itself, on fixture data (many tags: the quick-chip row scrolls) ---------- */
+const TAGS = ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf', 'hotel'];
+const FIX = {
+  'recipes/index.json': { pending: [], recipes: TAGS.map((t, i) => ({ slug: `r-${t}`, title: `Recipe ${t}`, summary: '', image: null, time: {},
+    servings: 2, status: i % 3 ? 'built' : 'custom', sourceType: 'custom', updatedAt: `2026-11-0${i + 1}T00:00:00Z`, openNotes: 0 })) },
+  'data/library.json': { schemaVersion: 1, playlists: [], recipes: Object.fromEntries(TAGS.map((t, i) => [`r-${t}`, { tags: TAGS.slice(i), rating: null, proficiency: null }])) }
+};
+// A 390px frame (phone media queries) running the view itself on the fixture; it shares this page's base URL.
+const fx = document.createElement('iframe');
+fx.style.cssText = 'width:390px;height:600px;border:1px solid var(--line)';
+fx.srcdoc = `<link rel="stylesheet" href="../css/base.css"><link rel="stylesheet" href="../css/library.css">
+<main id="view"></main><script type="module">
+const FIX = ${JSON.stringify(FIX)};
+const realFetch = window.fetch;
+window.fetch = (u, o) => { const k = Object.keys(FIX).find(p => String(u).includes(p)); return k ? Promise.resolve(new Response(JSON.stringify(FIX[k]))) : realFetch(u, o); };
+history.replaceState = () => {};   // about:srcdoc can't take the view's #/?… URL; the hash sync isn't under test here
+const { render } = await import('../js/views/library.js');
+window.offLib = await render(document.getElementById('view'), { query: new URLSearchParams() });
+<\/script>`;
+document.body.append(fx);
+try {
+  await new Promise(r => fx.addEventListener('load', r, { once: true }));
+  await until(() => fx.contentWindow.offLib);
+  const chipRow = fx.contentDocument.querySelector('.qchips');
+  chipRow.scrollLeft = chipRow.scrollWidth;
+  const lastChip = [...chipRow.querySelectorAll('[data-act="add"]')].at(-1);
+  const { k, v } = lastChip.dataset;
+  lastChip.click();
+  await wait(700);                                  // smooth scroll
+  const on = chipRow.querySelector(`[data-act="rm"][data-k="${k}"][data-v="${v}"]`);
+  const rr = chipRow.getBoundingClientRect(), cr = on?.getBoundingClientRect();
+  eq(`a chip tapped at the end of the scrolled row ("${lastChip.textContent}") is in view as an active filter`,
+    [chipRow.scrollWidth > chipRow.clientWidth, !!cr && cr.left >= rr.left - 1 && cr.right <= rr.right + 1], [true, true]);
+} catch (e) { eq('list view ran', String(e.stack || e), ''); }
+finally { fx.contentWindow?.offLib?.(); fx.remove(); }
+
 const failed = results.filter(r => !r.ok).length;
 document.querySelector('#view').innerHTML = `<p><strong>${results.length - failed}/${results.length} passed</strong></p><table>${results.map(r =>
   `<tr><td>${r.ok ? '✓' : '✗'}</td><td>${r.name}${r.detail ? ` — ${r.detail}` : ''}</td></tr>`).join('')}</table>`;
+fetch('/__smoke/release');
 </script>
 </body>
 </html>

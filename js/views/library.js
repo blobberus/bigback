@@ -20,7 +20,7 @@ import {
   getIndex, getLibrary, entryFor, mediaUrl, rawUrl, onChange, NotConnectedError,
   createPlaylist, renamePlaylist, deletePlaylist, addToPlaylist, removeFromPlaylist
 } from '../store.js';
-import { setTopbar, on, stars, sheet, promptSheet, confirmSheet, toast, reportError } from '../ui.js';
+import { setTopbar, on, stars, sheet, promptSheet, confirmSheet, toast, reportError, reducedMotion } from '../ui.js';
 import { isConnected } from '../prefs.js';
 import { PROFICIENCY, profLabel, editMeta } from '../components/meta-editor.js';
 import '../components/back-nav.js';   // watches list → recipe, so the recipe's ← comes back to this entry
@@ -526,7 +526,10 @@ export async function render(root, params) {
       update();
       if (name === 'clear-q') input.focus();
     } else if (name === 'filters') openFilters();
-    else if (name === 'rm' || name === 'add') { toggle(s, el.dataset.k, el.dataset.v); update(); }
+    else if (name === 'rm' || name === 'add') {
+      toggle(s, el.dataset.k, el.dataset.v); update();
+      if (name === 'add') revealChip(el.dataset.k, el.dataset.v);
+    }
     else if (name === 'clear-filters') { clearFilters(s); update(); }
     else if (name === 'more') openMeta(el.closest('.rcard'));
     else if (!pl) return;
@@ -540,6 +543,18 @@ export async function render(root, params) {
     } else if (name === 'unlist') {
       const li = el.closest('.rcard');
       try { removeFromPlaylist(pl.id, li.dataset.slug); toast(`Removed from “${pl.name}”`); } catch (e) { reportError(e); }
+    }
+  }
+
+  /** A suggestion you tap becomes an active filter at the front of the row: when the row was
+   *  scrolled sideways, bring that chip back into view instead of leaving it off-screen. */
+  function revealChip(k, v) {
+    const row = part('chips'), q = CSS.escape;
+    const chip = row.querySelector(`[data-act="rm"][data-k="${q(k)}"][data-v="${q(v || '')}"]`);
+    if (!chip) return;
+    const x = chip.getBoundingClientRect().left - row.getBoundingClientRect().left;
+    if (x < 0 || x + chip.offsetWidth > row.clientWidth) {
+      row.scrollTo({ left: Math.max(0, row.scrollLeft + x - parseFloat(getComputedStyle(row).paddingLeft)), behavior: reducedMotion() ? 'auto' : 'smooth' });
     }
   }
 
