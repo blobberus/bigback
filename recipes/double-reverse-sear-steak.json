@@ -3,8 +3,8 @@
   "slug": "double-reverse-sear-steak",
   "title": "Double Reverse Sear Steak",
   "summary": "Nearly no gray steak sear. Requires skillet, oven, and high smoke point oil.",
-  "profile": "",
-  "status": "custom",
+  "profile": "Pure beef and salt: a smoking-hot pan lays down a dark, crisp crust first, then a very low 215°F (100°C) oven brings the center up so gently that the pink runs almost edge to edge, with nearly no gray band under the crust. Texture target: tender and juicy, finished at about 120°F (49°C) in the center after the rest, which is rare to medium-rare; the oil is only there to carry the heat. Delivers one 12-oz steak for 2 in about 40 minutes, most of it hands-off while the oven and the rest do the work; slice against the grain and serve right away. Leftover slices keep 3 days refrigerated; eat them cold or warm them gently so they stay pink.",
+  "status": "built",
   "source": {
     "type": "custom",
     "url": null,
@@ -56,7 +56,7 @@
     {
       "id": "s1",
       "section": null,
-      "text": "Heat oven to 215F.",
+      "text": "Heat oven to 215°F (100°C).",
       "timers": [],
       "tip": null
     },
@@ -70,9 +70,9 @@
     {
       "id": "s3",
       "section": null,
-      "text": "Thoroughly remove moister and generously salt steak.",
+      "text": "Thoroughly remove moisture and generously salt steak.",
       "timers": [],
-      "tip": "salt steak right before placing on pan to minimize surface moisture."
+      "tip": "Salt the steak right before placing it in the pan to minimize surface moisture."
     },
     {
       "id": "s4",
@@ -84,24 +84,30 @@
           "seconds": 60
         }
       ],
-      "tip": "Note that the steak will continue to sear in the oven"
+      "tip": "Note that the steak will continue to sear in the oven."
     },
     {
       "id": "s5",
       "section": null,
-      "text": "Immediately place hot skillet with steak into heated oven. Flip when core temperature reaches 85F.",
+      "text": "Immediately place hot skillet with steak into heated oven. Flip when core temperature reaches 85°F (29°C).",
       "timers": [],
-      "tip": null
+      "tip": "Use an oven-safe skillet (cast iron or carbon steel); the handle comes out of the oven hot, so grab it with a towel or mitt."
     },
     {
       "id": "s6",
       "section": null,
-      "text": "Remove steak when it reaches 105F internal temperature and let it sit until it reaches 120F.",
+      "text": "Remove steak when it reaches 105°F (41°C) internal temperature and let it sit until it reaches 120°F (49°C).",
       "timers": [],
-      "tip": null
+      "tip": "The heat stored in the crust keeps cooking the center while it sits, and the rest lets the juices settle so they stay in the steak when you slice it."
     }
   ],
   "createdAt": "2026-11-15T09:37:10Z",
-  "updatedAt": "2026-11-15T09:37:10Z",
-  "changelog": []
+  "updatedAt": "2026-11-15T12:00:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-15",
+      "summary": "Enriched: added the profile and tips for the oven-safe skillet and the rest; wrote the temperatures as °F (°C) (215°F, 85°F, 105°F, 120°F were saved without the degree sign); fixed \"moister\" → \"moisture\". Your amounts, wording and steps are unchanged.",
+      "notes": []
+    }
+  ]
 }

@@ -3,7 +3,7 @@
   "slug": "reverse-sear-steak-chimichurri",
   "title": "Reverse-Sear Steak with Chimichurri",
   "summary": "Your low-oven reverse sear: edge-to-edge medium-rare, a 75-second crust and zingy RecipeTin chimichurri.",
-  "profile": "Beef-forward and savory: the all-purpose steak seasoning brings the salt (about 1% on the meat) and a peppery, garlicky backbone, the hard sear adds deep roasted notes, and the chimichurri cuts the richness with sharp red wine vinegar, raw garlic, grassy parsley and optional chili heat. Texture target: evenly pink medium-rare from edge to edge (about 125–130°F in the center after the sear) with almost no gray band, under a thin, dark, crisp crust; the chimichurri is finely chopped and loose, never a puree. Delivers 2 servings per pound of steak in about 1¼ hours, mostly hands-off oven time, plus ¾ cup chimichurri (more than a pound of steak needs); serve sliced against the grain with the sauce spooned over or alongside. Sliced leftover steak keeps 3 days refrigerated; eat it cold or warm it gently in a 250°F (120°C) oven so it stays pink, and keep the chimichurri airtight in the fridge for up to 3 days.",
+  "profile": "Beef-forward and savory: the all-purpose steak seasoning brings the salt (about 1% on the meat) and a peppery, garlicky backbone, the hard sear adds deep roasted notes, and the chimichurri cuts the richness with sharp red wine vinegar, raw garlic, grassy parsley and optional chili heat. Texture target: evenly pink medium-rare from edge to edge (about 125–130°F (52–54°C) in the center after the sear) with almost no gray band, under a thin, dark, crisp crust; the chimichurri is finely chopped and loose, never a puree. Delivers 2 servings per pound of steak in about 1¼ hours, mostly hands-off oven time, plus ¾ cup chimichurri (more than a pound of steak needs); serve sliced against the grain with the sauce spooned over or alongside. Sliced leftover steak keeps 3 days refrigerated; eat it cold or warm it gently in a 250°F (120°C) oven so it stays pink, and keep the chimichurri airtight in the fridge for up to 3 days.",
   "status": "built",
   "source": {
     "type": "text",
@@ -151,7 +151,7 @@
     {
       "id": "s3",
       "section": "Steak",
-      "text": "Roast until an instant-read thermometer in the center of the thickest part reads 100°F, 20–50 minutes depending on thickness (start checking at 20 minutes for a 1¼-inch steak).",
+      "text": "Roast until an instant-read thermometer in the center of the thickest part reads 100°F (38°C), 20–50 minutes depending on thickness (start checking at 20 minutes for a 1¼-inch steak).",
       "timers": [
         {
           "label": "Oven check",
@@ -163,7 +163,7 @@
     {
       "id": "s4",
       "section": "Steak",
-      "text": "Take the steak out, still on the rack, and let it rest uncovered until the center coasts up to about 115°F, 10–15 minutes. Meanwhile, heat the skillet over medium-high heat for a few minutes, then add the oil; it's ready when the oil shimmers and just starts to smoke.",
+      "text": "Take the steak out, still on the rack, and let it rest uncovered until the center coasts up to about 115°F (46°C), 10–15 minutes. Meanwhile, heat the skillet over medium-high heat for a few minutes, then add the oil; it's ready when the oil shimmers and just starts to smoke.",
       "timers": [
         {
           "label": "Rest",
@@ -175,7 +175,7 @@
     {
       "id": "s5",
       "section": "Steak",
-      "text": "Sear the steak 75 seconds per wide side over medium-high heat, without moving it, until deeply browned; flip once. The center should finish around 125–130°F, medium-rare.",
+      "text": "Sear the steak 75 seconds per wide side over medium-high heat, without moving it, until deeply browned; flip once. The center should finish around 125–130°F (52–54°C), medium-rare.",
       "timers": [
         {
           "label": "Sear side 1",
@@ -197,11 +197,16 @@
     }
   ],
   "createdAt": "2026-11-14T19:30:00Z",
-  "updatedAt": "2026-11-15T09:48:04Z",
+  "updatedAt": "2026-11-15T12:00:00Z",
   "changelog": [
     {
       "date": "2026-11-14",
       "summary": "Built from your Recipe List notes (Reverse Sear steak) with the chimichurri from RecipeTin Eats. Kept your numbers (1 tbsp seasoning per lb, 250°F oven, pull at 100°F, rest to ~115°F, 75 s per wide side over medium-high); added pat-dry, rack over a sheet pan, thermometer, sear oil and slicing against the grain. Steak cut wasn't specified; the chimichurri's plain \"salt\" is read as table salt.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-15",
+      "summary": "Wrote every temperature as °F (°C): added the Celsius conversions.",
       "notes": []
     }
   ]

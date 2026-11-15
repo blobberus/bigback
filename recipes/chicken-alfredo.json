@@ -218,7 +218,7 @@
     {
       "id": "s3",
       "section": "Chicken",
-      "text": "Flip the chicken, pour the broth into the pan around it and cover. Keep the heat at medium and cook 7–8 minutes for smaller thighs or 10–12 minutes for thick breasts, until thighs read at least 175°F and breasts 155–160°F in the thickest part and hold there while they rest.",
+      "text": "Flip the chicken, pour the broth into the pan around it and cover. Keep the heat at medium and cook 7–8 minutes for smaller thighs or 10–12 minutes for thick breasts, until thighs read at least 175°F (79°C) and breasts 155–160°F (68–71°C) in the thickest part and hold there while they rest.",
       "timers": [
         {
           "label": "Thighs",
@@ -283,11 +283,16 @@
     }
   ],
   "createdAt": "2026-11-14T20:30:00Z",
-  "updatedAt": "2026-11-14T20:30:00Z",
+  "updatedAt": "2026-11-15T12:00:00Z",
   "changelog": [
     {
       "date": "2026-11-14",
       "summary": "Built from Belly Full's web recipe (printed PDF, 5 pages: Noodles/Chicken/Sauce lists, 10 steps, storage notes). Your changes: (1) the garlic is minced very fine and goes in early, softened in the melted butter for about 1 minute before the cream, instead of being whisked in with the dry seasonings after the cream; (2) the chicken uses your broth technique from Pan-Seared Chicken instead of the source's medium-high heat, 5–7 minutes per side with butter: medium heat, 6½ minutes undisturbed, flip, ≈½ cup low-sodium broth, covered 7–8 minutes for smaller thighs or 10–12 for thick breasts, thighs 175°F+ / breasts 155–160°F with hold, 5-minute rest (source: 3). Thighs or breasts, still 1 lb with the source's Italian seasoning, salt, pepper and olive oil. Dropped the source's 1 tbsp chicken butter: the broth now finishes the second side and the sauce already has ½ cup. Any broth left in the skillet is boiled down and kept for the sauce, which the source also makes in the chicken pan. Added: pasta-water salt (2 tbsp Diamond Crystal for about 4 qt), parsley to the list (the source only names it as a garnish), and a tip to start the pasta when the chicken rests. Combined the 10 steps into 8.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-15",
+      "summary": "Wrote every temperature as °F (°C): added the Celsius conversions.",
       "notes": []
     }
   ]

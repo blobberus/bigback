@@ -3,7 +3,7 @@
   "slug": "pan-seared-chicken",
   "title": "Pan-Seared Chicken Thighs or Breasts",
   "summary": "Paprika-spiced chicken seared 6½ minutes, then finished covered in broth: juicy thighs or thick breasts, one pan.",
-  "profile": "Savory and warmly spiced: sweet paprika and oregano lead over a garlic- and onion-powder base, with black-pepper bite, a whisper of sugar and optional cayenne heat; salt is moderate (1 tsp table salt for 2–2½ lb) because the broth adds a little. The first side should carry a deep brown, spice-crusted sear while the broth steam finishes the meat juicy — thighs tender and yielding at 175°F or more, breasts moist and just opaque at 155–160°F — with a few spoonfuls of savory pan juices left in the skillet. Delivers 4 servings (6–8 thighs or 3–4 breasts) in about 50 minutes, 15 of them hands-off seasoning time; slice it over rice, salads, wraps or pasta. Keeps 4 days refrigerated or 3 months frozen; reheat covered in a skillet over medium-low with a splash of broth, or eat it cold, sliced, in salads.",
+  "profile": "Savory and warmly spiced: sweet paprika and oregano lead over a garlic- and onion-powder base, with black-pepper bite, a whisper of sugar and optional cayenne heat; salt is moderate (1 tsp table salt for 2–2½ lb) because the broth adds a little. The first side should carry a deep brown, spice-crusted sear while the broth steam finishes the meat juicy — thighs tender and yielding at 175°F (79°C) or more, breasts moist and just opaque at 155–160°F (68–71°C) — with a few spoonfuls of savory pan juices left in the skillet. Delivers 4 servings (6–8 thighs or 3–4 breasts) in about 50 minutes, 15 of them hands-off seasoning time; slice it over rice, salads, wraps or pasta. Keeps 4 days refrigerated or 3 months frozen; reheat covered in a skillet over medium-low with a splash of broth, or eat it cold, sliced, in salads.",
   "status": "built",
   "source": {
     "type": "web",
@@ -166,7 +166,7 @@
     {
       "id": "s4",
       "section": "Chicken",
-      "text": "Flip the chicken, pour the broth into the pan around it and cover. Keep the heat at medium and cook 7–8 minutes for smaller thighs or 10–12 minutes for thick breasts, until thighs read at least 175°F and breasts 155–160°F in the thickest part and hold there while they rest.",
+      "text": "Flip the chicken, pour the broth into the pan around it and cover. Keep the heat at medium and cook 7–8 minutes for smaller thighs or 10–12 minutes for thick breasts, until thighs read at least 175°F (79°C) and breasts 155–160°F (68–71°C) in the thickest part and hold there while they rest.",
       "timers": [
         {
           "label": "Thighs",
@@ -193,11 +193,16 @@
     }
   ],
   "createdAt": "2026-11-14T19:30:00Z",
-  "updatedAt": "2026-11-14T19:30:00Z",
+  "updatedAt": "2026-11-15T12:00:00Z",
   "changelog": [
     {
       "date": "2026-11-14",
       "summary": "Built from your Recipe List technique with Alphafoodie's chicken seasoning (half its jar batch, ≈1 tbsp per lb). Your notes applied: medium heat, 6½ min undisturbed on the first side, flip, add broth, then 7–8 min for smaller thighs or 10–12 min for thick breasts. Assumed (not in your notes): ½ cup low-sodium broth and a lid for the broth stage, 1 tbsp oil to sear, boneless chicken. Added pull temps (thighs 175°F+, breasts 155–160°F with hold) and a 5-minute rest. feelgoodfoodie.net blocked automated reads, so the turmeric option lists its spices without amounts.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-15",
+      "summary": "Wrote every temperature as °F (°C): added the Celsius conversions.",
       "notes": []
     }
   ]

@@ -3,7 +3,7 @@
   "slug": "kimchi-spam-fried-rice",
   "title": "Kimchi Spam Fried Rice 김치볶음밥",
   "summary": "Crisp-edged Spam, tangy kimchi and toasty rice in one pan, finished with sesame oil and a runny fried egg.",
-  "profile": "Salty, savory and funky: crisp-edged Spam and fish sauce bring the salt and umami, kimchi and its juice bring sour tang and gentle chili heat, a sliced fresh chili adds a sharper bite, and onion and garlic sweeten the base, with toasted sesame oil and cilantro as the nutty, fresh finish. Right looks like separate, slightly chewy grains stained evenly red, a patch of crackly crust from the pan bottom, Spam cubes browned on most sides and kimchi tender but not mushy — never wet or clumped. Makes 3 servings in about 30 minutes, nearly all of it at the stove in one pan; serve at once, each plate topped with a fried egg whose yolk sauces the rice, the reserved scallions and cilantro, and hot sauce. Keeps 3 days refrigerated (fry eggs fresh) or about 2 months frozen; refrigerate within an hour of cooking and reheat in a hot oiled skillet, pressed flat to re-crisp, until steaming throughout (165°F).",
+  "profile": "Salty, savory and funky: crisp-edged Spam and fish sauce bring the salt and umami, kimchi and its juice bring sour tang and gentle chili heat, a sliced fresh chili adds a sharper bite, and onion and garlic sweeten the base, with toasted sesame oil and cilantro as the nutty, fresh finish. Right looks like separate, slightly chewy grains stained evenly red, a patch of crackly crust from the pan bottom, Spam cubes browned on most sides and kimchi tender but not mushy — never wet or clumped. Makes 3 servings in about 30 minutes, nearly all of it at the stove in one pan; serve at once, each plate topped with a fried egg whose yolk sauces the rice, the reserved scallions and cilantro, and hot sauce. Keeps 3 days refrigerated (fry eggs fresh) or about 2 months frozen; refrigerate within an hour of cooking and reheat in a hot oiled skillet, pressed flat to re-crisp, until steaming throughout (165°F / 74°C).",
   "status": "built",
   "source": {
     "type": "web",
@@ -227,11 +227,16 @@
     }
   ],
   "createdAt": "2026-11-14T19:30:00Z",
-  "updatedAt": "2026-11-15T01:27:42Z",
+  "updatedAt": "2026-11-15T12:00:00Z",
   "changelog": [
     {
       "date": "2026-11-14",
       "summary": "Built from Serious Eats (J. Kenji López-Alt), re-sequenced to the user's order: Spam crisped in canola oil over medium-high → kimchi + garlic 2–4 min over medium → rice → sesame oil last. Differences from the source: the Spam stays in the pan instead of being set aside; garlic (with the chili and scallions) cooks with the kimchi and onion instead of in a well after the rice; the rice is fried in one go with everything (heat back up to medium-high) instead of toasted in two batches over high heat; all 2 tbsp oil goes in with the Spam instead of four ½-tbsp additions; kimchi juice, fish sauce and pepper go in with the rice; sesame oil and cilantro are added off the heat at the end. Added: Spam crisping time (source gave cues only), 1 tbsp oil and one egg per plate for the fried eggs (source: 'fried eggs, for serving'), and an egg doneness cue.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-15",
+      "summary": "Wrote every temperature as °F (°C): added the Celsius conversions.",
       "notes": []
     }
   ]

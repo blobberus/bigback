@@ -13,7 +13,7 @@
       "servings": 6,
       "status": "built",
       "sourceType": "web",
-      "updatedAt": "2026-11-14T20:30:00Z",
+      "updatedAt": "2026-11-15T12:00:00Z",
       "openNotes": 0
     },
     {
@@ -27,9 +27,9 @@
         "total": 40
       },
       "servings": 2,
-      "status": "custom",
+      "status": "built",
       "sourceType": "custom",
-      "updatedAt": "2026-11-15T09:37:10Z",
+      "updatedAt": "2026-11-15T12:00:00Z",
       "openNotes": 0
     },
     {
@@ -45,7 +45,7 @@
       "servings": 3,
       "status": "built",
       "sourceType": "web",
-      "updatedAt": "2026-11-15T01:27:42Z",
+      "updatedAt": "2026-11-15T12:00:00Z",
       "openNotes": 0
     },
     {
@@ -93,7 +93,7 @@
       "servings": 4,
       "status": "built",
       "sourceType": "web",
-      "updatedAt": "2026-11-14T19:30:00Z",
+      "updatedAt": "2026-11-15T12:00:00Z",
       "openNotes": 0
     },
     {
@@ -109,7 +109,7 @@
       "servings": 2,
       "status": "built",
       "sourceType": "text",
-      "updatedAt": "2026-11-15T09:48:04Z",
+      "updatedAt": "2026-11-15T12:00:00Z",
       "openNotes": 0
     },
     {
@@ -125,7 +125,7 @@
       "servings": 4,
       "status": "built",
       "sourceType": "web",
-      "updatedAt": "2026-11-14T19:30:00Z",
+      "updatedAt": "2026-11-15T12:00:00Z",
       "openNotes": 0
     },
     {
@@ -141,7 +141,7 @@
       "servings": 2,
       "status": "built",
       "sourceType": "pdf",
-      "updatedAt": "2026-11-15T01:25:38Z",
+      "updatedAt": "2026-11-15T12:00:00Z",
       "openNotes": 0
     },
     {

@@ -3,7 +3,7 @@
   "slug": "steak-and-scallop-linguine",
   "title": "Steak & Scallop Linguine",
   "summary": "Seared scallops and sliced steak over lemon-garlic Parmesan cream linguine, with a Dijon-pepper pan sauce.",
-  "profile": "Rich and savory: a browned steak crust and sweet, caramelized scallops over linguine in a garlicky Parmesan cream brightened with lemon zest and juice, while the Dijon-pepper pan sauce, built on the steak fond, adds mustard tang and peppery bite; the pasta should taste seasoned but not salty, since the Parmesan brings salt too. Texture target: al dente noodles lightly coated in a glossy sauce (not soupy, not clumped), scallops with a deep golden crust and centers just opaque, medium-rare steak (130–135°F after resting) sliced against the grain, and a pan sauce that coats a spoon. Delivers 2 plates in about 40 minutes (10 prep, 30 cooking); serve right away on warm plates with 1–2 tbsp Dijon cream per person. Best fresh, since the cream tightens and scallops turn rubbery when reheated; leftovers keep 1–2 days refrigerated, so rewarm the pasta gently in a skillet with a splash of water or broth and eat the steak and scallops cold or barely warmed.",
+  "profile": "Rich and savory: a browned steak crust and sweet, caramelized scallops over linguine in a garlicky Parmesan cream brightened with lemon zest and juice, while the Dijon-pepper pan sauce, built on the steak fond, adds mustard tang and peppery bite; the pasta should taste seasoned but not salty, since the Parmesan brings salt too. Texture target: al dente noodles lightly coated in a glossy sauce (not soupy, not clumped), scallops with a deep golden crust and centers just opaque, medium-rare steak (130–135°F / 54–57°C after resting) sliced against the grain, and a pan sauce that coats a spoon. Delivers 2 plates in about 40 minutes (10 prep, 30 cooking); serve right away on warm plates with 1–2 tbsp Dijon cream per person. Best fresh, since the cream tightens and scallops turn rubbery when reheated; leftovers keep 1–2 days refrigerated, so rewarm the pasta gently in a skillet with a splash of water or broth and eat the steak and scallops cold or barely warmed.",
   "status": "built",
   "source": {
     "type": "pdf",
@@ -196,7 +196,7 @@
     {
       "id": "s2",
       "section": "Steak",
-      "text": "Heat 1 tbsp of the oil in the heavy skillet over medium-high heat. Sear the steak 3–4 minutes per side, until an instant-read thermometer in the center reads 125–130°F for medium-rare; when you flip it, add the linguine to the boiling water. Lower the heat, add ½ tbsp of the butter and the thyme (if using) and baste for 30 seconds, then rest the steak on a warm plate, loosely tented, for 10–15 minutes. Drain the linguine 1 minute shy of al dente (usually 8–10 minutes), reserving 1 cup of the cooking water.",
+      "text": "Heat 1 tbsp of the oil in the heavy skillet over medium-high heat. Sear the steak 3–4 minutes per side, until an instant-read thermometer in the center reads 125–130°F (52–54°C) for medium-rare; when you flip it, add the linguine to the boiling water. Lower the heat, add ½ tbsp of the butter and the thyme (if using) and baste for 30 seconds, then rest the steak on a warm plate, loosely tented, for 10–15 minutes. Drain the linguine 1 minute shy of al dente (usually 8–10 minutes), reserving 1 cup of the cooking water.",
       "timers": [
         {
           "label": "Sear side 1",
@@ -215,7 +215,7 @@
           "seconds": 600
         }
       ],
-      "tip": "A steak this thick climbs about 5°F as it rests, landing at medium-rare (130–135°F)."
+      "tip": "A steak this thick climbs about 5°F (3°C) as it rests, landing at medium-rare (130–135°F / 54–57°C)."
     },
     {
       "id": "s3",
@@ -289,11 +289,16 @@
     }
   ],
   "createdAt": "2026-11-14T19:30:00Z",
-  "updatedAt": "2026-11-15T01:25:38Z",
+  "updatedAt": "2026-11-15T12:00:00Z",
   "changelog": [
     {
       "date": "2026-11-14",
       "summary": "Built from The Dinner Table PDF (2 pages: ingredient checklist + 7 steps). Added a pull temperature (125–130°F for medium-rare) since the PDF only said to check with a thermometer, plus a usual drain time for the linguine and a 1–2 minute estimate for reducing the sauce broth by half.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-15",
+      "summary": "Wrote every temperature as °F (°C): added the Celsius conversions.",
       "notes": []
     }
   ]

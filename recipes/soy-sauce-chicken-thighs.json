@@ -222,7 +222,7 @@
           "seconds": 900
         }
       ],
-      "tip": "Thighs stay juicy well past 165°F; the extra heat melts their connective tissue so the meat pulls cleanly off the bone."
+      "tip": "Thighs stay juicy well past 165°F (74°C); the extra heat melts their connective tissue so the meat pulls cleanly off the bone."
     },
     {
       "id": "s7",
@@ -238,11 +238,16 @@
     }
   ],
   "createdAt": "2026-11-14T19:30:00Z",
-  "updatedAt": "2026-11-14T19:30:00Z",
+  "updatedAt": "2026-11-15T12:00:00Z",
   "changelog": [
     {
       "date": "2026-11-14",
       "summary": "Built from The Woks of Life web recipe (Bill). User changes: skin-on chicken thighs instead of a whole 4-lb chicken, so the master sauce is halved at the same ratios (8 cups of liquid for 6 bone-in thighs, as the author suggests for parts), the cavity-draining steps are dropped, the covered simmer goes from 25 to 15 min and the off-heat steep from 25 to 15–20 min, and doneness moves from 165°F in the thigh to 175–185°F near the bone for tender thighs. Both wines (rose and Shaoxing) are optional per the user's note (replace with water). Rounding: 7 ginger slices to 4, 3 star anise to 1½–2, ⅞ cup sugar to ¾–1 cup; tempering cut from 1 hour to 30 minutes for pieces.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-15",
+      "summary": "Wrote every temperature as °F (°C): added the Celsius conversions.",
       "notes": []
     }
   ]
