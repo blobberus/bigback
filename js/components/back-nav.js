@@ -8,8 +8,9 @@
  *       isParent(hash) accepts it (a recipe takes the lists, cook mode its recipe). Decided once
  *       per entry and kept in history.state, so Back / Forward and reloads keep the answer; a deep
  *       link or a page reached any other way gets null.
- *   goBack(e, target)   click handler for a ← / exit link whose href is the fallback route: with a
- *       target, history.back() instead of following the link
+ *   goBack(e, target) → bool   click handler for a ← / exit link (e may be null): with a target and
+ *       an entry to go back to, history.back() instead of following the link; false = not handled
+ *       (the caller navigates; point the link's href at the target so it still lands there)
  * The previous page comes from hashchange's oldURL, so this module has to be loaded before the
  * hop it judges: library.js imports it for list → recipe.
  */
@@ -28,7 +29,8 @@ export function backTarget(isParent) {
 }
 
 export function goBack(e, target) {
-  if (!target) return;
-  e.preventDefault();
+  if (!target || history.length < 2) return false;   // e.g. a restored app with no earlier entry
+  e?.preventDefault();
   history.back();
+  return true;
 }

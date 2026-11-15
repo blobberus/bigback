@@ -240,7 +240,7 @@ export async function render(root, { slug }) {
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) return;
     if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); go(1); }
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(-1); }
-    else if (e.key === 'Escape') { if (from) history.back(); else location.hash = back; }
+    else if (e.key === 'Escape' && !goBack(null, from)) location.hash = back;
   };
 
   const timers = bindTimers(root, slug);
