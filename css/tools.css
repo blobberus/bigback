@@ -11,6 +11,9 @@
 :root { --tools-b: calc(var(--nav-h) + var(--safe-b) + 12px); --tools-x: 12px; }
 /* Cook mode hides the nav but has its own fixed Prev/Next bar (z 35): sit just above it. */
 body[data-view="cook"] { --tools-b: calc(var(--safe-b) + 96px); }   /* .ck-nav is ~85px tall */
+/* The add / edit / upload forms' sticky save bar (editor.css, ~70px) sits on the nav: stack above
+   it, so the stopwatch button and timer pills never cover Save. */
+body:has(.ed-savebar) { --tools-b: calc(var(--nav-h) + var(--safe-b) + 82px); }
 
 #tools {
   position: fixed; z-index: 40; bottom: var(--tools-b);
