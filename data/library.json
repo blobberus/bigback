@@ -1,14 +1,6 @@
 {
   "schemaVersion": 1,
   "recipes": {
-    "crispy-skillet-chicken-thighs": {
-      "tags": [],
-      "rating": 9,
-      "proficiency": 4,
-      "addedAt": "2026-11-14T10:00:00Z",
-      "cooked": 1,
-      "lastCooked": "2026-11-14T23:05:41Z"
-    },
     "reverse-sear-steak-chimichurri": {
       "tags": [],
       "rating": null,
