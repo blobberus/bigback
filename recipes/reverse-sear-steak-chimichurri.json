@@ -19,7 +19,7 @@
   "time": {
     "prep": 15,
     "cook": 45,
-    "total": 75
+    "total": 60
   },
   "equipment": [
     "food processor (or a sharp knife)",
@@ -197,7 +197,7 @@
     }
   ],
   "createdAt": "2026-11-14T19:30:00Z",
-  "updatedAt": "2026-11-15T01:27:18Z",
+  "updatedAt": "2026-11-15T09:48:04Z",
   "changelog": [
     {
       "date": "2026-11-14",
