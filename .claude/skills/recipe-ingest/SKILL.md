@@ -23,17 +23,17 @@ Use `item.text` whenever present — it's what the user pasted and is often the 
 | PDF | Read tool on the file (`pages: "1-20"` per call for long PDFs). Transcribe every page the recipe spans. |
 | Image (card, cookbook page, screenshot) | Read tool on each image, in upload order. Handwriting: pick the most plausible reading; log doubtful reads in the changelog ("read ⅓ cup from smudged card"). |
 | Web link | `python .claude/skills/recipe-ingest/extract.py jsonld <url>` → schema.org Recipe (exact ingredient lines + steps). Exit 2 / error → WebFetch the URL asking for "the recipe's ingredient list and method verbatim, plus author, yield and times — don't summarize". |
-| YouTube | `item.text` first. WebFetch the watch page for the description (often has the full recipe or a link to the written version — follow it with `extract.py jsonld`). If still thin: `yt-dlp --version`; if installed, `yt-dlp --skip-download --write-auto-subs --sub-langs en --write-description -o "<scratchpad>/%(id)s" <url>` then `python .claude/skills/recipe-ingest/extract.py vtt <scratchpad>/<id>.en.vtt`. Reconstruct from transcript + description. |
-| Instagram / TikTok | Rely on `item.text` / `hint` (the caption). Try WebFetch on the URL (usually a login wall); for TikTok also try WebFetch `https://www.tiktok.com/oembed?url=<url>` (its `title` is the caption). Follow any "recipe on my site" link. |
+| YouTube | `item.text` first. WebFetch the watch page for the description (often has the full recipe or a link to the written version — follow it with `extract.py jsonld`). If still thin: `yt-dlp --version`; if installed, `yt-dlp --skip-download --write-auto-subs --sub-langs en --write-description -o "<scratchpad>/%(id)s" <url>` then `python .claude/skills/recipe-ingest/extract.py vtt <scratchpad>/<id>.en.vtt`. Reconstruct from transcript + description. Shorts, or no subtitles: skill `.claude/skills/recipe-video/SKILL.md`. |
+| Instagram / TikTok / Facebook video | Skill `.claude/skills/recipe-video/SKILL.md`: `reel.py <url>` gets the caption, a speech transcript and frame sheets of the on-screen text from the link alone (no login). `item.text` / `hint`, when present, still win. Follow any "recipe on my site" link. |
 | Pasted text | `item.text` is the recipe. |
 
 One upload with several recipes: build the one the hint/title names; if unclear, the main
 one, and mention the others in your one-line reply.
 
 **Not enough to build a faithful recipe?** (no ingredient list and no transcript, a
-caption that just says "recipe in bio", an unreadable photo) — don't invent one. Set
-`"blocked": "<what's needed, ≤100 chars>"` in `inbox/<id>/item.json` (e.g. `"Instagram
-needs login — paste the caption into the item"`), write no recipe, and report it.
+caption that just says "recipe in bio" with a video that doesn't show it, an unreadable photo) — don't invent one. Set
+`"blocked": "<what's needed, ≤100 chars>"` in `inbox/<id>/item.json` (e.g. `"Private
+account — paste the caption into the item"`), write no recipe, and report it.
 Estimating amounts the video *shows* is fine (mark them `"note": "≈, eyeballed in video"`);
 inventing a dish isn't.
 

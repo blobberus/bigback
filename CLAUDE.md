@@ -12,6 +12,7 @@ in localStorage). Agents turn raw uploads + user feedback into polished recipes.
 | "update the site", "build recipes", "process notes/feedback", "sync" | `.claude/router/update-site.md` (follow it exactly) |
 | Changing a recipe because of feedback | skill `.claude/skills/recipe-refinement/SKILL.md` |
 | Formatting a raw upload into a recipe | skill `.claude/skills/recipe-ingest/SKILL.md` |
+| A video link (Instagram reel, TikTok, YouTube): read it without a login | skill `.claude/skills/recipe-video/SKILL.md` |
 | Data shapes (recipe, library, journal, inbox) | `docs/SCHEMA.md` |
 | Front-end code map / module contracts | `docs/ARCHITECTURE.md` |
 | Continuing unfinished build work | `autopilot/TASKS.md` (ledger) — then `autopilot/PROMPT.md` rules |
@@ -40,7 +41,9 @@ rating, proficiency or playlists (exception: adding blank entries for new recipe
 
 ## Conventions
 - No build step, no npm. Vanilla ES modules, hash router, mobile-first CSS.
-- Python 3 stdlib only for scripts (`python scripts/…`). Node is not installed.
+- Python 3 stdlib only for scripts (`python scripts/…`). Node is not installed. Exception: the
+  recipe-video skill's `reel.py` uses optional pip packages (its `requirements.txt`) for frames
+  and transcripts; the site and `scripts/` never need them.
 - Step and ingredient `id`s are stable forever — notes reference them.
 - Few commits: one per feature (code + tests + docs), imperative message, push to `main`.
   The owner caps the repo at **140 commits per day** — check `git log --since=<today> --oneline | wc -l`.
