@@ -77,7 +77,8 @@
       "name": "Steak",
       "recipes": [
         "reverse-sear-steak-chimichurri",
-        "steak-and-scallop-linguine"
+        "steak-and-scallop-linguine",
+        "double-reverse-sear-steak"
       ],
       "createdAt": "2026-11-15T09:26:07Z"
     }
