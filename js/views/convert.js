@@ -1,8 +1,9 @@
 /**
  * views/convert.js — kitchen converter (#/convert), laid out like a search engine's unit
  * converter: one row each for weight, volume and temperature, [amount][unit] = [amount][unit].
- *   - Type on either side: the other side updates on every keystroke. Mid-typing ("1 1/",
- *     "2.") keeps the last result instead of blanking it.
+ *   - Type on either side: the other side updates on every keystroke. Mid-typing ("1 1",
+ *     "1 1/", "2.", a lone "-" for a temperature) keeps showing the last whole amount, converted
+ *     into the current units, instead of blanking it or flagging it (midTyping).
  *   - Changing a unit recalculates from the side you typed in last, so your number stays put.
  *   - Amounts take decimals or fractions ("1.5", "1,5", "1 1/2", "½"); a US kitchen result also
  *     shows the nearest measure ("≈ ⅜ cup").
@@ -18,6 +19,13 @@ const KEY = 'bb.convert';
 const KINDS = Object.keys(CONVERTERS);
 const other = side => (side === 'a' ? 'b' : 'a');
 const unitName = (kind, key) => CONVERTERS[kind].units.find(u => u[0] === key)?.[1] || key;
+// The start of an amount that isn't one yet: "-", ".", "2.", "1/", "1 1", "1 1/".
+const PARTIAL = /^-?\s*(?:[.,]|\d+(?:[.,]|\/|\s+(?:\d+\/?)?)?)?$/;
+/** Halfway through typing a valid amount (a leading minus only where negatives exist). */
+export function midTyping(raw, signed) {
+  const s = String(raw).trim().replace(/^[−–]/, '-');
+  return !!s && (signed || s[0] !== '-') && PARTIAL.test(s);
+}
 
 function loadState() {
   let saved = {};
@@ -61,17 +69,22 @@ export async function render(root) {
   </div>`;
 
   const rowOf = kind => root.querySelector(`.cv-row[data-kind="${kind}"]`);
+  const last = {};          // per row: { side, v } the last whole amount typed, reused while mid-typing
 
   /** Recalculate the row's other side from the side typed in last. */
   function compute(kind) {
     const st = state[kind], row = rowOf(kind), src = st.from, dst = other(src);
     const inS = row.querySelector(`.cv-amt[data-side="${src}"]`), inD = row.querySelector(`.cv-amt[data-side="${dst}"]`);
     const raw = inS.value;
-    const v = parseAmount(raw);
-    const ok = Number.isFinite(v) && (kind === 'temp' || v >= 0);
-    const partial = !ok && /[/.,\s\-−–]$/.test(raw) && /\d/.test(raw);      // "1 1/", "2.", "-"
+    let v = parseAmount(raw);
+    let ok = Number.isFinite(v) && (kind === 'temp' || v >= 0);
+    const partial = !ok && midTyping(raw, kind === 'temp');
     inS.classList.toggle('is-bad', !!raw.trim() && !ok && !partial);
-    if (partial) return;
+    if (ok) last[kind] = { side: src, v };
+    else if (partial) {
+      if (last[kind]?.side !== src) return;       // nothing whole typed on this side yet: leave the row be
+      v = last[kind].v; ok = true;                // in the current units, so a unit change mid-typing stays right
+    } else delete last[kind];
     const out = ok ? convertUnit(kind, v, st[src], st[dst]) : NaN;
     inD.value = ok ? fmtAmount(out) : '';
     inD.classList.remove('is-bad');
