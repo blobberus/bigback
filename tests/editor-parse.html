@@ -24,6 +24,7 @@ import {
   parseSteps, formatSteps, detectTimers, timerLabel, parseLines, linkType
 } from '../js/components/editor-parse.js';
 import { mergeIngredients, mergeSteps, matchItems, similarity, nextIdNumber } from '../js/components/editor-ids.js';
+import { buildRecipe, stateFrom } from '../js/components/editor-form.js';
 
 const results = [];
 const canon = v => JSON.stringify(v, (k, x) => (x && typeof x === 'object' && !Array.isArray(x)
@@ -167,6 +168,14 @@ eq('helpers: similarity, nextIdNumber, matchItems', [
 /* ---------- links ---------- */
 eq('linkType', ['https://youtu.be/abc', 'www.youtube.com/watch?v=1', 'https://www.instagram.com/reel/xyz/', 'https://vm.tiktok.com/ZM/', 'https://smittenkitchen.com/x', 'not a url']
   .map(linkType), ['youtube', 'youtube', 'instagram', 'tiktok', 'web', 'web']);
+
+/* ---------- saving: the stock-photo credit follows the photo ---------- */
+const stock = { ...sample, image: 'media/x/hero.jpg', imageCredit: { author: 'A', license: 'CC BY 2.0', url: 'https://commons.wikimedia.org/wiki/File:X.jpg' } };
+const form = stateFrom(stock);
+eq('stock credit kept on a text edit, dropped with a new or removed photo', [
+  buildRecipe(form, stock).imageCredit?.author, buildRecipe(form, stock, { hasNewPhoto: true }).imageCredit,
+  buildRecipe(form, stock, { removeImage: true }).imageCredit, 'imageCredit' in buildRecipe(form, sample, { hasNewPhoto: true })
+], ['A', null, null, false]);
 
 /* ---------- render ---------- */
 const pass = results.filter(r => r.ok).length, fail = results.length - pass;

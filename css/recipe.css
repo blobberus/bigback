@@ -13,15 +13,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
   margin: calc(-1 * var(--gap)) calc(-1 * var(--gap)) 0; aspect-ratio: 4 / 3; max-height: 56vh;
   overflow: hidden; background: var(--surface-2);
 }
-.rx-hero { position: relative; }
 .rx-hero img { width: 100%; height: 100%; object-fit: cover; }
-/* stock-photo credit (CC licenses ask for it); small, over the corner of the photo */
-.rx-credit {
-  position: absolute; right: 8px; bottom: 8px; max-width: calc(100% - 16px); padding: 2px 8px; border-radius: 999px;
-  background: rgb(20 16 12 / .55); color: #fff; font-size: .68rem; line-height: 1.5;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.rx-credit a { color: inherit; text-decoration: none; }
 .rx-hero-ph {
   aspect-ratio: auto; height: 132px; display: grid; place-items: center; color: var(--accent);
   background:
@@ -61,6 +53,9 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 .rx-source a { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; font-weight: 600; }
 .rx-source .rx-ic { width: 15px; height: 15px; }
 .rx-dot { color: var(--muted); }
+/* stock-photo credit line (photoCredit in recipe.js): quieter than the source */
+.rx-credit { font-size: .8rem; }
+.rx-credit a { font-weight: 500; color: var(--muted); text-decoration: none; overflow-wrap: anywhere; }
 
 .rx-notice {
   display: flex; gap: 10px; align-items: flex-start; margin: 16px 0 0; padding: 12px 14px;

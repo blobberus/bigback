@@ -20,7 +20,7 @@ import { draftKey, loadDraft, saveDraft, clearDraft, draftAge } from './editor-d
 const FIELDS = ['title', 'summary', 'servings', 'yield', 'prep', 'cook', 'total', 'ingredients', 'steps', 'equipment', 'profile'];
 const str = v => (v == null ? '' : String(v));
 
-function stateFrom(r) {
+export function stateFrom(r) {
   if (!r) return { ...Object.fromEntries(FIELDS.map(f => [f, ''])), totalAuto: true };
   const t = r.time || {};
   return {
@@ -66,7 +66,12 @@ export function buildRecipe(s, base, { reserved = [], removeImage = false, hasNe
     servings: number(s.servings), yield: s.yield.trim() || null, time: { prep, cook, total },
     equipment: parseLines(s.equipment), ingredients, steps
   };
-  if (base) return { ...base, ...content, image: removeImage && !hasNewPhoto ? null : (base.image ?? null) };
+  if (base) {
+    const out = { ...base, ...content, image: removeImage && !hasNewPhoto ? null : (base.image ?? null) };
+    // A stock-photo credit belongs to that photo: your own photo (or none) drops it.
+    if ((removeImage || hasNewPhoto) && 'imageCredit' in out) out.imageCredit = null;
+    return out;
+  }
   return {
     schemaVersion: 1, slug: null, title: content.title, summary: content.summary, profile: content.profile,
     status: 'custom', source: { type: 'custom', url: null, files: [], author: null }, image: null,

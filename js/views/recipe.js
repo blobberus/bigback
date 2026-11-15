@@ -112,6 +112,7 @@ export async function render(root, { slug }) {
           ${stats(r)}
           ${r.yield ? html`<p class="rx-line"><span class="rx-label">Makes</span><span>${r.yield}</span></p>` : ''}
           ${source(r)}
+          ${photoCredit(r)}
         </header>
         ${r.status === 'custom' ? html`
           <p class="rx-notice">${icon('spark')}<span>Typed by you — Claude will add a flavor profile and timers next time you say “update the site”.</span></p>` : ''}
@@ -161,10 +162,7 @@ export async function render(root, { slug }) {
 
   function hero(r) {
     if (r.image) {
-      const c = r.imageCredit, href = safeUrl(c?.url);
-      const credit = c?.author ? `Photo: ${c.author}${c.license ? ` · ${c.license}` : ''}` : '';
-      return html`<figure class="rx-hero"><img src="${mediaUrl(r.image)}" data-fallback="${rawUrl(r.image)}" alt="${r.title}" decoding="async">${credit
-        ? html`<figcaption class="rx-credit">${href ? html`<a href="${href}" target="_blank" rel="noopener noreferrer">${credit}</a>` : credit}</figcaption>` : ''}</figure>`;
+      return html`<figure class="rx-hero"><img src="${mediaUrl(r.image)}" data-fallback="${rawUrl(r.image)}" alt="${r.title}" decoding="async"></figure>`;
     }
     return html`<div class="rx-hero rx-hero-ph" aria-hidden="true">${icon('pan')}</div>`;
   }
@@ -191,6 +189,16 @@ export async function render(root, { slug }) {
     if (!bits.length) return '';
     return html`<p class="rx-line rx-source"><span class="rx-label">Source</span><span class="rx-source-bits">${bits.map((b, i) =>
       i ? html`<span class="rx-dot" aria-hidden="true">·</span>${b}` : b)}</span></p>`;
+  }
+
+  /** Stock photos under CC BY / BY-SA must credit the photographer; a quiet line by the source
+   *  instead of a tag on the photo. CC0 / public domain need none. */
+  function photoCredit(r) {
+    const c = r.imageCredit;
+    if (!c?.author || !/^cc by/i.test(c.license || '')) return '';
+    const href = safeUrl(c.url), text = `${c.author} · ${c.license}`;
+    return html`<p class="rx-line rx-credit"><span class="rx-label">Photo</span><span class="rx-source-bits">${href
+      ? html`<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>` : html`<span>${text}</span>`}</span></p>`;
   }
 
   function youCard(entry, photos) {
