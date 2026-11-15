@@ -354,7 +354,10 @@ function emptyLibrary(hasPending) {
 }
 
 /* ---------- view ---------- */
+let renders = 0;   // newest render of this view: an older one still loading must not paint or bind
+
 export async function render(root, params) {
+  const me = ++renders;
   const s = readState(params);
   const pathOf = h => (h || '#/').split('?')[0];
   const myPath = pathOf(location.hash);
@@ -382,7 +385,7 @@ export async function render(root, params) {
   }
   const shownRows = () => orderRows(rows.filter(x => matches(x, s, plSets)), s.sort, !plId);
   await load();
-  if (pathOf(location.hash) !== myPath) return;   // navigated away while loading
+  if (me !== renders || pathOf(location.hash) !== myPath) return;   // navigated away (or away and back) while loading
 
   root.innerHTML = html`<div class="lib">
     <div class="lib-bar" role="search" data-part="bar">

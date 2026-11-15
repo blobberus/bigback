@@ -7,6 +7,8 @@
  * remembered per slug in sessionStorage (components/recipe-state.js), and so are half-typed
  * notes: closing the note sheet keeps the draft (per step, or 'recipe'), shared with the
  * recipe page's composers; a successful save clears it.
+ * A render that is still loading when you move on paints and binds nothing (the router drops
+ * the cleanup of a render it has already left).
  */
 import { getRecipe, getJournal, onChange, addNote, NotConnectedError } from '../store.js';
 import { setTopbar, on, sheet, toast, reportError, busy } from '../ui.js';
@@ -19,9 +21,14 @@ import { stepTextHtml, tempsHtml, timerButtonsHtml, bindTimers } from '../compon
 import { mentionMatcher, bindMentions } from '../components/recipe-mentions.js';
 import { cookedLine, cookLog, clip, openPhotoUploader } from '../components/recipe-journal.js';
 
+let renders = 0;   // newest render of this view
+
 export async function render(root, { slug }) {
   const back = `#/r/${slug}`;
+  const me = ++renders, path = location.hash.split('?')[0];
+  const stale = () => me !== renders || location.hash.split('?')[0] !== path;
   let [recipe, journal] = await Promise.all([getRecipe(slug), getJournal(slug)]);
+  if (stale()) return;
 
   if (!recipe || !(recipe.steps || []).length) {
     setTopbar({ title: recipe ? recipe.title : 'Recipe not found', back: recipe ? back : '#/' });
@@ -229,6 +236,7 @@ export async function render(root, { slug }) {
     onChange(async ev => {
       if (!ev.paths?.some(p => p === `recipes/${slug}.json` || p === `journal/${slug}.json`)) return;
       const [r, j] = await Promise.all([getRecipe(slug), getJournal(slug)]);
+      if (stale()) return;
       if (r?.steps?.length) {
         const id = steps[i]?.id;
         recipe = r;

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Navigation glitches · Bigback</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <style>
+    body { padding-bottom: 24px; }
+    .t-sum { font-weight: 700; margin: 0 0 12px; }
+    .t-sum.bad { color: var(--danger); } .t-sum.good { color: var(--ok); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    td { padding: 6px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+    td:first-child { width: 2.5em; font-weight: 800; }
+    tr.pass td:first-child { color: var(--ok); } tr.fail td:first-child { color: var(--danger); }
+    #frames iframe { display: block; width: 390px; height: 700px; border: 1px solid var(--line); margin: 8px 0; }
+  </style>
+</head>
+<body>
+<!-- Run: python scripts/smoke.py tests/navigation.html
+     Drives the real app in a 390px iframe (no token: it reads the static JSON) the way a phone
+     user moves around: quick Back while a page is still loading, the topbar ←, cook mode's exits.
+     A page's data is made slow by wrapping the frame's fetch. -->
+<main id="view"><p class="muted">Running…</p></main>
+<!-- Scroll restore and the timers need real time: this holds smoke.py's DOM dump until the release below. -->
+<img hidden alt="" src="/__smoke/hold">
+<div id="frames"></div>
+<script type="module">
+const results = [];
+const ok = (name, cond, detail = '') => { results.push({ name, ok: !!cond, detail: cond ? '' : detail }); if (!cond) console.error(`Test failed: ${name} ${detail}`); };
+const wait = ms => new Promise(r => setTimeout(r, ms));
+async function until(fn, ms = 4000) {
+  const t0 = performance.now();
+  while (performance.now() - t0 < ms) { try { if (fn()) return true; } catch { /* not there yet */ } await wait(25); }
+  return false;
+}
+/** The app in a fresh 390px frame at `hash`, with a clean session (cooking state, history). */
+async function app(hash) {
+  document.querySelectorAll('#frames iframe').forEach(f => f.remove());
+  const f = document.createElement('iframe');
+  f.src = '../index.html' + hash;
+  document.getElementById('frames').append(f);
+  await new Promise(r => f.addEventListener('load', r, { once: true }));
+  const w = f.contentWindow, d = f.contentDocument;
+  w.sessionStorage.clear();
+  const view = () => d.getElementById('view');
+  await until(() => view().children.length && view().getAttribute('aria-busy') !== 'true');
+  return { f, w, d, view, $: s => view().querySelector(s) };
+}
+/** Delay the frame's fetches whose URL matches `re` by `ms`. */
+function slow(w, re, ms) {
+  const real = w.fetch.bind(w);
+  w.fetch = (u, o) => (re.test(String(u)) ? wait(ms).then(() => real(u, o)) : real(u, o));
+}
+const go = (w, hash) => { w.location.hash = hash; };
+
+try {
+  /* ---------- a page still loading when you move on ---------- */
+  {
+    const a = await app('#/');
+    slow(a.w, /recipes\/tteokguk\.json/, 500);
+    go(a.w, '#/r/tteokguk'); await wait(120); go(a.w, '#/');
+    await wait(900);
+    ok('Back while a recipe loads: the list stays (the recipe does not paint over it)',
+      a.$('.lib') && !a.$('.rx') && a.d.getElementById('topbar-title').textContent === 'Recipes',
+      `view: ${a.view().firstElementChild?.className}, title: ${a.d.getElementById('topbar-title').textContent}`);
+    go(a.w, '#/r/tteokguk');
+    await until(() => a.$('.rx-num'));
+    a.$('.rx-num').click();
+    ok('opening it again works as usual (a tap on the step number checks it off)', a.$('.rx-step.is-done'), a.$('.rx-step')?.className);
+  }
+  {
+    const a = await app('#/');
+    slow(a.w, /recipes\/mapo-tofu\.json/, 500);
+    go(a.w, '#/r/mapo-tofu/cook'); await wait(120); go(a.w, '#/');
+    await wait(900);
+    ok('Back while cook mode loads: the list stays', a.$('.lib') && !a.$('.ck'), a.view().firstElementChild?.className);
+    a.d.dispatchEvent(new a.w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await wait(300);
+    ok('…and cook mode left no key handler behind (Esc on the list stays on the list)', a.w.location.hash === '#/', a.w.location.hash);
+  }
+  {
+    const a = await app('#/convert');
+    slow(a.w, /recipes\/index\.json/, 600);
+    go(a.w, '#/'); await wait(150); go(a.w, '#/playlists'); await wait(40); go(a.w, '#/');
+    await until(() => a.$('.rcard'), 3000); await wait(700);
+    a.$('[data-act="filters"]').click();
+    await wait(300);
+    const n = a.d.querySelectorAll('.filter-sheet').length;
+    ok('Recipes → Playlists → Recipes during a slow first load: one set of handlers (one Filters sheet per tap)', n === 1, `${n} sheets`);
+  }
+} catch (e) {
+  ok('test page ran', false, String(e.stack || e));
+}
+
+const failed = results.filter(r => !r.ok);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+document.getElementById('view').innerHTML =
+  `<h1>Navigation</h1><p class="t-sum ${failed.length ? 'bad' : 'good'}">${results.length - failed.length} passed · ${failed.length} failed</p>` +
+  `<table>${results.map(r => `<tr class="${r.ok ? 'pass' : 'fail'}"><td>${r.ok ? 'ok' : 'FAIL'}</td><td>${esc(r.name)}${r.detail ? `<br><small>${esc(r.detail)}</small>` : ''}</td></tr>`).join('')}</table>`;
+document.querySelectorAll('#frames iframe').forEach(f => f.remove());
+fetch('/__smoke/release');
+</script>
+</body>
+</html>

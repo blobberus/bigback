@@ -30,13 +30,15 @@ function row(p) {
   </li>`;
 }
 
+let renders = 0;   // newest render of this view: an older one still loading must not paint or bind
+
 export async function render(root) {
   setTopbar({ title: 'Playlists' });
-  const myPath = location.hash.split('?')[0];
+  const me = ++renders, myPath = location.hash.split('?')[0];
   let idx, lib, alive = true;
   const load = async () => { [idx, lib] = await Promise.all([getIndex(), getLibrary()]); };
   await load();
-  if (location.hash.split('?')[0] !== myPath) return;   // navigated away while loading
+  if (me !== renders || location.hash.split('?')[0] !== myPath) return;   // navigated away (or away and back) while loading
 
   function paint() {
     const bySlug = new Map(idx.recipes.map(r => [r.slug, r]));

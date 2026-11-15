@@ -5,6 +5,8 @@
  * timers and step notes → recipe notes → photo journal → changelog.
  * Re-renders on store changes to this recipe's files. Cooking state (checked, done, scale)
  * and half-typed notes live in sessionStorage (components/recipe-state.js), shared with cook mode.
+ * A render that is still loading when you move on (Back, another recipe) paints nothing and binds
+ * nothing: the router drops the cleanup of a render it has already left.
  */
 import {
   getRecipe, getLibrary, entryFor, getJournal, onChange, addNote,
@@ -28,19 +30,23 @@ const safeUrl = u => (/^https?:\/\//i.test(String(u || '')) ? u : null);
 const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
 const fileName = p => String(p).split('/').pop();
 const PAST_TITLE = 'rx-past-title';
+let renders = 0;            // newest render of this view
 
 export async function render(root, { slug }) {
   const mine = new Set([`recipes/${slug}.json`, `journal/${slug}.json`, 'data/library.json']);
   const openDetails = new Set();
+  const me = ++renders, path = location.hash.split('?')[0];
+  const stale = () => me !== renders || location.hash.split('?')[0] !== path;
   let data = null;          // { recipe, entry, journal }
   let seq = 0;
   let io = null;
+  let timers = null;
 
   /* ---------- painting ---------- */
   async function paint() {
     const my = ++seq;
     const [recipe, lib, journal] = await Promise.all([getRecipe(slug), getLibrary(), getJournal(slug)]);
-    if (my !== seq) return;
+    if (my !== seq || stale()) return;
     data = { recipe, entry: entryFor(lib, slug), journal };
     if (!recipe) return paintMissing();
     setTopbar({
@@ -52,7 +58,7 @@ export async function render(root, { slug }) {
     const focus = captureFocus();
     root.innerHTML = page(data);
     restoreFocus(focus);
-    timers.refresh();
+    timers?.refresh();
     observeTitle();
   }
 
@@ -365,8 +371,10 @@ export async function render(root, { slug }) {
     if (d?.tagName === 'DETAILS' && d.dataset.key) { if (d.open) openDetails.add(d.dataset.key); else openDetails.delete(d.dataset.key); }
   };
 
-  /* ---------- wiring ---------- */
-  const timers = bindTimers(root, slug);
+  /* ---------- wiring (after the first paint, so a render you've already left binds nothing) ---------- */
+  await paint();
+  if (stale()) return;
+  timers = bindTimers(root, slug);
   const offs = [
     timers,
     bindIngredients(root, () => data?.recipe, slug),
@@ -381,8 +389,6 @@ export async function render(root, { slug }) {
     onChange(ev => { if (ev.paths?.some(p => mine.has(p))) paint().catch(reportError); })
   ];
   root.addEventListener('toggle', onToggle, true);
-
-  await paint();
 
   return () => {
     offs.forEach(off => off());
