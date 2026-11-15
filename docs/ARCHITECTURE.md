@@ -53,6 +53,14 @@ hard-coded colors. Mobile-first; tap targets ≥ 44px; inputs 16px (no iOS zoom)
 `<img src="${mediaUrl(p)}" data-fallback="${rawUrl(p)}">` — the global handler in
 `app.js` swaps to raw.githubusercontent when Pages hasn't redeployed a fresh upload.
 
+## Loading and caching
+- **Data** (`store.js`): snapshot-first. A file read before on this device paints at once from
+  its localStorage copy while the live file is fetched behind it; a changed live copy fires
+  `onChange({ type: 'refresh' })` and the open view repaints. One network read per file per
+  page load; coming back to the app after a minute re-checks what's in memory.
+- **Gate** (`lock.js`): a remembered device opens on its last copy of `data/lock.json`; the
+  live file is checked right after and locks the app if the password changed.
+
 ## Why these choices
 - **Repo as DB**: free, versioned, and agents edit plain JSON with full history.
 - **One file per recipe / journal**: small diffs, model edits don't clobber user data.

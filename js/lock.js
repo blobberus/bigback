@@ -16,7 +16,10 @@
  *   Public like the rest of the file, so its safety is the password (600k PBKDF2 rounds/guess).
  *
  *   unlockGate()                       → Promise; resolves once the app may render (and restores
- *                                        the token from the vault when this device has none)
+ *                                        the token from the vault when this device has none).
+ *                                        Remembered devices open at once on their last copy of
+ *                                        lock.json; the live file is checked right behind it
+ *                                        and locks the app if the password changed meanwhile.
  *   showLockScreen(config)             → Promise<key>; resolves after the right password
  *   sealToken(key, token) → vault      openVault(config, key) → token | null
  *   storedKey() → this device's derived key | null      restoreToken(config, key) → bool
@@ -24,7 +27,7 @@
  *   makeLock(password, {iterations})   → { config, key }      checkPassword(config, pw) → key | null
  *   validLock(c) · isRemembered(config) · remember(key, persist) · forgetDevice() · supported()
  */
-import { getLock, saveLock } from './store.js';
+import { getLock, peekLock, saveLock } from './store.js';
 import { getPrefs, setPrefs } from './prefs.js';
 
 export const ITERATIONS = 600000;     // OWASP 2023 guidance for PBKDF2-HMAC-SHA256
@@ -130,19 +133,40 @@ export async function restoreToken(config, keyHex) {
 
 /* ---------- gate ---------- */
 const root = document.documentElement;
+const mayOpen = async config => !validLock(config) || (supported() && await isRemembered(config));
 
-export async function unlockGate() {
-  let config = null;
-  try { config = await getLock(); } catch (e) { console.warn('lock: could not read data/lock.json', e); }
+/**
+ * Fast path (no network): this device's copy of data/lock.json from its last visit says the
+ * app may open (no password, or one this device is remembered for) → open now, and let the
+ * live file decide right behind it: a password set or changed since then shows the lock
+ * screen over the app a moment later. Otherwise (first visit, or not remembered) wait for
+ * the live file, as before.
+ */
+export async function unlockGate({ peek = peekLock, fetchLive = () => getLock({ force: true }) } = {}) {
   try {
-    if (!validLock(config)) return;
-    const key = supported() && await isRemembered(config) ? storedKey() : await showLockScreen(config);
-    await restoreToken(config, key).catch(e => console.warn('lock: token vault', e));
-    // In the background: the first device with token + password saves the copy for the others.
-    autoVault(config, key).catch(e => console.warn('lock: could not save the token copy', e));
+    const last = peek();
+    if (last !== undefined && await mayOpen(last).catch(() => false)) {
+      const key = validLock(last) ? storedKey() : null;
+      if (key) await restoreToken(last, key).catch(e => console.warn('lock: token vault', e));
+      const live = fetchLive().catch(e => { console.warn('lock: could not read data/lock.json', e); return last; });
+      live.then(admit).catch(e => console.warn('lock:', e));
+      return;
+    }
+    let config = null;
+    try { config = await fetchLive(); } catch (e) { console.warn('lock: could not read data/lock.json', e); }
+    await admit(config);
   } finally {
     root.classList.remove('is-gating');
   }
+}
+
+/** Ask for the password unless this config lets the device in; then restore / save the token copy. */
+async function admit(config) {
+  if (!validLock(config)) return;
+  const key = supported() && await isRemembered(config) ? storedKey() : await showLockScreen(config);
+  await restoreToken(config, key).catch(e => console.warn('lock: token vault', e));
+  // In the background: the first device with token + password saves the copy for the others.
+  autoVault(config, key).catch(e => console.warn('lock: could not save the token copy', e));
 }
 
 // Resolved from this module, so it also works from tests/ pages.

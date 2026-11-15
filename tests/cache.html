@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>store cache + lock fast path tests · Bigback</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <style>
+    body { padding-bottom: 24px; }
+    .t-sum { font-weight: 700; margin: 0 0 12px; }
+    .t-sum.bad { color: var(--danger); } .t-sum.good { color: var(--ok); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    td { padding: 6px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+    td:first-child { width: 2.5em; font-weight: 800; }
+    tr.pass td:first-child { color: var(--ok); } tr.fail td:first-child { color: var(--danger); }
+  </style>
+</head>
+<body>
+<!-- Run: python scripts/smoke.py tests/cache.html -->
+<main id="view"><p class="muted">Running…</p></main>
+<!-- WebCrypto needs real time: this holds smoke.py's DOM dump until the release below. -->
+<img hidden alt="" src="/__smoke/hold">
+<script type="module">
+import { getRecipe, getJournal, getLibrary, setRating, flushLibrary, onChange, peekLock } from '../js/store.js';
+import { unlockGate, makeLock, remember, forgetDevice } from '../js/lock.js';
+
+const results = [];
+function ok(name, cond, detail = '') {
+  results.push({ name, ok: !!cond, detail });
+  if (!cond) console.error(`Test failed: ${name} ${detail}`);
+}
+const tick = (ms = 0) => new Promise(r => setTimeout(r, ms));
+const when = (test, ms = 3000) => new Promise(res => {
+  const t0 = Date.now();
+  (function poll() { if (test()) res(true); else if (Date.now() - t0 > ms) res(false); else setTimeout(poll, 10); })();
+});
+const settled = async (p, ms = 30) => { let done = false; p.then(() => { done = true; }, () => { done = true; }); await tick(ms); return done; };
+
+// Everything this page touches in localStorage is put back at the end.
+const saved = Object.fromEntries(Object.keys(localStorage).filter(k => k.startsWith('bb.')).map(k => [k, localStorage.getItem(k)]));
+const savedSession = sessionStorage.getItem('bb.unlock');
+const restore = () => {
+  Object.keys(localStorage).filter(k => k.startsWith('bb.')).forEach(k => localStorage.removeItem(k));
+  Object.entries(saved).forEach(([k, v]) => localStorage.setItem(k, v));
+  sessionStorage.removeItem('bb.unlock');
+  if (savedSession != null) sessionStorage.setItem('bb.unlock', savedSession);
+};
+
+/* ---------- fetch stub: every read waits until the test answers it ---------- */
+const realFetch = window.fetch.bind(window);
+const realWarn = console.warn;
+console.warn = () => {};            // the offline cases log expected "load failed" warnings
+const waiting = new Map();          // repo path → [{ res, rej }]
+const calls = [];
+const pathOf = url => {
+  const u = String(url);
+  const m = u.match(/\/contents\/([^?]+)/);
+  return m ? decodeURIComponent(m[1]) : u.split('?')[0].replace(/^\//, '');
+};
+window.fetch = (url, opts) => new Promise((res, rej) => {
+  const p = pathOf(url);
+  calls.push(p);
+  if (!waiting.has(p)) waiting.set(p, []);
+  waiting.get(p).push({ res, rej });
+});
+const answer = (path, status, body) => {
+  const w = waiting.get(path)?.shift();
+  if (!w) return false;
+  w.res(new Response(body === undefined ? '' : JSON.stringify(body), { status }));
+  return true;
+};
+const failNet = path => { const w = waiting.get(path)?.shift(); if (w) w.rej(new TypeError('Failed to fetch')); return !!w; };
+const nCalls = path => calls.filter(c => c === path).length;
+const snapOf = path => localStorage.getItem('bb.cache:' + path);
+const events = [];
+onChange(ev => events.push(ev));
+const refreshed = path => events.some(e => e.type === 'refresh' && e.paths?.includes(path));
+
+try {
+  localStorage.setItem('bb.prefs', JSON.stringify({ ...JSON.parse(saved['bb.prefs'] || '{}'), token: '' }));
+  Object.keys(localStorage).filter(k => k.startsWith('bb.cache:')).forEach(k => localStorage.removeItem(k));
+
+  /* ---------- first read: network ---------- */
+  const a = getRecipe('t-a');
+  ok('no snapshot → the read waits for the network', !(await settled(a)) && nCalls('recipes/t-a.json') === 1);
+  answer('recipes/t-a.json', 200, { slug: 't-a', v: 1 });
+  ok('…and resolves with the live copy', (await a)?.v === 1);
+  ok('…which becomes the snapshot', JSON.parse(snapOf('recipes/t-a.json') || 'null')?.v === 1);
+  ok('in memory afterwards: no second request', (await getRecipe('t-a'))?.v === 1 && nCalls('recipes/t-a.json') === 1);
+
+  const h = [getRecipe('t-h'), getRecipe('t-h')];
+  ok('two reads at once share one request', nCalls('recipes/t-h.json') === 1);
+  answer('recipes/t-h.json', 200, { slug: 't-h' });
+  ok('…and both get it', (await h[0])?.slug === 't-h' && (await h[1])?.slug === 't-h');
+
+  /* ---------- snapshot first ---------- */
+  localStorage.setItem('bb.cache:recipes/t-b.json', JSON.stringify({ slug: 't-b', v: 1 }));
+  const b = getRecipe('t-b');
+  ok('snapshot → resolves at once, before the network answers', (await settled(b)) && (await b).v === 1);
+  ok('…while the live copy is fetched behind it', nCalls('recipes/t-b.json') === 1);
+  answer('recipes/t-b.json', 200, { slug: 't-b', v: 2 });
+  ok('live copy differs → onChange "refresh" for that path', await when(() => refreshed('recipes/t-b.json')));
+  ok('…the next read returns it', (await getRecipe('t-b')).v === 2 && JSON.parse(snapOf('recipes/t-b.json')).v === 2);
+
+  localStorage.setItem('bb.cache:recipes/t-c.json', JSON.stringify({ slug: 't-c', v: 1 }));
+  await getRecipe('t-c');
+  answer('recipes/t-c.json', 200, { slug: 't-c', v: 1 });
+  await tick(30);
+  ok('live copy unchanged → no refresh event', !refreshed('recipes/t-c.json'));
+
+  localStorage.setItem('bb.cache:recipes/t-d.json', JSON.stringify({ slug: 't-d', v: 1 }));
+  await getRecipe('t-d');
+  failNet('recipes/t-d.json');
+  await tick(30);
+  ok('offline refresh → the snapshot stays, no event', !refreshed('recipes/t-d.json') && JSON.parse(snapOf('recipes/t-d.json')).v === 1
+    && (await getRecipe('t-d')).v === 1);
+
+  /* ---------- failures never overwrite a good copy ---------- */
+  const e1 = getJournal('t-e');
+  failNet('journal/t-e.json');
+  const ej = await e1;
+  ok('offline, nothing saved → fallback', ej?.slug === 't-e' && Array.isArray(ej.entries) && !ej.entries.length);
+  ok('…not stored as a snapshot', snapOf('journal/t-e.json') === null);
+  const e2 = getJournal('t-e');
+  ok('…so the next read tries the network again', nCalls('journal/t-e.json') === 2);
+  answer('journal/t-e.json', 404);
+  await e2;
+  ok('a missing file (404) is a real answer → stored', snapOf('journal/t-e.json') !== null);
+
+  localStorage.setItem('bb.cache:recipes/t-g.json', JSON.stringify({ slug: 't-g', v: 1 }));
+  const g = getRecipe('t-g', { force: true });
+  ok('force → waits for the network even with a snapshot', !(await settled(g)));
+  answer('recipes/t-g.json', 500);
+  ok('server error → the snapshot, untouched', (await g)?.v === 1 && JSON.parse(snapOf('recipes/t-g.json')).v === 1);
+
+  /* ---------- a local write wins over an older refresh ---------- */
+  localStorage.setItem('bb.prefs', JSON.stringify({ ...JSON.parse(localStorage.getItem('bb.prefs')), token: 'github_pat_test' }));
+  localStorage.setItem('bb.cache:data/library.json', JSON.stringify({ schemaVersion: 1, recipes: {}, playlists: [] }));
+  await getLibrary();
+  ok('with a token the refresh goes to the GitHub API', nCalls('data/library.json') === 1);
+  setRating('t-x', 7);                             // optimistic, batched commit (never answered here)
+  answer('data/library.json', 200, { schemaVersion: 1, recipes: { other: { tags: [], rating: 3 } }, playlists: [] });
+  await tick(30);
+  const lib = await getLibrary();
+  ok('refresh started before a local edit is dropped', lib.recipes['t-x']?.rating === 7 && !lib.recipes.other && !refreshed('data/library.json'));
+  flushLibrary().catch(() => {});                  // send the batch now (into the stub) so no timer fires after the restore
+  localStorage.setItem('bb.prefs', JSON.stringify({ ...JSON.parse(localStorage.getItem('bb.prefs')), token: '' }));
+
+  /* ---------- lock gate ---------- */
+  const FAST = { iterations: 2000 };
+  const one = await makeLock('basil', FAST), two = await makeLock('thyme', FAST);
+  const root = document.documentElement;
+  const lockShown = () => document.querySelector('.lock');
+  const clearLock = () => { document.querySelectorAll('.lock').forEach(el => el.remove()); root.classList.remove('is-locked'); };
+  const deferred = () => { let res; const p = new Promise(r => { res = r; }); return { p, res }; };
+
+  localStorage.setItem('bb.cache:data/lock.json', JSON.stringify(one.config));
+  ok('peekLock reads the snapshot without a request', peekLock()?.check === one.config.check && nCalls('data/lock.json') === 0);
+  localStorage.removeItem('bb.cache:data/lock.json');
+
+  remember(one.key, true);
+  let live = deferred();
+  const fast = unlockGate({ peek: () => one.config, fetchLive: () => live.p });
+  ok('remembered + last copy → opens without waiting for the live file', await settled(fast, 200));
+  ok('…not gating, no lock screen', !root.classList.contains('is-gating') && !lockShown());
+  live.res(one.config);
+  await tick(50);
+  ok('live file unchanged → stays open', !lockShown());
+
+  const changed = unlockGate({ peek: () => one.config, fetchLive: () => Promise.resolve(two.config) });
+  ok('password changed since → still opens at once…', await settled(changed, 200));
+  ok('…then the live file locks it', await when(lockShown) && root.classList.contains('is-locked'));
+  clearLock();
+
+  forgetDevice();
+  const fresh = unlockGate({ peek: () => null, fetchLive: () => Promise.resolve(one.config) });
+  ok('no password last time → opens at once', await settled(fresh, 200));
+  ok('…and locks when the live file has one', await when(lockShown));
+  clearLock();
+
+  live = deferred();
+  const first = unlockGate({ peek: () => undefined, fetchLive: () => live.p });
+  ok('first visit (no copy) → waits for the live file', !(await settled(first, 60)));
+  live.res(null);
+  ok('…and opens when there is no password', await settled(first, 60) && !lockShown());
+
+  live = deferred();
+  const notRem = unlockGate({ peek: () => one.config, fetchLive: () => live.p });
+  ok('not remembered → waits for the live file', !(await settled(notRem, 60)) && !lockShown());
+  live.res(one.config);
+  ok('…then asks for the password', await when(lockShown) && !(await settled(notRem, 20)));
+  clearLock();
+} catch (e) {
+  ok('suite threw', false, String(e?.stack || e));
+} finally {
+  restore();
+}
+
+window.fetch = realFetch;
+console.warn = realWarn;
+const failed = results.filter(r => !r.ok).length;
+document.querySelector('#view').innerHTML = `
+  <p class="t-sum ${failed ? 'bad' : 'good'}">${results.length - failed}/${results.length} passed</p>
+  <table>${results.map(r => `<tr class="${r.ok ? 'pass' : 'fail'}"><td>${r.ok ? '✓' : '✗'}</td><td>${r.name.replace(/</g, '&lt;')}${r.detail && !r.ok ? `<br><small>${r.detail.replace(/</g, '&lt;')}</small>` : ''}</td></tr>`).join('')}</table>`;
+fetch('/__smoke/release').catch(() => {});
+</script>
+</body>
+</html>

@@ -12,7 +12,7 @@
  *   #/settings            settings
  */
 import { getPrefs, onPrefs } from './prefs.js';
-import { onChange } from './store.js';
+import { onChange, revalidateAll } from './store.js';
 import { $, $$, reportError, toast } from './ui.js';
 import { unlockGate } from './lock.js';
 
@@ -129,6 +129,14 @@ async function boot() {
 
   window.addEventListener('hashchange', route);
   route();
+
+  // Home Screen apps resume from memory: after a while away, re-check the files on screen
+  // (they repaint only if something changed, e.g. a recipe built since).
+  let hiddenAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') hiddenAt = Date.now();
+    else if (hiddenAt && Date.now() - hiddenAt > 60000) { hiddenAt = 0; revalidateAll(); }
+  });
 
   // Write failures from batched library saves.
   let warnedRead = false;

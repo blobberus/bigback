@@ -11,6 +11,18 @@
  *   getPending(id)               → inbox item | null
  *   mediaUrl(path) / rawUrl(path)  image src + fallback (use <img data-fallback>)
  *   getLock({force})             → data/lock.json config | null (site password; see lock.js)
+ *   peekLock()                   → this device's last copy of data/lock.json, no network
+ *                                  (undefined = never read here); lock.js opens the app on it
+ *   revalidateAll()              → background-refresh every file read so far (app resume)
+ *
+ * CACHING  Each file is read from the network at most once per page load (concurrent reads
+ *   share one request) and kept in memory. Reads are snapshot-first: a file this device has
+ *   read before (localStorage `bb.cache:<path>`) resolves at once from that copy while the
+ *   live file is fetched behind it; when the live copy differs, it replaces the snapshot and
+ *   onChange fires { type: 'refresh', paths: [path] } so the open view repaints. A local
+ *   write always wins over a background refresh that was already in flight. {force: true}
+ *   waits for the network (offline → the snapshot). A failed read never overwrites a
+ *   snapshot; a missing file (404) is a real answer and is stored as the fallback.
  *
  * WRITES (need a token → throw NotConnectedError otherwise). Each is one atomic commit.
  *   Library (optimistic + batched ~1.2s into one commit):
@@ -49,43 +61,102 @@ const EMPTY_INDEX = { recipes: [], pending: [] };
 const EMPTY_LIB = { schemaVersion: 1, recipes: {}, playlists: [] };
 
 /* ---------- cache + events ---------- */
-const mem = new Map();
+const mem = new Map();        // path → parsed copy for this page load
+const seen = new Map();       // path → JSON text of that copy (tells a real change from a re-read)
+const fallbacks = new Map();  // path → what a missing file reads as
+const writes = new Map();     // path → count of local writes; a refresh started before one is dropped
+const inflight = new Map();   // path → the network read in progress (concurrent reads share it)
 const subs = new Set();
 export const onChange = fn => (subs.add(fn), () => subs.delete(fn));
 const emit = ev => subs.forEach(fn => { try { fn(ev); } catch (e) { console.error(e); } });
 const clone = o => (o == null ? o : JSON.parse(JSON.stringify(o)));
 const SNAP = 'bb.cache:';
-function snap(path, data) { try { localStorage.setItem(SNAP + path, JSON.stringify(data)); } catch { /* quota */ } }
 function fromSnap(path) { try { const s = localStorage.getItem(SNAP + path); return s ? JSON.parse(s) : undefined; } catch { return undefined; } }
+/** Keep a copy read from the repo: memory + snapshot. */
+function keep(path, data) {
+  const text = JSON.stringify(data);
+  mem.set(path, data); seen.set(path, text);
+  try { localStorage.setItem(SNAP + path, text); } catch { /* quota */ }
+}
+/** This device changed the file (write, optimistic library edit, delete). */
+function local(path, data) {
+  writes.set(path, (writes.get(path) || 0) + 1);
+  if (data === undefined) {
+    mem.delete(path); seen.delete(path);
+    try { localStorage.removeItem(SNAP + path); } catch { /* private mode */ }
+  } else keep(path, data);
+}
 
 function client() { const p = getPrefs(); return p.token ? new GitHub(p) : null; }
 function requireClient() { const c = client(); if (!c) throw new NotConnectedError(); return c; }
 
-async function load(path, fallback, { force = false } = {}) {
-  if (!force && mem.has(path)) return mem.get(path);
-  let data;
+/** One network read of `path` → parsed JSON, or undefined when the file doesn't exist.
+ *  Rejects when the repo can't be reached (offline, 5xx, broken JSON). */
+function fetchLive(path) {
+  if (inflight.has(path)) return inflight.get(path);
   const fromSite = async () => {
     const r = await fetch(`${path}?t=${Date.now()}`, { cache: 'no-store' });
-    return r.ok ? r.json() : undefined;
+    if (r.ok) return r.json();
+    if (r.status === 404) return undefined;
+    throw new Error(`${path}: HTTP ${r.status}`);
   };
-  try {
+  const p = (async () => {
     const c = client();
-    if (c) {
-      try { data = (await c.readJson(path, null)) ?? undefined; }   // missing file → fallback below
-      catch (e) {                      // bad/expired token or API hiccup → public copy
-        console.warn('GitHub read failed, using site copy', path, e);
-        emit({ type: 'read-error', error: e, paths: [path] });
-        data = await fromSite();
-      }
-    } else data = await fromSite();
-  } catch (e) {
-    data = fromSnap(path);             // offline → last known copy
-    if (data === undefined) { console.warn('load failed', path, e); }
-  }
-  if (data === undefined) data = clone(fallback);
-  mem.set(path, data); snap(path, data);
-  return data;
+    if (!c) return fromSite();
+    try { return (await c.readJson(path, null)) ?? undefined; }   // missing file → undefined
+    catch (e) {                        // bad/expired token or API hiccup → public copy
+      console.warn('GitHub read failed, using site copy', path, e);
+      emit({ type: 'read-error', error: e, paths: [path] });
+      return fromSite();
+    }
+  })().finally(() => inflight.delete(path));
+  inflight.set(path, p);
+  return p;
 }
+
+/** Background read: swap in the live copy and announce it, unless nothing changed. */
+function revalidate(path) {
+  const n = writes.get(path);
+  fetchLive(path).then(data => {
+    if (writes.get(path) !== n) return;                  // a local write is newer
+    if (data === undefined) data = clone(fallbacks.get(path));
+    if (JSON.stringify(data) === seen.get(path)) return;
+    keep(path, data);
+    emit({ type: 'refresh', paths: [path] });
+  }, () => { /* offline: the snapshot stays */ });
+}
+
+async function load(path, fallback, { force = false } = {}) {
+  if (!fallbacks.has(path)) fallbacks.set(path, clone(fallback));
+  if (!force && mem.has(path)) return mem.get(path);
+  if (!force) {
+    const s = fromSnap(path);
+    if (s !== undefined) {             // paint the last copy now; the live one follows
+      mem.set(path, s); seen.set(path, JSON.stringify(s));
+      revalidate(path);
+      return s;
+    }
+  }
+  const n = writes.get(path);
+  try {
+    let data = await fetchLive(path);
+    if (writes.get(path) !== n && mem.has(path)) return mem.get(path);
+    if (data === undefined) data = clone(fallback);
+    keep(path, data);
+    return data;
+  } catch (e) {
+    const s = fromSnap(path);          // offline → last known copy
+    if (s === undefined) { console.warn('load failed', path, e); return clone(fallback); }
+    mem.set(path, s); seen.set(path, JSON.stringify(s));
+    return s;
+  }
+}
+
+/** The app came back to the foreground: re-check every file already read (lock.js owns lock.json). */
+export function revalidateAll() {
+  for (const path of mem.keys()) if (path !== P.lock && !inflight.has(path)) revalidate(path);
+}
+export const peekLock = () => (mem.has(P.lock) ? mem.get(P.lock) : fromSnap(P.lock));
 
 /* ---------- reads ---------- */
 export async function getIndex({ force = false } = {}) {
@@ -136,8 +207,8 @@ async function write(message, builder) {
     return files;
   });
   for (const f of files) {
-    if (f.delete) mem.delete(f.path);
-    else if (f.obj !== undefined) { mem.set(f.path, f.obj); snap(f.path, f.obj); }
+    if (f.delete) local(f.path, undefined);
+    else if (f.obj !== undefined) local(f.path, f.obj);
   }
   emit({ type: 'write', message, paths: files.map(f => f.path) });
 }
@@ -148,7 +219,7 @@ export async function saveLock(config, { message } = {}) {
     if (config) return [json(P.lock, config)];
     return (await read(P.lock)) != null ? [{ path: P.lock, delete: true }] : [];
   });
-  if (!config) { mem.set(P.lock, null); snap(P.lock, null); }
+  if (!config) local(P.lock, null);
 }
 
 /* ---------- index helpers (mirror scripts/build_index.py) ---------- */
@@ -175,7 +246,7 @@ function mutateLibrary(label, fn) {
   requireClient();
   const lib = normLib(mem.get(P.library) || clone(EMPTY_LIB));
   fn(lib);                                   // optimistic local apply
-  mem.set(P.library, lib); snap(P.library, lib);
+  local(P.library, lib);
   emit({ type: 'library', paths: [P.library] });
   queue.push({ label, fn });
   flushSoon();
@@ -195,7 +266,7 @@ export async function flushLibrary() {
     if (queue.length) {
       const lib = normLib(mem.get(P.library));
       queue.forEach(q => q.fn(lib));
-      mem.set(P.library, lib); snap(P.library, lib);
+      local(P.library, lib);
       emit({ type: 'library', paths: [P.library] });
     }
   } catch (e) {
