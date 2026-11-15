@@ -3,7 +3,7 @@
 headless Edge/Chrome, prints page-originated console errors and the rendered #view.
 
     python scripts/smoke.py                       # default routes
-    python scripts/smoke.py r/crispy-skillet-chicken-thighs add/custom
+    python scripts/smoke.py r/pan-seared-chicken add/custom
     python scripts/smoke.py --dom settings        # also print full #view HTML
 Routes are given without the leading "#/" (Git Bash mangles "#/..." into a path).
 Paths ending in .html (e.g. tests/editor-parse.html) load as standalone pages; a test
@@ -23,7 +23,7 @@ import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_ROUTES = ["#/", "#/r/crispy-skillet-chicken-thighs", "#/r/crispy-skillet-chicken-thighs/cook",
+DEFAULT_ROUTES = ["#/", "#/r/pan-seared-chicken", "#/r/pan-seared-chicken/cook",
                   "#/add", "#/add/custom", "#/add/upload", "#/playlists", "#/settings"]
 CANDIDATES = [
     r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",

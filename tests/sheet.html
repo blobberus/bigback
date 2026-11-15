@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sheet gestures · Bigback</title>
   <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/library.css">
   <style>body { padding-bottom: 24px; } .tall { height: 2000px; } td { padding: 4px 8px; border-top: 1px solid var(--line); font-size: .85rem; }</style>
 </head>
 <body>
@@ -80,6 +81,33 @@ try {
   s.box.querySelector('[data-i]').click();
   await s.p;
   ok('…and close from their buttons', s.result()?.v === true && !document.documentElement.classList.contains('sheet-open'));
+
+  // on-screen keyboard: the backdrop follows the visual viewport, so the sheet sits above the keyboard
+  const de = document.documentElement, vvp = window.visualViewport;
+  s = open({ h: 40 }); await frame(); await frame();
+  ok('open sheet is fitted to the visible area', de.style.getPropertyValue('--vv-h') === `${Math.round(vvp.height)}px`
+    && Math.abs(s.wrap.getBoundingClientRect().height - vvp.height) < 2, de.style.getPropertyValue('--vv-h'));
+  de.style.setProperty('--vv-h', '320px');                // what a raised keyboard leaves visible
+  await wait(300);                                         // slide-in finished
+  const bb = s.box.getBoundingClientRect();
+  ok('with the keyboard up the sheet ends above it', bb.bottom <= 321 && bb.height <= 296, `${bb.top}-${bb.bottom}`);
+  s.wrap.click(); await s.p;
+  ok('closing the last sheet clears the fit', !de.style.getPropertyValue('--vv-h') && !de.classList.contains('kb-open'));
+
+  // a focused field low in a long sheet is scrolled above the sticky footer
+  s = open({ h: 1, className: 'picker-sheet', body: '<div style="height:1400px"></div><input class="input" id="low">' });
+  await wait(300);
+  const low = s.box.querySelector('#low');
+  low.focus({ preventScroll: true }); s.box.scrollTop = 0;
+  vvp.dispatchEvent(new Event('resize')); await frame(); await frame();
+  const foot = s.box.querySelector('.sheet-actions');
+  ok('focused field is scrolled into view above the footer', low.getBoundingClientRect().bottom <= foot.getBoundingClientRect().top + 1,
+    `${low.getBoundingClientRect().bottom} vs ${foot.getBoundingClientRect().top}`);
+  s.box.scrollTop = 0; await frame();
+  ok('picker Done button stays visible without scrolling', getComputedStyle(foot).position === 'sticky'
+    && foot.getBoundingClientRect().bottom <= s.box.getBoundingClientRect().bottom + 1
+    && foot.getBoundingClientRect().top < s.box.getBoundingClientRect().bottom - 30);
+  s.wrap.click(); await s.p;
 } catch (e) {
   ok('suite threw', false, String(e?.stack || e));
 }

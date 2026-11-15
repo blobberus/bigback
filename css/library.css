@@ -143,8 +143,9 @@
 .fcount { font-weight: 500; font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .fchip[aria-pressed="true"] .fcount { color: inherit; opacity: .65; }
 .fchip.is-zero { color: var(--muted); }
-.filter-sheet .sheet-actions {
-  position: sticky; bottom: calc(-18px - var(--safe-b)); margin: 18px -18px calc(-18px - var(--safe-b));
+/* Footer buttons stay on screen while the sheet's content scrolls under them. */
+.filter-sheet .sheet-actions, .picker-sheet .sheet-actions {
+  position: sticky; z-index: 2; bottom: calc(-18px - var(--safe-b)); margin: 18px -18px calc(-18px - var(--safe-b));
   padding: 12px 18px calc(12px + var(--safe-b)); background: var(--surface); border-top: 1px solid var(--line);
 }
 .filter-sheet .sheet-actions .btn-ghost { flex: 0 0 auto; color: var(--ink-2); }

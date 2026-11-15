@@ -83,7 +83,7 @@ eq('formatIngredientLine', [
   formatIngredientLine(ing(null, null, null, 'salt', 'to taste')), formatIngredientLine(ing(1.5, null, 'lb', 'chicken', null))
 ], ['2-3 cloves garlic, minced', '½ cup stock', 'salt, to taste', '1½ lb chicken']);
 
-const sample = await (await fetch('../recipes/crispy-skillet-chicken-thighs.json', { cache: 'no-store' })).json();
+const sample = await (await fetch('fixtures/editor-sample.json', { cache: 'no-store' })).json();
 eq('sample ingredients round-trip through text', parseIngredients(formatIngredients(sample.ingredients)).map(i => ({ ...fields(i), section: i.section })),
   sample.ingredients.map(i => ({ ...fields(i), section: i.section })));
 eq('sample steps round-trip through text', parseSteps(formatSteps(sample.steps)).map(s => [s.section, s.text, s.tip]),
