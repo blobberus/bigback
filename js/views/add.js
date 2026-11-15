@@ -3,7 +3,7 @@
  *   params.mode: 'choose' | 'custom' | 'upload' | 'edit' (+ params.slug)
  * The forms live in components/editor-form.js (custom + edit) and editor-upload.js.
  */
-import { setTopbar } from '../ui.js';
+import { setTopbar, on } from '../ui.js';
 import { html } from '../util.js';
 import { getIndex, getRecipe, onChange } from '../store.js';
 import { linkType } from '../components/editor-parse.js';
@@ -11,6 +11,7 @@ import { icon } from '../components/editor-icons.js';
 import { loadDraft, draftKey, draftAge } from '../components/editor-drafts.js';
 import { mountRecipeForm } from '../components/editor-form.js';
 import { mountUploadForm } from '../components/editor-upload.js';
+import { backTarget, goBack } from '../components/back-nav.js';
 
 export async function render(root, params = {}) {
   const mode = params.mode || 'choose';
@@ -19,7 +20,10 @@ export async function render(root, params = {}) {
     return mountRecipeForm(root, { recipe: null });
   }
   if (mode === 'edit') {
-    setTopbar({ title: 'Edit recipe', back: `#/r/${params.slug}` });
+    // Opened from its recipe page: ← and Save go back to that page's own history entry, so its ←
+    // still leads to the list you came from (back-nav.js).
+    const page = `#/r/${params.slug}`, from = backTarget(h => h.split('?')[0] === page);
+    setTopbar({ title: 'Edit recipe', back: page });
     const here = location.hash;
     const recipe = await getRecipe(params.slug);
     if (location.hash !== here) return;            // left while it loaded: #view is the next page's now
@@ -30,7 +34,9 @@ export async function render(root, params = {}) {
         <a class="btn" href="#/">Back to recipes</a></div>`;
       return;
     }
-    return mountRecipeForm(root, { recipe });
+    const offForm = mountRecipeForm(root, { recipe, backTo: from });
+    const offBack = on(document, 'click', '#topbar-back', e => goBack(e, from));
+    return () => { offBack(); offForm?.(); };
   }
   if (mode === 'upload') {
     setTopbar({ title: 'Upload', back: '#/add' });

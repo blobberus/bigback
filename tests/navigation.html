@@ -118,6 +118,22 @@ try {
     ok('…whose ← still leads to the search', a.w.location.hash === '#/?q=chicken' && a.$('.search-input').value === 'chicken', a.w.location.hash);
   }
   {
+    const a = await app('#/?q=chicken');     // a fresh frame: history.length is only reliable before any Back
+    a.$('.rcard-link').click();
+    await until(() => a.$('.rx'));
+    const atRecipe = a.w.history.length, page = a.w.location.hash;
+    a.d.querySelector('#topbar-actions a[href^="#/edit/"]').click();
+    await until(() => a.$('.ed-title'));
+    topBack(a).click();
+    await until(() => a.$('.rx'));
+    await wait(100);
+    ok('Edit’s ← goes back to the recipe page it came from (no new entry)', a.w.location.hash === page && a.w.history.length === atRecipe + 1,
+      `${a.w.location.hash} · history +${a.w.history.length - atRecipe}`);
+    topBack(a).click();
+    await until(() => a.$('.lib'));
+    ok('…whose ← still leads to the search', a.w.location.hash === '#/?q=chicken' && a.$('.search-input').value === 'chicken', a.w.location.hash);
+  }
+  {
     const a = await app('#/');
     a.w.scrollTo(0, 400);
     await wait(400);                       // library.js saves the position 160 ms after scrolling stops

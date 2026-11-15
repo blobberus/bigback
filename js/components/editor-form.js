@@ -1,13 +1,13 @@
 /**
  * components/editor-form.js — the recipe form behind #/add/custom and #/edit/<slug> (WS3).
- *   mountRecipeForm(root, { recipe }) → cleanup()
+ *   mountRecipeForm(root, { recipe, backTo }) → cleanup()   backTo: hash this edit was opened from (back-nav.js)
  *     recipe null → new custom recipe: status 'custom', source custom, ids i1… / s1…
  *     recipe set  → edit: keeps status/source/changelog/createdAt/image (unless the photo is
  *                   replaced or removed) and every ingredient/step id (editor-ids.js; journal
  *                   stepIds are reserved so a removed step's id is never handed out again).
  *   Ingredients/steps are fast textareas with a live parsed preview (editor-parse.js).
  *   Drafts autosave per form (editor-drafts.js) and are offered back on return.
- *   Saved → opens the recipe; deleted → the list. If you've moved to another page while it was
+ *   Saved → opens the recipe (an edit opened from its recipe page goes back to it: backTo); deleted → the list. If you've moved to another page while it was
  *   writing, only the toast shows (a delete still leaves the deleted recipe's own page).
  */
 import { html, fmtMinutes, debounce, parseDurations } from '../util.js';
@@ -18,6 +18,7 @@ import { parseIngredients, parseSteps, formatIngredients, formatSteps, formatIng
 import { mergeIngredients, mergeSteps } from './editor-ids.js';
 import { icon } from './editor-icons.js';
 import { draftKey, loadDraft, saveDraft, clearDraft, draftAge } from './editor-drafts.js';
+import { goBack } from './back-nav.js';
 
 const FIELDS = ['title', 'summary', 'servings', 'yield', 'prep', 'cook', 'total', 'ingredients', 'steps', 'equipment', 'profile'];
 const str = v => (v == null ? '' : String(v));
@@ -241,7 +242,7 @@ function formHtml(st, recipe) {
 }
 
 /* ---------- component ---------- */
-export function mountRecipeForm(root, { recipe = null } = {}) {
+export function mountRecipeForm(root, { recipe = null, backTo = null } = {}) {
   const key = recipe ? draftKey.edit(recipe.slug) : draftKey.new;
   const initial = stateFrom(recipe);
   let totalAuto = initial.totalAuto, heroFile = null, heroUrl = null, removeImage = false;
@@ -391,7 +392,9 @@ export function mountRecipeForm(root, { recipe = null } = {}) {
       const slug = await busy(btn, doSave(s));
       saved = true; clearDraft(key);
       toast(recipe ? 'Changes saved' : 'Recipe saved', { type: 'ok' });
-      if (alive) location.hash = `#/r/${slug}`;      // moved on while it saved → stay where you are
+      // An edit opened from its recipe page goes back to that entry; otherwise open the recipe.
+      // Moved on while it saved → stay where you are.
+      if (alive && !(recipe && backTo && goBack(null, backTo))) location.hash = `#/r/${slug}`;
     } catch (e) {
       touched = true; persistDraft();
       reportError(e);
