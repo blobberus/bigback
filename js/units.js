@@ -316,11 +316,12 @@ export function parseAmount(s) {
   return neg ? -n : n;
 }
 
-/** 4 significant figures, no exponent or thousands separators: 236.6, 3785, 0.2029, 45360. */
+/** 4 significant figures, no exponent or thousands separators: 236.6, 3785, 0.2029, 45360,
+ *  0.0000001302 (not 1.302e-7), 7680000000000000000000 (not 7.68e+21). */
+const FMT4 = new Intl.NumberFormat('en-US', { maximumSignificantDigits: 4, useGrouping: false });
 export function fmtAmount(v) {
   if (!Number.isFinite(v)) return '';
-  const r = Number(v.toPrecision(4));
-  return String(Object.is(r, -0) || Math.abs(r) < 1e-12 ? 0 : r);
+  return Math.abs(v) < 1e-12 ? '0' : FMT4.format(v);     // also turns -0 into "0"
 }
 
 /** "≈ ⅜ cup" for a US kitchen unit when the decimal isn't already a clean measure; '' otherwise. */

@@ -33,6 +33,8 @@ eq('volume', [C('volume', 1, 'cup', 'ml'), C('volume', 1, 'tbsp', 'tsp'), C('vol
   ['236.6', '3', '16', '3785', '0.001302', '2.113']);
 eq('temperature', [C('temp', 350, 'F', 'C'), C('temp', 180, 'C', 'F'), C('temp', -40, 'C', 'F'), C('temp', 32, 'F', 'C'), C('temp', 212, 'F', 'F')],
   ['176.7', '356', '-40', '0', '212']);
+eq('huge and tiny results are written out, never as 1e-7', [C('weight', 0.0001, 'g', 'kg'), C('volume', 0.0001, 'tsp', 'gallon'), C('volume', 1e19, 'gallon', 'tsp'), fmtAmount(-0), fmtAmount(-40), fmtAmount(1e-13)],
+  ['0.0000001', '0.0000001302', '7680000000000000000000', '0', '-40', '0']);
 eq('amounts as cooks type them', ['2', '1.5', '1,5', '.5', '1/2', '1 1/2', '1½', '½', '-18', '2.', '', 'abc', '1 1/'].map(parseAmount).map(v => (Number.isNaN(v) ? 'NaN' : v)),
   [2, 1.5, 1.5, 0.5, 0.5, 1.5, 1.5, 0.5, -18, 2, 'NaN', 'NaN', 'NaN']);
 eq('kitchen hints for US results only', [kitchenHint('volume', 0.4227, 'cup'), kitchenHint('volume', 2.113, 'cup'), kitchenHint('volume', 3, 'tsp'),
