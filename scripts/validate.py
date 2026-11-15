@@ -147,6 +147,8 @@ def main():
                 err(w, "proficiency must be 1-5 or null")
             if not isinstance(e.get("tags", []), list):
                 err(w, "tags must be a list")
+            if e.get("pinnedAt") is not None and not isinstance(e["pinnedAt"], str):
+                err(w, "pinnedAt must be an ISO timestamp or absent")
         for slug in recipes:
             if slug not in (lib.get("recipes") or {}):
                 warn("data/library.json", f"no entry for '{slug}' (add a blank one)")

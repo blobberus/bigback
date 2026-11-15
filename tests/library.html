@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Library order · Bigback</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <style>td { padding: 4px 8px; border-top: 1px solid var(--line); font-size: .85rem; }</style>
+</head>
+<body>
+<!-- Run: python scripts/smoke.py tests/library.html -->
+<main id="view"><p class="muted">Running…</p></main>
+<script type="module">
+import { orderRows } from '../js/views/library.js';
+import { entryFor } from '../js/store.js';
+
+const results = [];
+const canon = v => JSON.stringify(v);
+function eq(name, got, want) {
+  const ok = canon(got) === canon(want);
+  results.push({ name, ok, detail: ok ? '' : `want ${canon(want)} got ${canon(got)}` });
+  if (!ok) console.error(`Test failed: ${name} | want ${canon(want)} | got ${canon(got)}`);
+}
+
+const row = (slug, title, ts, e = {}) => ({ r: { slug, title }, e: { tags: [], rating: null, proficiency: null, pinnedAt: null, ...e }, t: null, pos: null, ts });
+const rows = [
+  row('a', 'Alfredo', 3), row('b', 'Banana bread', 5, { pinnedAt: '2026-11-15T10:00:00Z', rating: 6 }),
+  row('c', 'Carbonara', 1, { rating: 9 }), row('d', 'Dumplings', 4, { pinnedAt: '2026-11-15T09:00:00Z', rating: 8 })
+];
+const slugs = list => list.map(x => x.r.slug);
+eq('pinned recipes come first, each group in the chosen sort', [slugs(orderRows(rows, 'recent')), slugs(orderRows(rows, 'title')), slugs(orderRows(rows, 'rating'))],
+  [['b', 'd', 'a', 'c'], ['b', 'd', 'a', 'c'], ['d', 'b', 'c', 'a']]);
+eq('a playlist keeps its own order (no pin grouping)', slugs(orderRows(rows, 'title', false)), ['a', 'b', 'c', 'd']);
+eq('no pins → plain sort', slugs(orderRows(rows.map(x => ({ ...x, e: { ...x.e, pinnedAt: null } })), 'recent')), ['b', 'd', 'a', 'c']);
+eq('unknown sort falls back to recently added', slugs(orderRows(rows, 'nope')), ['b', 'd', 'a', 'c']);
+eq('library entries default to not pinned', [entryFor({ recipes: {} }, 'x').pinnedAt, entryFor({ recipes: { x: { pinnedAt: 'T' } } }, 'x').pinnedAt], [null, 'T']);
+
+const failed = results.filter(r => !r.ok).length;
+document.querySelector('#view').innerHTML = `<p><strong>${results.length - failed}/${results.length} passed</strong></p><table>${results.map(r =>
+  `<tr><td>${r.ok ? '✓' : '✗'}</td><td>${r.name}${r.detail ? ` — ${r.detail}` : ''}</td></tr>`).join('')}</table>`;
+</script>
+</body>
+</html>

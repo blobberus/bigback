@@ -30,6 +30,7 @@ export const ICON = {
   search: svg('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>'),
   filter: svg('<path d="M4 7h9M19 7h1M4 17h3M13 17h7"/><circle cx="16" cy="7" r="2.5"/><circle cx="10" cy="17" r="2.5"/>'),
   x: svg('<path d="M7 7l10 10M17 7L7 17"/>'),
+  pin: svg('<path d="M9 3.5h6M10 3.5l-.7 6L6.5 13h11l-2.8-3.5-.7-6M12 13v7.5"/>'),
   more: svg('<circle cx="5.5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.6" fill="currentColor" stroke="none"/>'),
   clock: svg('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
   plus: svg('<path d="M12 5v14M5 12h14"/>'),
@@ -191,6 +192,13 @@ const SORT_FNS = {
   playlist: (a, b) => nullsLast(a.pos, b.pos, 1) || byTitle(a, b)
 };
 
+/** Pinned recipes first (pinFirst: the main Recipes list; a playlist keeps its own order), then the sort. */
+export function orderRows(list, sort, pinFirst = true) {
+  const by = SORT_FNS[sort] || SORT_FNS.recent;
+  return [...list].sort((a, b) => (pinFirst ? !!b.e.pinnedAt - !!a.e.pinnedAt : 0) || by(a, b));
+}
+const secHead = t => html`<li class="rlist-sec" role="presentation">${t}</li>`;
+
 /** pos: index in the viewed playlist's recipe list (null outside a playlist). */
 function toRow(r, lib, pos = null) {
   const e = entryFor(lib, r.slug);
@@ -252,7 +260,7 @@ function card({ r, e, t }, pl) {
     <a class="rcard-link" href="#/r/${r.slug}">
       ${thumb(r, 'rcard-thumb')}
       <span class="rcard-body">
-        <span class="rcard-title">${r.title}</span>
+        <span class="rcard-title">${e.pinnedAt ? html`<span class="rcard-pin" title="Pinned">${raw(ICON.pin)}<span class="sr-only">Pinned: </span></span>` : ''}${r.title}</span>
         ${r.summary ? html`<span class="rcard-sum">${r.summary}</span>` : ''}
         <span class="rcard-meta">
           ${t ? html`<span class="rm-time">${raw(ICON.clock)}${fmtMinutes(t)}</span>` : ''}
@@ -266,7 +274,7 @@ function card({ r, e, t }, pl) {
         </span>` : ''}
       </span>
     </a>
-    <button type="button" class="icon-btn rcard-more" data-act="more" aria-label="Rating, tags &amp; playlists for ${r.title}">${raw(ICON.more)}</button>
+    <button type="button" class="icon-btn rcard-more" data-act="more" aria-label="Pin, rating, tags &amp; playlists for ${r.title}">${raw(ICON.more)}</button>
     ${pl ? html`<button type="button" class="icon-btn rcard-remove" data-act="unlist" aria-label="Remove ${r.title} from ${pl.name}" title="Remove from playlist">${raw(ICON.minus)}</button>` : ''}
   </li>`;
 }
@@ -372,7 +380,7 @@ export async function render(root, params) {
     rows = scope.map(r => toRow(r, lib, order.get(r.slug) ?? null));
     s.pl = s.pl.filter(id => plSets[id]);            // drop filters for deleted playlists
   }
-  const shownRows = () => rows.filter(x => matches(x, s, plSets)).sort(SORT_FNS[s.sort]);
+  const shownRows = () => orderRows(rows.filter(x => matches(x, s, plSets)), s.sort, !plId);
   await load();
   if (pathOf(location.hash) !== myPath) return;   // navigated away while loading
 
@@ -455,7 +463,10 @@ export async function render(root, params) {
     part('count').hidden = !any;
     countEl.textContent = narrowed ? `${shown.length} of ${plural(rows.length, 'recipe')}` : plural(rows.length, 'recipe');
     if (sortEl.value !== s.sort) sortEl.value = s.sort;
-    put('list', html`${shown.map(x => card(x, pl))}`);
+    // Pinned group on top, with a label for each group once anything is pinned.
+    const pins = !plId && shown.some(x => x.e.pinnedAt);
+    put('list', html`${shown.map((x, i) => html`${!pins ? '' : i === 0 ? secHead(x.e.pinnedAt ? 'Pinned' : 'Recipes')
+      : !x.e.pinnedAt && shown[i - 1].e.pinnedAt ? secHead('Other recipes') : ''}${card(x, pl)}`)}`);
     put('empty', !any ? (pl ? emptyPlaylist(pl) : emptyLibrary(idx.pending.length > 0))
       : !shown.length ? html`<div class="empty lib-empty">
           <h2>No recipes match</h2>

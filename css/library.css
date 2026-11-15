@@ -150,6 +150,20 @@
 }
 .filter-sheet .sheet-actions .btn-ghost { flex: 0 0 auto; color: var(--ink-2); }
 
+/* pinned recipes (orderRows): group labels in the list, a pin before the title */
+.rlist-sec { margin: 2px 2px -4px; font: 800 .7rem/1.2 var(--font-body); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+.rlist-sec:not(:first-child) { margin-top: 8px; }
+.rcard-pin { display: inline-flex; margin-right: 5px; vertical-align: -1px; color: var(--accent); }
+.rcard-pin svg { width: 15px; height: 15px; stroke-width: 2.2; }
+/* the ⋯ sheet's pin toggle (meta-editor.js) */
+.me-pin {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; margin: 0 0 18px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); color: var(--ink);
+  font-weight: 650; text-align: left; cursor: pointer;
+}
+.me-pin svg { width: 20px; height: 20px; flex: none; }
+.me-pin[aria-pressed="true"] { border-color: transparent; background: var(--accent-soft); color: var(--accent); }
+
 /* "Add" in the Recipes topbar (it used to be a bottom-nav tab) */
 .topbar-add { gap: 4px; margin-right: 4px; padding: 0 13px 0 9px; }
 .topbar-add svg { width: 18px; height: 18px; stroke-width: 2.4; }

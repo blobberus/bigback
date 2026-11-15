@@ -1,6 +1,6 @@
 /**
  * components/meta-editor.js — shared editor for user-owned recipe metadata (WS1).
- *   editMeta(slug, { title }) → Promise<void>   opens a sheet: rating 1–10, proficiency 1–5
+ *   editMeta(slug, { title }) → Promise<void>   opens a sheet: pin to the top of Recipes, rating 1–10, proficiency 1–5
  *                                               (tap the current value again — or "Clear" — to
  *                                               reset to blank), tags (chip input, suggestions
  *                                               from allTags), playlist membership + new playlist.
@@ -8,13 +8,13 @@
  *   metaSummary(entry) → html raw               compact read-only chips: "8/10" · ●●●○○ · tags
  *                                               ("Unrated" muted when blank). Styles: library.css.
  *   PROFICIENCY: string[5]   profLabel(n) → "Comfortable" | "Not set"
- * Every change applies immediately via store.setTags / setRating / setProficiency /
+ * Every change applies immediately via store.setPinned / setTags / setRating / setProficiency /
  * addToPlaylist / removeFromPlaylist / createPlaylist (optimistic, batched into one commit).
  * Setters throw NotConnectedError without a token → reportError shows the friendly toast.
  */
 import { html, raw } from '../util.js';
 import {
-  getLibrary, entryFor, allTags, setTags, setRating, setProficiency,
+  getLibrary, entryFor, allTags, setTags, setRating, setProficiency, setPinned,
   createPlaylist, addToPlaylist, removeFromPlaylist
 } from '../store.js';
 import { sheet, stars, reportError, on } from '../ui.js';
@@ -26,7 +26,8 @@ export const profLabel = n => PROFICIENCY[n - 1] || 'Not set';
 const ICON = {
   x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>',
   plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>',
-  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3.5h6M10 3.5l-.7 6L6.5 13h11l-2.8-3.5-.7-6M12 13v7.5"/></svg>'
 };
 
 /** Normalize a typed tag: lowercase, single spaces, no leading "#". */
@@ -59,6 +60,7 @@ export async function editMeta(slug, { title = '' } = {}) {
   body.className = 'meta-ed';
   body.innerHTML = html`
     ${isConnected() ? '' : html`<p class="connect-hint">Connect GitHub to save ratings &amp; playlists → <a href="#/settings">Settings</a></p>`}
+    <button type="button" class="me-pin" data-act="pin" aria-pressed="false">${raw(ICON.pin)}<span class="me-pin-l"></span></button>
     <section class="me-sec" aria-labelledby="me-rating-h">
       <div class="me-head">
         <h3 class="label" id="me-rating-h">Rating</h3>
@@ -132,6 +134,12 @@ export async function editMeta(slug, { title = '' } = {}) {
     part('sugg').hidden = !fresh && !pool.length;
   }
   /** Repaint the playlist chips; keyboard focus follows `focusId` (or the chip that had it). */
+  function paintPin() {
+    const b = body.querySelector('[data-act="pin"]');
+    b.setAttribute('aria-pressed', String(!!st.pinnedAt));
+    b.querySelector('.me-pin-l').textContent = st.pinnedAt ? 'Pinned to the top of Recipes' : 'Pin to the top of Recipes';
+  }
+
   function paintPlaylists(focusId) {
     const box = part('pls'), f = document.activeElement;
     const keep = focusId || (box.contains(f) ? f.dataset.pl || f.dataset.act : null);
@@ -156,6 +164,10 @@ export async function editMeta(slug, { title = '' } = {}) {
     if (addTags([input.value])) { input.value = ''; paintSugg(); }
   }
 
+  on(body, 'click', '[data-act="pin"]', () => {
+    const next = !st.pinnedAt;
+    if (attempt(() => setPinned(slug, next))) { st.pinnedAt = next ? new Date().toISOString() : null; paintPin(); }
+  });
   on(body, 'click', '[data-rate]', (e, b) => {
     const n = +b.dataset.rate, next = st.rating === n ? null : n;
     if (attempt(() => setRating(slug, next))) { st.rating = next; paintRating(); }
@@ -211,7 +223,7 @@ export async function editMeta(slug, { title = '' } = {}) {
     field.value = ''; form.hidden = true; paintPlaylists(id);
   });
 
-  paintRating(); paintProf(); paintTags(); paintPlaylists();
+  paintPin(); paintRating(); paintProf(); paintTags(); paintPlaylists();
 
   await sheet({
     title: title || 'Recipe details',

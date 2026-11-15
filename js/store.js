@@ -5,7 +5,7 @@
  *   getIndex({force})            → { recipes:[summary], pending:[item] }
  *   getRecipe(slug)              → recipe | null
  *   getLibrary()                 → { recipes:{slug:entry}, playlists:[] }
- *   entryFor(lib, slug)          → entry with blank defaults (tags [], rating null, proficiency null)
+ *   entryFor(lib, slug)          → entry with blank defaults (tags [], rating null, proficiency null, pinnedAt null)
  *   allTags(lib)                 → sorted unique tags
  *   getJournal(slug)             → { slug, entries:[] }
  *   getPending(id)               → inbox item | null
@@ -15,6 +15,7 @@
  * WRITES (need a token → throw NotConnectedError otherwise). Each is one atomic commit.
  *   Library (optimistic + batched ~1.2s into one commit):
  *     setTags(slug, tags) setRating(slug, n|null) setProficiency(slug, n|null)
+ *     setPinned(slug, bool) — pinnedAt timestamp on the entry; pinned recipes head the Recipes list
  *     createPlaylist(name)→id renamePlaylist(id,name) deletePlaylist(id)
  *     addToPlaylist(id, slug) removeFromPlaylist(id, slug)  flushLibrary()
  *   Recipes:  saveRecipe(recipe, { heroFile, isNew }) → slug      deleteRecipe(slug)
@@ -109,7 +110,7 @@ function normLib(lib) {
 export const blankEntry = () => ({ tags: [], rating: null, proficiency: null, addedAt: nowIso() });
 export function entryFor(lib, slug) {
   const e = lib?.recipes?.[slug];
-  return { ...blankEntry(), addedAt: null, ...(e || {}), tags: [...(e?.tags || [])] };
+  return { ...blankEntry(), addedAt: null, pinnedAt: null, ...(e || {}), tags: [...(e?.tags || [])] };
 }
 export function allTags(lib) {
   const s = new Set();
@@ -215,6 +216,10 @@ export const setTags = (slug, tags) => mutateLibrary(`tags ${name(slug)}`, lib =
 });
 export const setRating = (slug, n) => mutateLibrary(`rate ${name(slug)} ${n ?? '-'}/10`, lib => { ensure(lib, slug).rating = n == null ? null : Math.max(1, Math.min(10, Math.round(n))); });
 export const setProficiency = (slug, n) => mutateLibrary(`proficiency ${name(slug)} ${n ?? '-'}/5`, lib => { ensure(lib, slug).proficiency = n == null ? null : Math.max(1, Math.min(5, Math.round(n))); });
+export const setPinned = (slug, on) => mutateLibrary(`${on ? 'pin' : 'unpin'} ${name(slug)}`, lib => {
+  const e = ensure(lib, slug);
+  if (on) e.pinnedAt ||= nowIso(); else delete e.pinnedAt;
+});
 export function createPlaylist(plName) {
   const id = 'pl-' + Math.random().toString(36).slice(2, 6);
   const at = nowIso();
