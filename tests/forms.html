@@ -19,6 +19,7 @@
      Loads the real app in phone-width iframes (no token: reads only, never writes) and checks
      the forms the way a phone user meets them. Then mounts the forms on this page against
      tests/fixtures/fake-store.js to finish saves and uploads. Needs real time. -->
+<a id="topbar-back" hidden></a>
 <main id="view"><p class="muted">Running…</p></main>
 <div id="frames"></div>
 <img hidden alt="" src="/__smoke/hold">
@@ -206,6 +207,15 @@ try {
   S.release('deletePending'); await wait(30);
   ok('deleting an upload, then leaving: you stay on the new page', location.hash === '#/playlists', location.hash);
   sandbox.innerHTML = '';
+
+  /* the inbox list is on the Add page: an upload's page leads back there */
+  hashIs('#/pending/test-up');
+  const offPending2 = await pendingView.render(sandbox, { id: 'test-up' });
+  ok('an upload’s back arrow returns to the inbox list on Add', document.getElementById('topbar-back').getAttribute('href') === '#/add');
+  sandbox.querySelector('[data-act="delete"]').click(); await frame();
+  confirmTop(); await wait(30);
+  ok('…and so does deleting it', location.hash === '#/add', location.hash);
+  offPending2(); sandbox.innerHTML = '';
 } catch (e) {
   ok('fake-store suite threw', false, String(e?.stack || e));
 }

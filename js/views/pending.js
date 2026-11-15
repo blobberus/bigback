@@ -1,8 +1,9 @@
 /**
  * views/pending.js — #/pending/<id>: an inbox upload waiting for "update the site" (WS3).
  * Shows what was sent (link, files, pasted text, note for the builder), the builder's
- * `blocked` reason when it couldn't extract a recipe, and a delete button (afterwards it leaves
- * the page, unless you already have). Missing item → "Already built (or removed)".
+ * `blocked` reason when it couldn't extract a recipe, and a delete button (afterwards it goes
+ * back to the inbox list on #/add, unless you've already left). Back also leads to #/add.
+ * Missing item → "Already built (or removed)".
  */
 import { setTopbar, on, busy, confirmSheet, toast, reportError } from '../ui.js';
 import { html } from '../util.js';
@@ -121,7 +122,7 @@ function itemHtml(item) {
 }
 
 export async function render(root, { id } = {}) {
-  setTopbar({ title: 'Inbox', back: '#/' });
+  setTopbar({ title: 'Inbox', back: '#/add' });            // the inbox list lives on the Add page
   const item = id ? await getPending(id, { force: true }) : null;
   if (!item) return notFound(root);
   root.innerHTML = itemHtml(item);
@@ -134,7 +135,7 @@ export async function render(root, { id } = {}) {
     try {
       await busy(btn, deletePending(id));
       toast('Upload deleted', { type: 'ok' });
-      if (alive) location.hash = '#/';               // moved on while it deleted → stay where you are
+      if (alive) location.hash = '#/add';             // moved on while it deleted → stay where you are
     } catch (err) { reportError(err); }
   });
   return () => { alive = false; off(); };
