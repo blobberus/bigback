@@ -103,6 +103,23 @@ try {
       !$('textarea[data-composer="recipe"]').value && a?.type === 'submit' && a.closest('[data-composer-form="recipe"]'), where());
   }
   ok('a recipe with steps offers cook mode (page button + topbar)', $('.rx-cook-btn') && document.querySelector(`#topbar-actions [href="#/r/${SLUG}/cook"]`));
+
+  /* photo journal: add a photo (the file picker is skipped: the input gets a file directly) */
+  {
+    const canvas = Object.assign(document.createElement('canvas'), { width: 64, height: 48 });
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.8));
+    const input = $('[data-photo-input]'), dt = new DataTransfer(), before = commits.length;
+    dt.items.add(new File([blob], 'IMG_0001.jpg', { type: 'image/jpeg' }));
+    input.files = dt.files;
+    $('[data-act="photo-add"]').focus();
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    await until(() => document.querySelector('.rx-up-sheet [data-up="save"]'));
+    document.querySelector('.rx-up-sheet [data-up="save"]').click();
+    await until(() => commits.length > before && $('.rx-photo') && !document.querySelector('.sheet-backdrop.open'), 6000);
+    await wait(300);
+    ok('a photo added to the journal shows in the grid and logs the cook', $('.rx-photo') && /Cooked 1×/.test($('.rx-you-cooked').textContent), $('.rx-you-cooked').textContent);
+    ok('…and focus is back on "Add photo" (re-rendered by the upload)', document.activeElement?.dataset?.act === 'photo-add', where());
+  }
   off(); off = null;
 
   /* a recipe typed in without steps yet */

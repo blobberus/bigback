@@ -397,6 +397,9 @@ export async function render(root, { slug }) {
     if (!file || !data?.recipe) return;
     if (file.type && !/^image\//.test(file.type)) { toast('That file isn’t an image.', { type: 'error' }); return; }
     await openPhotoUploader({ slug, recipe: data.recipe, file });
+    // The upload re-rendered the page, so "Add photo" (the sheet's opener) is a new button.
+    const a = document.activeElement;
+    if (!a || a === document.body || a === root) root.querySelector('[data-act="photo-add"]')?.focus({ preventScroll: true });
   }
 
   const onToggle = e => {
