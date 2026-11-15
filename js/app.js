@@ -12,7 +12,7 @@
  *   #/settings            settings
  */
 import { getPrefs, onPrefs } from './prefs.js';
-import { onChange, revalidateAll } from './store.js';
+import { onChange, revalidateAll, warmRecipes } from './store.js';
 import { $, $$, reportError, toast } from './ui.js';
 import { unlockGate } from './lock.js';
 
@@ -164,6 +164,12 @@ async function boot() {
     for (const [file, fn] of [['./timers.js', 'mount'], ['./stopwatch.js', 'mount'], ['./wakelock.js', 'initWakeLock']]) {
       import(file).then(m => m[fn]?.()).catch(e => console.error(file, e));
     }
+    // A moment later: copies of the recipes not opened on this device yet, and the recipe
+    // page's code, so the first tap on a recipe opens at once (offline too).
+    setTimeout(() => {
+      import('./views/recipe.js').catch(() => {});
+      if (navigator.onLine && !navigator.connection?.saveData) warmRecipes().catch(() => {});
+    }, 1500);
   });
 
   // First visit: the install downloads the whole shell, so it waits for the view and its eager

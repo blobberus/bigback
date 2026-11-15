@@ -21,7 +21,7 @@
 <!-- WebCrypto needs real time: this holds smoke.py's DOM dump until the release below. -->
 <img hidden alt="" src="/__smoke/hold">
 <script type="module">
-import { getRecipe, getJournal, getLibrary, setRating, flushLibrary, onChange, peekLock } from '../js/store.js';
+import { getRecipe, getJournal, getLibrary, setRating, flushLibrary, onChange, peekLock, warmRecipes } from '../js/store.js';
 import { unlockGate, makeLock, remember, forgetDevice } from '../js/lock.js';
 
 const results = [];
@@ -145,6 +145,38 @@ try {
   ok('refresh started before a local edit is dropped', lib.recipes['t-x']?.rating === 7 && !lib.recipes.other && !refreshed('data/library.json'));
   flushLibrary().catch(() => {});                  // send the batch now (into the stub) so no timer fires after the restore
   localStorage.setItem('bb.prefs', JSON.stringify({ ...JSON.parse(localStorage.getItem('bb.prefs')), token: '' }));
+
+  /* ---------- warm-up: recipes not opened on this device yet ---------- */
+  localStorage.setItem('bb.cache:recipes/index.json', JSON.stringify({ recipes: [{ slug: 'w-1' }, { slug: 'w-2' }], pending: [] }));
+  localStorage.setItem('bb.cache:recipes/w-1.json', JSON.stringify({ slug: 'w-1', v: 1 }));
+  const liveFiles = { 'recipes/w-1.json': [200, { slug: 'w-1', v: 9 }], 'recipes/w-2.json': [200, { slug: 'w-2', v: 1 }], 'journal/w-1.json': [404], 'journal/w-2.json': [200, { slug: 'w-2', entries: [{ id: 'n-1' }] }] };
+  const before = calls.length;
+  let warmed = false;
+  const warm = warmRecipes().then(() => { warmed = true; });
+  while (!warmed) {                                 // answer whatever it asks for, as it asks
+    for (const [p, [st, body]] of Object.entries(liveFiles)) answer(p, st, body);
+    await tick(5);
+  }
+  await warm;
+  const asked = calls.slice(before).filter(p => p !== 'recipes/index.json');
+  ok('warm-up fetches only what has no copy yet', asked.length === 3 && !asked.includes('recipes/w-1.json'), asked.join(', '));
+  ok('…and snapshots it (404 journal → empty journal)', JSON.parse(snapOf('recipes/w-2.json'))?.v === 1
+    && JSON.parse(snapOf('journal/w-1.json'))?.entries?.length === 0 && JSON.parse(snapOf('journal/w-2.json'))?.entries?.length === 1);
+  ok('…without touching the copy it already had', JSON.parse(snapOf('recipes/w-1.json')).v === 1);
+  const w2 = getRecipe('w-2');
+  ok('a warmed recipe then opens at once', (await settled(w2)) && (await w2).v === 1);
+
+  localStorage.setItem('bb.cache:recipes/index.json', JSON.stringify({ recipes: [{ slug: 'w-3' }, { slug: 'w-4' }, { slug: 'w-5' }], pending: [] }));
+  const offBefore = calls.length;
+  let offDone = false;
+  const offWarm = warmRecipes().then(() => { offDone = true; });
+  while (!offDone) {
+    for (const p of ['recipes/w-3.json', 'journal/w-3.json', 'recipes/w-4.json', 'journal/w-4.json', 'recipes/w-5.json', 'journal/w-5.json']) failNet(p);
+    await tick(5);
+  }
+  await offWarm;
+  ok('offline → stops instead of trying every recipe', calls.slice(offBefore).length <= 2 && snapOf('recipes/w-3.json') === null,
+    calls.slice(offBefore).join(', '));
 
   /* ---------- lock gate ---------- */
   const FAST = { iterations: 2000 };

@@ -57,7 +57,9 @@ hard-coded colors. Mobile-first; tap targets ≥ 44px; inputs 16px (no iOS zoom)
 - **Data** (`store.js`): snapshot-first. A file read before on this device paints at once from
   its localStorage copy while the live file is fetched behind it; a changed live copy fires
   `onChange({ type: 'refresh' })` and the open view repaints. One network read per file per
-  page load; coming back to the app after a minute re-checks what's in memory.
+  page load; coming back to the app after a minute re-checks what's in memory. Shortly after
+  the first view, `warmRecipes()` snapshots the recipes (and journals) this device hasn't
+  opened yet, so every recipe opens at once and offline.
 - **Gate** (`lock.js`): a remembered device opens on its last copy of `data/lock.json`; the
   live file is checked right after and locks the app if the password changed.
 - **Shell** (`sw.js`): cache-first per `VERSION` (a hash of the app files, stamped at deploy).

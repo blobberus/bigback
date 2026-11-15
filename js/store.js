@@ -14,6 +14,8 @@
  *   peekLock()                   → this device's last copy of data/lock.json, no network
  *                                  (undefined = never read here); lock.js opens the app on it
  *   revalidateAll()              → background-refresh every file read so far (app resume)
+ *   warmRecipes()                → idle time: snapshot the recipes (+ journals) this device has
+ *                                  no copy of yet, two at a time, so they open at once and offline
  *
  * CACHING  Each file is read from the network at most once per page load (concurrent reads
  *   share one request) and kept in memory. Reads are snapshot-first: a file this device has
@@ -172,6 +174,28 @@ export const getJournal = async (slug, opts) => {
 export const getPending = (id, opts) => load(P.inboxItem(id), null, opts);
 export async function getLibrary(opts) { return normLib(await load(P.library, EMPTY_LIB, opts)); }
 export const getLock = opts => load(P.lock, null, opts);
+
+/** Idle-time warm-up: the index's recipes (and journals) this device has no copy of yet, two at
+ *  a time, into the snapshot only (not memory, so revalidateAll stays small). A recipe opened
+ *  later then paints at once (and offline) and is refreshed behind as usual. Stops at the first
+ *  network failure or full storage. */
+export async function warmRecipes({ parallel = 2 } = {}) {
+  const idx = await getIndex();
+  const has = p => { try { return mem.has(p) || localStorage.getItem(SNAP + p) != null; } catch { return true; } };
+  const todo = idx.recipes.flatMap(r => [[P.recipe(r.slug), null], [P.journal(r.slug), { slug: r.slug, entries: [] }]])
+    .filter(([p]) => !has(p));
+  let stop = false;
+  const worker = async () => {
+    for (let job; !stop && (job = todo.shift());) {
+      const [p, fallback] = job, n = writes.get(p);
+      try {
+        const data = await fetchLive(p);
+        if (!has(p) && writes.get(p) === n) localStorage.setItem(SNAP + p, JSON.stringify(data === undefined ? fallback : data));
+      } catch { stop = true; }
+    }
+  };
+  await Promise.all(Array.from({ length: parallel }, worker));
+}
 
 function normLib(lib) {
   lib ||= clone(EMPTY_LIB);
