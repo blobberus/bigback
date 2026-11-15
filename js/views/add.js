@@ -41,7 +41,7 @@ const shortDate = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.toL
 export const kindIcon = p => icon(p.kind === 'link' ? linkType(p.url || '') : p.kind === 'text' ? 'text' : 'file');
 
 async function renderChooser(root) {
-  setTopbar({ title: 'Add' });
+  setTopbar({ title: 'Add', back: '#/' });
   const paint = idx => {
     const draft = loadDraft(draftKey.new);
     const pending = [...(idx?.pending || [])].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));

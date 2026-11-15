@@ -150,6 +150,10 @@
 }
 .filter-sheet .sheet-actions .btn-ghost { flex: 0 0 auto; color: var(--ink-2); }
 
+/* "Add" in the Recipes topbar (it used to be a bottom-nav tab) */
+.topbar-add { gap: 4px; margin-right: 4px; padding: 0 13px 0 9px; }
+.topbar-add svg { width: 18px; height: 18px; stroke-width: 2.4; }
+
 /* ---------- count + sort ---------- */
 .lib-count { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 6px 0 8px; }
 .lib-count-n { margin: 0; font-size: .875rem; font-weight: 600; color: var(--ink-2); }

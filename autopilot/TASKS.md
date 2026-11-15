@@ -79,6 +79,7 @@ Mark items `[x]` in the same commit that completes them. `[~]` = in progress on 
 - [x] Skill recipe-video: Instagram reel links read with no login (embed caption + video, yt-dlp fallback, faster-whisper transcript, frame sheets) (.claude/skills/recipe-video/)
 - [x] No "I cooked this" button: the cook log is the days with journal photos; photos carry `cookedOn` (EXIF date or picked) (js/components/recipe-journal.js, js/util.js takenOn)
 - [x] Sheets stay above the phone keyboard; playlist picker's Done is a sticky footer; with the keyboard up the bottom nav and timer step aside (js/ui.js kb-open, tests/sheet.html)
+- [x] Convert tab replaces Add in the bottom nav: weight / volume / temperature rows, type either side, fractions OK, units remembered (js/views/convert.js, tests/convert.html); "Add" moved to the Recipes topbar
 - [x] Temperatures tap-to-convert like ingredient amounts: °C, oven dial, fan, convection (js/units.js findTemps/tempDetails, tests/ingredients.html)
 
 ## Standing build checks (every build / "update the site"; not tasks to tick)

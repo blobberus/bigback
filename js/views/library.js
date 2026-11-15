@@ -356,7 +356,9 @@ export async function render(root, params) {
 
   const topbar = () => {
     const title = plId ? pl?.name || 'Playlist' : 'Recipes';
-    if (title !== shownTitle) setTopbar(plId ? { title, back: '#/playlists' } : { title });
+    if (title !== shownTitle) setTopbar(plId ? { title, back: '#/playlists' } : {
+      title, actions: html`<a class="btn btn-primary btn-sm topbar-add" href="#/add">${raw(ICON.plus)}Add</a>`
+    });
     shownTitle = title;
   };
   topbar();

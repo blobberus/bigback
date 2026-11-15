@@ -8,6 +8,7 @@
  *   #/r/<slug>            recipe         #/r/<slug>/cook   cook (step-by-step mode)
  *   #/add                 add (chooser)  #/add/custom  #/add/upload  #/edit/<slug>
  *   #/pending/<id>        pending        #/playlists       playlists
+ *   #/convert             convert (weight / volume / temperature)
  *   #/settings            settings
  */
 import { getPrefs, onPrefs } from './prefs.js';
@@ -25,9 +26,11 @@ const ROUTES = [
   [/^edit\/([\w-]+)$/, 'add', m => ({ mode: 'edit', slug: m[1] })],
   [/^pending\/([\w-]+)$/, 'pending', m => ({ id: m[1] })],
   [/^playlists$/, 'playlists', () => ({})],
+  [/^convert$/, 'convert', () => ({})],
   [/^settings$/, 'settings', () => ({})]
 ];
-const NAV_OF = { library: 'library', recipe: 'library', cook: 'library', pending: 'library', add: 'add', playlists: 'playlists', settings: 'settings' };
+// Adding a recipe starts from the Recipes page (its topbar "Add" button), so it lights up Recipes.
+const NAV_OF = { library: 'library', recipe: 'library', cook: 'library', pending: 'library', add: 'library', playlists: 'playlists', convert: 'convert', settings: 'settings' };
 
 let cleanup = null, seq = 0, firstRoute = true;
 

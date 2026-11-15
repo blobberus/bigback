@@ -110,7 +110,6 @@ svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; 
 .bottomnav a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; color: var(--muted); text-decoration: none; font-size: .69rem; font-weight: 650; line-height: 1.15; }
 .bottomnav svg { width: 21px; height: 21px; }
 .bottomnav a[aria-current] { color: var(--accent); }
-.bottomnav .nav-add svg { width: 23px; height: 23px; padding: 3px; border-radius: 7px; background: var(--accent); color: var(--accent-ink); }
 body[data-view="cook"] .bottomnav { display: none; }
 /* Keyboard up (html.kb-open, ui.js): the nav would sit behind it and slide around as the page
    scrolls, so it steps aside until the keyboard closes. */

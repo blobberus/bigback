@@ -24,7 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_ROUTES = ["#/", "#/r/pan-seared-chicken", "#/r/pan-seared-chicken/cook",
-                  "#/add", "#/add/custom", "#/add/upload", "#/playlists", "#/settings"]
+                  "#/add", "#/add/custom", "#/add/upload", "#/playlists", "#/convert", "#/settings"]
 CANDIDATES = [
     r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
     r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
