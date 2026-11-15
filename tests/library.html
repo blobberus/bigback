@@ -35,6 +35,30 @@ eq('no pins → plain sort', slugs(orderRows(rows.map(x => ({ ...x, e: { ...x.e,
 eq('unknown sort falls back to recently added', slugs(orderRows(rows, 'nope')), ['b', 'd', 'a', 'c']);
 eq('library entries default to not pinned', [entryFor({ recipes: {} }, 'x').pinnedAt, entryFor({ recipes: { x: { pinnedAt: 'T' } } }, 'x').pinnedAt], [null, 'T']);
 
+/* ---------- the list itself, in a 390px frame of the app ---------- */
+const wait = ms => new Promise(r => setTimeout(r, ms));
+async function until(fn, ms = 4000) {
+  const t0 = performance.now();
+  while (performance.now() - t0 < ms) { try { if (fn()) return true; } catch { /* not there yet */ } await wait(25); }
+  return false;
+}
+try {
+  const f = document.createElement('iframe');
+  f.style.cssText = 'width:390px;height:700px;border:1px solid var(--line)';
+  f.src = '../index.html#/';
+  document.body.append(f);
+  await new Promise(r => f.addEventListener('load', r, { once: true }));
+  const d = f.contentDocument;
+  await until(() => d.querySelector('#view .rcard'));
+  d.querySelector('#view [data-act="filters"]').click();
+  await until(() => d.querySelector('.filter-sheet [data-f="rating"]'));
+  const chip = d.querySelector('.filter-sheet [data-f="rating"][data-v="unrated"]');
+  chip.focus(); chip.click();
+  const a = d.activeElement;
+  eq('Filters sheet: toggling a chip keeps keyboard focus on it (re-rendered)', [a?.dataset?.f, a?.dataset?.v, a?.getAttribute('aria-pressed')], ['rating', 'unrated', 'true']);
+  f.remove();
+} catch (e) { eq('app frame ran', String(e), ''); }
+
 const failed = results.filter(r => !r.ok).length;
 document.querySelector('#view').innerHTML = `<p><strong>${results.length - failed}/${results.length} passed</strong></p><table>${results.map(r =>
   `<tr><td>${r.ok ? '✓' : '✗'}</td><td>${r.name}${r.detail ? ` — ${r.detail}` : ''}</td></tr>`).join('')}</table>`;

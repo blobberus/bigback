@@ -502,7 +502,12 @@ export async function render(root, params) {
       body.innerHTML = filterBody(s, lib, facets(rows, plSets));
       if (cta) cta.textContent = label();
     };
-    on(body, 'click', '[data-f]', (e, b) => { toggle(s, b.dataset.f, b.dataset.v); update(); draw(); });
+    on(body, 'click', '[data-f]', (e, b) => {
+      const { f, v } = b.dataset, had = b === document.activeElement;
+      toggle(s, f, v); update(); draw();
+      // The chips were just re-rendered: keep keyboard focus on the one you toggled.
+      if (had) body.querySelector(`[data-f="${CSS.escape(f)}"][data-v="${CSS.escape(v)}"]`)?.focus({ preventScroll: true });
+    });
     draw();
     await sheet({
       title: 'Filters', body, className: 'filter-sheet',
