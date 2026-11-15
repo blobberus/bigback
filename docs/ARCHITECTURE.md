@@ -60,6 +60,10 @@ hard-coded colors. Mobile-first; tap targets ≥ 44px; inputs 16px (no iOS zoom)
   page load; coming back to the app after a minute re-checks what's in memory.
 - **Gate** (`lock.js`): a remembered device opens on its last copy of `data/lock.json`; the
   live file is checked right after and locks the app if the password changed.
+- **Shell** (`sw.js`): cache-first per `VERSION` (a hash of the app files, stamped at deploy).
+  Launches make no shell requests; a code deploy changes `sw.js`, the browser installs the new
+  shell whole, and `app.js` reloads once onto it. Data JSON is network-first with a cache
+  fallback; images are cache-first (fixed names like `hero.jpg` re-checked after a day).
 
 ## Why these choices
 - **Repo as DB**: free, versioned, and agents edit plain JSON with full history.
