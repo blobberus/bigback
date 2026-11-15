@@ -172,6 +172,25 @@ try {
   ok('a delete that finishes after you left keeps you where you went', await deleteAndLeave('#/settings') === '#/settings');
   ok('…unless that’s the deleted recipe’s own page', await deleteAndLeave('#/r/test-dish') === '#/');
 
+  /* Enter moves to the next field, but not the Enter that confirms an IME candidate */
+  const enterOn = (el, init = {}) => el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true, ...init }));
+  let offIme = mountRecipeForm(sandbox, { recipe: null });
+  const ttl = sandbox.querySelector('#ed-title');
+  ttl.focus();
+  enterOn(ttl, { isComposing: true }); enterOn(ttl, { keyCode: 229 });
+  const stayed = document.activeElement === ttl;
+  enterOn(ttl);
+  ok('recipe form: an IME’s Enter stays in the title, a plain Enter moves on', stayed && document.activeElement?.id === 'ed-summary', document.activeElement?.id);
+  offIme(); sandbox.innerHTML = ''; localStorage.removeItem('bb.draft:new');
+  offIme = mountUploadForm(sandbox);
+  const upTitle = sandbox.querySelector('#up-title');
+  upTitle.focus();
+  enterOn(upTitle, { keyCode: 229 });
+  const stayedUp = document.activeElement === upTitle;
+  enterOn(upTitle);
+  ok('upload form: the same', stayedUp && document.activeElement?.id === 'up-hint', document.activeElement?.id);
+  offIme(); sandbox.innerHTML = ''; localStorage.removeItem('bb.draft:upload');
+
   /* photo: remove the current one, pick a new one, remove that too → no photo */
   const pickPhoto = () => {
     const dt = new DataTransfer();

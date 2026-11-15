@@ -433,7 +433,7 @@ export function mountRecipeForm(root, { recipe = null } = {}) {
       setHero(f);          // a removed current photo stays removed if this new one is removed too
     }),
     on(form, 'keydown', 'input, [data-oneline]', (e, el) => {
-      if (e.key !== 'Enter' || e.isComposing || el.type === 'file') return;
+      if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229 || el.type === 'file') return;   // 229: Safari's IME-confirm Enter
       e.preventDefault();
       const items = $$('input:not([type="file"]), textarea, button[type="submit"]', form).filter(x => x.offsetParent !== null);
       items[items.indexOf(el) + 1]?.focus();

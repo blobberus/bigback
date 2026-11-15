@@ -268,7 +268,7 @@ export function mountUploadForm(root) {
       persistSoon();
     }),
     on(root, 'keydown', 'input:not([type="file"])', (e, el) => {
-      if (e.key !== 'Enter' || e.isComposing) return;
+      if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;   // 229: Safari's IME-confirm Enter
       e.preventDefault();
       const items = $$('input:not([type="file"]), textarea', form).filter(x => x.offsetParent !== null);
       items[items.indexOf(el) + 1]?.focus();
