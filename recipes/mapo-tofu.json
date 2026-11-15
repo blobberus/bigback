@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "slug": "mapo-tofu",
+  "title": "Mapo Tofu",
+  "summary": "Silken tofu in a glossy, spicy doubanjiang sauce with minced chicken and a gentle Sichuan-pepper tingle. 15 minutes.",
+  "profile": "Savory, spicy and gently numbing: doubanjiang gives salty, fermented chili depth, oyster sauce and chicken stock add umami, and the ½ tsp of toasted Sichuan pepper brings a citrusy tingle that sits behind the heat rather than taking over; garlic, scallion and dried chili are the aromatics and sesame oil the finish, with at most a faint sweetness (the sugar is optional). The silken tofu should be custardy and still mostly in whole cubes, bathed in a glossy, brick-red sauce that coats a spoon and clings to the tofu without turning gluey, with small bits of browned chicken throughout. Delivers 1 serving (about 1½ cups, or 2 as part of a shared meal) in about 15 minutes; serve immediately over steamed rice. Best fresh; leftovers keep 2 days refrigerated and reheat gently, covered, in a small pan or the microwave with a splash of stock (don't freeze: the cornstarch sauce thins and silken tofu weeps).",
+  "status": "built",
+  "source": {
+    "type": "web",
+    "url": "https://www.cookerru.com/mapo-tofu/",
+    "files": [
+      "sources/reverse-sear-steak-chimichurri/recipe-list.pdf"
+    ],
+    "author": "Elle, Cooker Ru"
+  },
+  "image": null,
+  "servings": 1,
+  "yield": "about 1½ cups",
+  "time": {
+    "prep": 5,
+    "cook": 10,
+    "total": 15
+  },
+  "equipment": [
+    "wok or 10-inch skillet",
+    "small saucepan and slotted spoon (optional, for blanching)",
+    "spice grinder or mortar and pestle"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": null,
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "Sichuan peppercorns",
+      "note": "toasted and ground (or ½ tsp pre-ground)"
+    },
+    {
+      "id": "i2",
+      "section": null,
+      "qty": 1.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "cornstarch",
+      "note": "or potato starch; stirred with 1 tbsp cold water for the slurry"
+    },
+    {
+      "id": "i3",
+      "section": null,
+      "qty": 225,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "silken tofu",
+      "note": "about 8 oz, half a 16-oz package"
+    },
+    {
+      "id": "i4",
+      "section": null,
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "salt",
+      "note": "table salt; a big pinch for the optional blanch, then to taste"
+    },
+    {
+      "id": "i5",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "vegetable oil",
+      "note": null
+    },
+    {
+      "id": "i6",
+      "section": null,
+      "qty": 1.5,
+      "qtyMax": null,
+      "unit": "clove",
+      "item": "garlic",
+      "note": "minced"
+    },
+    {
+      "id": "i7",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "green onion",
+      "note": "white part chopped, green part sliced for garnish"
+    },
+    {
+      "id": "i8",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "dried red chili",
+      "note": "crushed; optional"
+    },
+    {
+      "id": "i9",
+      "section": null,
+      "qty": 40,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "minced chicken",
+      "note": "about 1½ oz; or ground pork or beef, or finely chopped mushrooms"
+    },
+    {
+      "id": "i10",
+      "section": null,
+      "qty": 2.25,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "doubanjiang",
+      "note": "Sichuan chili bean paste"
+    },
+    {
+      "id": "i11",
+      "section": null,
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "chicken stock",
+      "note": "or water, though stock is richer"
+    },
+    {
+      "id": "i12",
+      "section": null,
+      "qty": 1.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "oyster sauce",
+      "note": "or soy sauce"
+    },
+    {
+      "id": "i13",
+      "section": null,
+      "qty": 0.25,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "dark soy sauce",
+      "note": "a few extra drops if skipping the sugar"
+    },
+    {
+      "id": "i14",
+      "section": null,
+      "qty": 0.25,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "sugar",
+      "note": "optional"
+    },
+    {
+      "id": "i15",
+      "section": null,
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "toasted sesame oil",
+      "note": null
+    },
+    {
+      "id": "i16",
+      "section": null,
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "steamed white rice",
+      "note": "to serve"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": null,
+      "text": "Toast the Sichuan peppercorns in the dry wok over medium heat until fragrant, about 30 seconds, then grind to a lightly coarse powder. Stir the cornstarch into 1 tbsp cold water for the slurry and keep it by the stove.",
+      "timers": [],
+      "tip": null
+    },
+    {
+      "id": "s2",
+      "section": null,
+      "text": "Drain the tofu and cut it into ¾-inch cubes right in the pack, or turn it out onto a board, cutting straight down and leaving the cubes together. Optional: bring a small saucepan of water to a bare simmer with a big pinch of the salt, slide the cubes in off the board, leave them 1 minute, then lift them out gently with a slotted spoon.",
+      "timers": [
+        {
+          "label": "Blanch tofu",
+          "seconds": 60
+        }
+      ],
+      "tip": "The author warns silken tofu falls apart in mapo; a short salted soak firms and seasons the outside, and from here on you move the pan, not the tofu."
+    },
+    {
+      "id": "s3",
+      "section": null,
+      "text": "Heat the vegetable oil in the wok over medium heat. Add the garlic, the white part of the green onion and the chili and stir until fragrant, about 30 seconds. Add the chicken and cook, breaking it up with the spatula, until no longer pink, about 2 minutes.",
+      "timers": [
+        {
+          "label": "Cook chicken",
+          "seconds": 120
+        }
+      ],
+      "tip": null
+    },
+    {
+      "id": "s4",
+      "section": null,
+      "text": "Add the doubanjiang and fry, stirring, until brick-red and toasty-smelling, about 1 minute. Pour in the stock and season with the oyster sauce, dark soy sauce, sugar (if using) and ground Sichuan peppercorns. Stir and simmer for 2 minutes.",
+      "timers": [
+        {
+          "label": "Fry paste",
+          "seconds": 60
+        },
+        {
+          "label": "Simmer",
+          "seconds": 120
+        }
+      ],
+      "tip": "Frying the paste in the oil before the stock goes in is what gives the sauce its red color and roasted depth."
+    },
+    {
+      "id": "s5",
+      "section": null,
+      "text": "Slide the tofu into the sauce from the board or spoon and nudge it under with the back of the spatula. Simmer gently until heated through, about 2 minutes, shaking or pushing the pan instead of stirring. Re-stir the slurry and drizzle it in over 2–3 additions, pushing the pan gently between each, until the sauce turns glossy and clings to the tofu, about 1 minute.",
+      "timers": [
+        {
+          "label": "Heat tofu",
+          "seconds": 120
+        },
+        {
+          "label": "Thicken",
+          "seconds": 60
+        }
+      ],
+      "tip": "Silken tofu sheds water as it heats, so thickening after it goes in keeps the sauce glossy and means the cubes never get folded through a thick sauce."
+    },
+    {
+      "id": "s6",
+      "section": null,
+      "text": "Off the heat, taste and add salt only if needed, then drizzle with the sesame oil. Slide into a shallow bowl, scatter over the green onion tops and serve right away over the rice.",
+      "timers": [],
+      "tip": null
+    }
+  ],
+  "createdAt": "2026-11-14T19:30:00Z",
+  "updatedAt": "2026-11-14T19:30:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-14",
+      "summary": "Built from Cooker Ru web recipe (Elle). User changes: every amount halved (serves 1; ½ tbsp → 1½ tsp, 1½ tbsp doubanjiang → 2¼ tsp); Sichuan pepper set to ½ tsp total per the user (the halved source would be ¼ tsp); sugar optional, with dark soy and starch-thickened chicken stock carrying the sauce (a few extra drops of dark soy if skipping sugar); silken tofu instead of the soft tofu the author recommends, so cubes are cut ¾-inch instead of ½-inch, the author's optional 1-minute salted blanch is written in, and the tofu is slid in and pushed rather than stirred, with the slurry moved after the tofu instead of before it. Added the author's toast-and-grind peppercorn note as a step, and listed salt and steamed rice.",
+      "notes": []
+    }
+  ]
+}

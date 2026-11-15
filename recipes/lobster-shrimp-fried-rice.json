@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "slug": "lobster-shrimp-fried-rice",
+  "title": "Lobster & Shrimp Fried Rice with Egg and White Pepper",
+  "summary": "Jasmine rice fried in a reduced lobster-shell stock with sweet seafood, soft egg curds and a warm white-pepper finish.",
+  "profile": "Savory, briny and gently sweet: a reduced lobster-and-shrimp-shell stock seasoned with oyster sauce and soy soaks into the jasmine rice for deep shellfish umami, sweet lobster, shrimp, edamame and a little garlic keep it rounded, and ground white pepper lands as a warm, floral heat at the end rather than chili burn; there's no acid, and the optional salmon roe adds salty pops. The rice should be separate, dry-to-the-touch grains with a few toasty golden patches and no liquid left in the pan, the lobster and shrimp just opaque and juicy (never rubbery), the egg in soft, tender curds and the mushrooms browned and meaty. Serves 2 generously as a one-dish meal in about 45 minutes with cooked rice (add about 20 minutes to cook rice from scratch), nearly all of it active at the stove; serve straight from the skillet, with a simple green vegetable such as garlicky gai lan or bok choy if you want one. Best eaten right away; leftovers keep up to 2 days refrigerated and reheat in a hot, lightly oiled skillet with a splash of water just until hot (longer toughens the seafood); it doesn't freeze well.",
+  "status": "built",
+  "source": {
+    "type": "pdf",
+    "url": null,
+    "files": [
+      "sources/lobster-shrimp-fried-rice/Lobster_Shrimp_Fried_Rice_with_Egg_and_White_Pepper.pdf"
+    ],
+    "author": "Mott 32-inspired home recipe (PDF); after Chef Lee Man Sing's lobster clay-pot rice"
+  },
+  "image": "media/lobster-shrimp-fried-rice/hero.jpg",
+  "servings": 2,
+  "yield": "about 4 cups (2 generous plates)",
+  "time": {
+    "prep": 15,
+    "cook": 30,
+    "total": 45
+  },
+  "equipment": [
+    "12-inch skillet",
+    "small saucepan",
+    "kitchen shears",
+    "fine-mesh sieve",
+    "rimmed tray (for spreading the rice)"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": "Seafood, rice & vegetables",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": null,
+      "item": "raw shell-on lobster tails",
+      "note": "4–5 oz each (shell-on weight); frozen is fine, thawed in the fridge. Buy them with shells even if your shrimp are peeled: these two shells make the stock"
+    },
+    {
+      "id": "i2",
+      "section": "Seafood, rice & vegetables",
+      "qty": 6,
+      "qtyMax": null,
+      "unit": "oz",
+      "item": "raw large shrimp",
+      "note": "peeled and deveined; or 8 oz shell-on before peeling (save the shells)"
+    },
+    {
+      "id": "i3",
+      "section": "Seafood, rice & vegetables",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "cooked jasmine rice",
+      "note": "about 320 g; from ¾ cup raw, or cold leftover rice"
+    },
+    {
+      "id": "i4",
+      "section": "Seafood, rice & vegetables",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": null,
+      "item": "large eggs",
+      "note": "lightly beaten"
+    },
+    {
+      "id": "i5",
+      "section": "Seafood, rice & vegetables",
+      "qty": 3,
+      "qtyMax": null,
+      "unit": "oz",
+      "item": "king oyster mushrooms",
+      "note": "cut in ¼-inch dice; cremini or shiitake caps also work"
+    },
+    {
+      "id": "i6",
+      "section": "Seafood, rice & vegetables",
+      "qty": 0.33,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "frozen shelled edamame",
+      "note": "cooked according to the package and drained"
+    },
+    {
+      "id": "i7",
+      "section": "Seafood, rice & vegetables",
+      "qty": 3,
+      "qtyMax": null,
+      "unit": null,
+      "item": "scallions",
+      "note": "thinly sliced; whites and greens kept separate"
+    },
+    {
+      "id": "i8",
+      "section": "Stock & seasoning",
+      "qty": 2.33,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "neutral oil",
+      "note": "2 tbsp + 1 tsp (7 tsp), divided: 1 tsp stock, 2 tsp seafood, then 1 tsp each for eggs, mushrooms, rice and scallions"
+    },
+    {
+      "id": "i9",
+      "section": "Stock & seasoning",
+      "qty": 0.75,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "unsalted chicken stock",
+      "note": "or water"
+    },
+    {
+      "id": "i10",
+      "section": "Stock & seasoning",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "oyster sauce",
+      "note": null
+    },
+    {
+      "id": "i11",
+      "section": "Stock & seasoning",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "soy sauce",
+      "note": "regular or Chinese light soy sauce, plus more to taste"
+    },
+    {
+      "id": "i12",
+      "section": "Stock & seasoning",
+      "qty": 0.375,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "ground white pepper",
+      "note": "divided: ¼ tsp for the sauce, ⅛ tsp to finish"
+    },
+    {
+      "id": "i13",
+      "section": "Stock & seasoning",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "clove",
+      "item": "garlic",
+      "note": "small; minced"
+    },
+    {
+      "id": "i14",
+      "section": "Stock & seasoning",
+      "qty": 1,
+      "qtyMax": 2,
+      "unit": "tsp",
+      "item": "salmon roe",
+      "note": "optional, to finish"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": null,
+      "text": "If starting from dry rice, cook ¾ cup jasmine rice according to the package and measure out 2 cups; fluff it and spread it on a tray while you make the stock so steam escapes. Cold cooked rice also works; just break up the clumps. Snip down the top of each lobster tail with kitchen shears, ease out the meat, remove any dark vein and cut it into ¾-inch pieces; peel the shrimp if needed, saving all the shells. Pat the seafood dry and refrigerate it, and cook the edamame according to the package and drain.",
+      "timers": [],
+      "tip": "Steam-dried or day-old rice fries into separate grains; warm, wet rice clumps and turns gummy once the stock goes in."
+    },
+    {
+      "id": "s2",
+      "section": null,
+      "text": "Cut the lobster shells into several pieces. In the small saucepan, warm 1 tsp of the oil over medium-high heat and stir the lobster shells and any shrimp shells until red and fragrant, 2–3 minutes. Add the stock, scrape the bottom and simmer uncovered for 8 minutes, then strain through a fine sieve and discard the shells. Return the liquid to the pan and boil until just 3 tablespoons remain, about 3–5 minutes; measure it, and top up with water if it went too far. Off the heat, stir in the oyster sauce, soy sauce and ¼ tsp of the white pepper.",
+      "timers": [
+        {
+          "label": "Toast shells",
+          "seconds": 120
+        },
+        {
+          "label": "Simmer",
+          "seconds": 480
+        },
+        {
+          "label": "Reduce",
+          "seconds": 180
+        }
+      ],
+      "tip": "Boiling down to 3 tablespoons concentrates the shells' sweetness into a glaze strong enough to season the rice without wetting it."
+    },
+    {
+      "id": "s3",
+      "section": null,
+      "text": "Heat 2 tsp of the oil in the 12-inch skillet over medium-high heat. Lay the lobster in one layer, turn it after about 1 minute and cook until pearly and opaque through the center, 1–2 minutes more (2–3 minutes total); transfer to a clean plate. Sear the shrimp in the same pan, turning once, until opaque throughout, 2–3 minutes, and add them to the plate.",
+      "timers": [
+        {
+          "label": "Lobster side 1",
+          "seconds": 60
+        },
+        {
+          "label": "Lobster side 2",
+          "seconds": 60
+        },
+        {
+          "label": "Shrimp",
+          "seconds": 120
+        }
+      ],
+      "tip": "Both go back in at the end to warm through, so pull them the moment the centers turn opaque; a minute too long and lobster goes rubbery."
+    },
+    {
+      "id": "s4",
+      "section": null,
+      "text": "Lower the heat to medium and add 1 tsp of the oil. Pour in the eggs and, as the edges set, draw them toward the center with a spatula to form soft curds. Once just set, 30–60 seconds, slide them onto the plate with the seafood.",
+      "timers": [],
+      "tip": "They warm through again with the rice, so taking them off still glossy keeps the curds tender."
+    },
+    {
+      "id": "s5",
+      "section": null,
+      "text": "Return the skillet to medium-high heat and add 1 tsp of the oil. Spread the mushrooms in one layer and leave them undisturbed for 2 minutes, then toss until browned and their moisture has evaporated, 1–2 minutes more. Stir in the garlic and edamame for 30 seconds.",
+      "timers": [
+        {
+          "label": "Undisturbed",
+          "seconds": 120
+        },
+        {
+          "label": "Toss",
+          "seconds": 60
+        }
+      ],
+      "tip": "Leaving them alone first browns the mushrooms before they release their water; stirring early steams them."
+    },
+    {
+      "id": "s6",
+      "section": null,
+      "text": "Add 1 tsp of the oil and the rice. Spread it over the base, let it sizzle for 45 seconds, then lift and turn; repeat until the grains separate and are hot throughout, 2–3 minutes for warm rice or about 5 minutes for cold. Add half the seasoned stock (1½ tbsp) around the edge of the pan and toss until absorbed, then repeat with the rest: the pan should sizzle again, with no puddle under the rice. Taste a spoonful and add a little more soy sauce if needed.",
+      "timers": [
+        {
+          "label": "Warm rice",
+          "seconds": 120
+        },
+        {
+          "label": "Cold rice",
+          "seconds": 300
+        }
+      ],
+      "tip": "Pouring the stock onto the hot pan rather than over the rice flashes off the water, so the grains absorb flavor instead of steaming soft."
+    },
+    {
+      "id": "s7",
+      "section": null,
+      "text": "Clear a small space in the center, add the last 1 tsp of the oil and the scallion whites, and let them sizzle for 15 seconds before folding them through the rice. Spread the rice out and leave it over medium-high heat until you smell toast and can lift a golden patch with your spatula, 45–75 seconds. Fold in the egg curds, seafood and any resting juices, half the scallion greens and the remaining ⅛ tsp white pepper, tossing just long enough to warm through. Serve with the rest of the greens and the salmon roe, if using.",
+      "timers": [
+        {
+          "label": "Toast",
+          "seconds": 45
+        }
+      ],
+      "tip": "The undisturbed stretch toasts a light golden crust, the skillet's stand-in for the crisp bottom of the clay-pot rice this dish riffs on."
+    }
+  ],
+  "createdAt": "2026-11-14T19:30:00Z",
+  "updatedAt": "2026-11-14T19:30:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-14",
+      "summary": "Built from PDF (Mott 32-inspired home recipe; credits TVB / Chef Lee Man Sing's lobster clay-pot rice and Mott 32's Hong Kong and Las Vegas menus). Each step names its share of the divided oil (1 tsp stock, 2 tsp seafood, then 1 tsp each for eggs, mushrooms, rice and scallions = 2 tbsp + 1 tsp) and white pepper (¼ tsp sauce, ⅛ tsp finish); edamame cooking moved into prep; added an estimated 3–5 minute time for the stock reduction; shopping tip folded into the lobster and shrimp notes.",
+      "notes": []
+    }
+  ]
+}

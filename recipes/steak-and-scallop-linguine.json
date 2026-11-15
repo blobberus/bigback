@@ -1,0 +1,300 @@
+{
+  "schemaVersion": 1,
+  "slug": "steak-and-scallop-linguine",
+  "title": "Steak & Scallop Linguine",
+  "summary": "Seared scallops and sliced steak over lemon-garlic Parmesan cream linguine, with a Dijon-pepper pan sauce.",
+  "profile": "Rich and savory: a browned steak crust and sweet, caramelized scallops over linguine in a garlicky Parmesan cream brightened with lemon zest and juice, while the Dijon-pepper pan sauce, built on the steak fond, adds mustard tang and peppery bite; the pasta should taste seasoned but not salty, since the Parmesan brings salt too. Texture target: al dente noodles lightly coated in a glossy sauce (not soupy, not clumped), scallops with a deep golden crust and centers just opaque, medium-rare steak (130–135°F after resting) sliced against the grain, and a pan sauce that coats a spoon. Delivers 2 plates in about 40 minutes (10 prep, 30 cooking); serve right away on warm plates with 1–2 tbsp Dijon cream per person. Best fresh, since the cream tightens and scallops turn rubbery when reheated; leftovers keep 1–2 days refrigerated, so rewarm the pasta gently in a skillet with a splash of water or broth and eat the steak and scallops cold or barely warmed.",
+  "status": "built",
+  "source": {
+    "type": "pdf",
+    "url": null,
+    "files": [
+      "sources/steak-and-scallop-linguine/Steak_and_Scallop_Linguine.pdf"
+    ],
+    "author": "The Dinner Table (PDF)"
+  },
+  "image": "media/steak-and-scallop-linguine/hero.jpg",
+  "servings": 2,
+  "yield": "2 plates + about ¼ cup Dijon pan sauce",
+  "time": {
+    "prep": 10,
+    "cook": 30,
+    "total": 40
+  },
+  "equipment": [
+    "heavy 10- or 12-inch skillet (cast iron or stainless)",
+    "large skillet for the pasta",
+    "large pot",
+    "tongs",
+    "fine grater",
+    "instant-read thermometer",
+    "small sauce bowl"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": "Steak",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "New York strip steak or filet mignon",
+      "note": "10–12 oz and 1–1¼ inches thick"
+    },
+    {
+      "id": "i2",
+      "section": "Steak",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "fine salt",
+      "note": "12 g, for the 2 L pasta water, plus more to taste; or 2½ tsp Morton / 4 tsp Diamond Crystal kosher"
+    },
+    {
+      "id": "i3",
+      "section": "Steak",
+      "qty": 0.25,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "coarsely ground black pepper",
+      "note": "for the Dijon sauce, plus more to taste"
+    },
+    {
+      "id": "i4",
+      "section": "Steak",
+      "qty": 1.5,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "avocado oil or neutral oil",
+      "note": "divided: 1 tbsp for the steak, ½ tbsp for the scallops"
+    },
+    {
+      "id": "i5",
+      "section": "Steak",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "unsalted butter",
+      "note": "divided: ½ tbsp each for the steak and scallops"
+    },
+    {
+      "id": "i6",
+      "section": "Steak",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "sprig",
+      "item": "fresh thyme",
+      "note": "optional"
+    },
+    {
+      "id": "i7",
+      "section": "Dijon pepper sauce",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "small shallot",
+      "note": "finely minced (about 2 tbsp)"
+    },
+    {
+      "id": "i8",
+      "section": "Dijon pepper sauce",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "low-sodium chicken or vegetable broth",
+      "note": "divided: ¼ cup for each sauce"
+    },
+    {
+      "id": "i9",
+      "section": "Dijon pepper sauce",
+      "qty": 6,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "heavy cream",
+      "note": "divided: 2 tbsp for the Dijon sauce, ¼ cup for the pasta"
+    },
+    {
+      "id": "i10",
+      "section": "Dijon pepper sauce",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "Dijon mustard",
+      "note": null
+    },
+    {
+      "id": "i11",
+      "section": "Linguine",
+      "qty": 6,
+      "qtyMax": null,
+      "unit": "oz",
+      "item": "linguine or spaghetti",
+      "note": null
+    },
+    {
+      "id": "i12",
+      "section": "Linguine",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "extra-virgin olive oil",
+      "note": null
+    },
+    {
+      "id": "i13",
+      "section": "Linguine",
+      "qty": 4,
+      "qtyMax": null,
+      "unit": "clove",
+      "item": "garlic",
+      "note": "finely minced"
+    },
+    {
+      "id": "i14",
+      "section": "Linguine",
+      "qty": 0.33,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "finely grated Parmesan",
+      "note": "loosely packed (about 20–25 g)"
+    },
+    {
+      "id": "i15",
+      "section": "Linguine",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "small lemon",
+      "note": "for 1 tsp zest and 1–2 tsp juice"
+    },
+    {
+      "id": "i16",
+      "section": "Linguine",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "flat-leaf parsley",
+      "note": "chopped, divided"
+    },
+    {
+      "id": "i17",
+      "section": "Scallops",
+      "qty": 6,
+      "qtyMax": 8,
+      "unit": null,
+      "item": "large dry-packed sea scallops",
+      "note": "8–10 oz total"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": null,
+      "text": "Bring 2 L (about 2 quarts) of water to a boil in the pot with 2 teaspoons (12 g) of the salt. Pat the steak dry and season both sides with salt and pepper. Pull the tough side muscle off each scallop, pat them dry and refrigerate. Mince the garlic and shallot, grate the Parmesan, zest the lemon, chop the parsley, and measure the cream and broth for each sauce.",
+      "timers": [],
+      "tip": "Cold, bone-dry scallops brown before their centers overcook."
+    },
+    {
+      "id": "s2",
+      "section": "Steak",
+      "text": "Heat 1 tbsp of the oil in the heavy skillet over medium-high heat. Sear the steak 3–4 minutes per side, until an instant-read thermometer in the center reads 125–130°F for medium-rare; when you flip it, add the linguine to the boiling water. Lower the heat, add ½ tbsp of the butter and the thyme (if using) and baste for 30 seconds, then rest the steak on a warm plate, loosely tented, for 10–15 minutes. Drain the linguine 1 minute shy of al dente (usually 8–10 minutes), reserving 1 cup of the cooking water.",
+      "timers": [
+        {
+          "label": "Sear side 1",
+          "seconds": 180
+        },
+        {
+          "label": "Sear side 2",
+          "seconds": 180
+        },
+        {
+          "label": "Linguine",
+          "seconds": 480
+        },
+        {
+          "label": "Rest steak",
+          "seconds": 600
+        }
+      ],
+      "tip": "A steak this thick climbs about 5°F as it rests, landing at medium-rare (130–135°F)."
+    },
+    {
+      "id": "s3",
+      "section": "Dijon pepper sauce",
+      "text": "Remove the thyme and pour off all but about 1 tsp of fat, leaving the browned bits in the skillet. Soften the shallot over medium-low heat, 1–2 minutes. Add ¼ cup of the broth and the pepper, scrape up the browned bits and reduce by half, 1–2 minutes. Stir in 2 tbsp of the cream and the Dijon mustard and simmer gently until it coats a spoon, 1–2 minutes; taste for salt, then transfer to a warm bowl and cover.",
+      "timers": [
+        {
+          "label": "Shallot",
+          "seconds": 60
+        },
+        {
+          "label": "Reduce",
+          "seconds": 60
+        },
+        {
+          "label": "Simmer",
+          "seconds": 60
+        }
+      ],
+      "tip": "Reducing the broth before the cream goes in concentrates the fond, so the sauce tastes meaty rather than milky."
+    },
+    {
+      "id": "s4",
+      "section": "Linguine",
+      "text": "In the pasta skillet, warm the olive oil over medium-low heat. Stir in the garlic for 45–60 seconds, keeping it pale. Add the remaining ¼ cup broth and ¼ cup of the cream and simmer 1–2 minutes. Toss in the linguine and 2 tbsp of the reserved pasta water and cook until al dente and lightly coated, 1–2 minutes, adding more water a spoonful at a time if needed.",
+      "timers": [
+        {
+          "label": "Garlic",
+          "seconds": 45
+        },
+        {
+          "label": "Simmer",
+          "seconds": 60
+        },
+        {
+          "label": "Toss",
+          "seconds": 60
+        }
+      ],
+      "tip": "Pale garlic stays sweet; browned garlic turns bitter in a cream sauce."
+    },
+    {
+      "id": "s5",
+      "section": "Linguine",
+      "text": "Take the skillet off the heat. When the bubbling stops, toss in the Parmesan a little at a time, then add 1 tsp lemon zest, 1 tsp lemon juice, most of the parsley and a few grinds of pepper. Taste a coated noodle: add a pinch of salt if it tastes flat, or up to 1 tsp more juice if it needs brightness.",
+      "timers": [],
+      "tip": "Off the heat, the cheese melts into the cream instead of seizing into clumps."
+    },
+    {
+      "id": "s6",
+      "section": "Scallops",
+      "text": "Wipe the steak skillet clean and dry, then heat the remaining ½ tbsp oil over medium-high heat. Pat the scallops dry again, salt them lightly and lay them in, spaced apart. Sear undisturbed until deep golden, 1½–2 minutes, then flip, add the remaining ½ tbsp butter and cook until the centers are just opaque, 1–2 minutes.",
+      "timers": [
+        {
+          "label": "Sear",
+          "seconds": 90
+        },
+        {
+          "label": "Second side",
+          "seconds": 60
+        }
+      ],
+      "tip": "A scallop releases from the pan on its own once the crust has formed; tugging tears it."
+    },
+    {
+      "id": "s7",
+      "section": null,
+      "text": "Loosen the pasta with warm reserved water if needed and divide between warm plates. Set the scallops on top, golden side up. Slice the steak against the grain and serve it alongside the pasta with 1–2 tbsp of the Dijon sauce per person, then finish with the remaining parsley.",
+      "timers": [],
+      "tip": null
+    }
+  ],
+  "createdAt": "2026-11-14T19:30:00Z",
+  "updatedAt": "2026-11-14T19:30:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-14",
+      "summary": "Built from The Dinner Table PDF (2 pages: ingredient checklist + 7 steps). Added a pull temperature (125–130°F for medium-rare) since the PDF only said to check with a thermometer, plus a usual drain time for the linguine and a 1–2 minute estimate for reducing the sauce broth by half.",
+      "notes": []
+    }
+  ]
+}

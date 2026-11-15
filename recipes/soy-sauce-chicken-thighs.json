@@ -1,0 +1,244 @@
+{
+  "schemaVersion": 1,
+  "slug": "soy-sauce-chicken-thighs",
+  "title": "See Yao Gai (Soy Sauce Chicken Thighs)",
+  "summary": "Cantonese soy-poached thighs: silky mahogany skin, juicy meat, steeped in a sweet star-anise master sauce.",
+  "profile": "Sweet-savory and deeply soy-forward: light soy brings the salt, dark soy and a generous amount of sugar give a rounded molasses-caramel sweetness, with warm star anise and ginger underneath and a faint floral, boozy note from the rose and Shaoxing wines if you use them (without them it tastes cleaner and more purely of soy). The skin should be silky, supple and glossy mahogany, never crisp or rubbery, over juicy, tender thigh meat that is seasoned to the bone and pulls away cleanly. Delivers 6 thighs (4 servings) plus about 2 quarts of reusable master sauce in about 1 hour 20 minutes, mostly hands-off; serve warm or at room temperature over steamed rice with a spoonful of the sauce (ginger-scallion oil and blanched greens are classic alongside). The chicken keeps 3 days refrigerated: eat it cold or at room temperature, or rewarm it gently in a little simmering sauce or by steaming 5–8 minutes; the strained master sauce freezes for 3 months and should be brought to a boil before reuse.",
+  "status": "built",
+  "source": {
+    "type": "web",
+    "url": "https://thewoksoflife.com/soy-sauce-chicken/",
+    "files": [
+      "sources/reverse-sear-steak-chimichurri/recipe-list.pdf"
+    ],
+    "author": "Bill, The Woks of Life"
+  },
+  "image": null,
+  "servings": 4,
+  "yield": "6 thighs + about 2 quarts master sauce",
+  "time": {
+    "prep": 10,
+    "cook": 70,
+    "total": 80
+  },
+  "equipment": [
+    "4- to 5-quart pot or Dutch oven (9–10 inches wide)",
+    "tongs",
+    "instant-read thermometer",
+    "cleaver (optional, for chopping)"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": null,
+      "qty": 6,
+      "qtyMax": null,
+      "unit": null,
+      "item": "bone-in, skin-on chicken thighs",
+      "note": "about 2.5 lb (1.1 kg), trimmed of overhanging fat"
+    },
+    {
+      "id": "i2",
+      "section": null,
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "table salt",
+      "note": "or 2½ tbsp Morton kosher / ¼ cup Diamond Crystal"
+    },
+    {
+      "id": "i3",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "neutral oil",
+      "note": "vegetable, canola or avocado"
+    },
+    {
+      "id": "i4",
+      "section": null,
+      "qty": 4,
+      "qtyMax": null,
+      "unit": "slice",
+      "item": "ginger",
+      "note": "¼-inch coins"
+    },
+    {
+      "id": "i5",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "scallion",
+      "note": "cut into 3-inch pieces and smashed flat"
+    },
+    {
+      "id": "i6",
+      "section": null,
+      "qty": 1.5,
+      "qtyMax": 2,
+      "unit": null,
+      "item": "whole star anise",
+      "note": null
+    },
+    {
+      "id": "i7",
+      "section": null,
+      "qty": 6,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "Chinese rose wine (mei gui lu)",
+      "note": "optional; skip or replace with water"
+    },
+    {
+      "id": "i8",
+      "section": null,
+      "qty": 6,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "Shaoxing wine",
+      "note": "optional; skip or replace with water"
+    },
+    {
+      "id": "i9",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "light soy sauce",
+      "note": null
+    },
+    {
+      "id": "i10",
+      "section": null,
+      "qty": 0.25,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "dark soy sauce",
+      "note": null
+    },
+    {
+      "id": "i11",
+      "section": null,
+      "qty": 0.75,
+      "qtyMax": 1,
+      "unit": "cup",
+      "item": "sugar",
+      "note": "granulated; ⅞ cup matches the original ratio"
+    },
+    {
+      "id": "i12",
+      "section": null,
+      "qty": 6,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "water",
+      "note": "plus ¾ cup more if skipping both wines"
+    },
+    {
+      "id": "i13",
+      "section": null,
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "steamed white rice",
+      "note": "to serve"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": null,
+      "text": "Take the thighs out of the fridge 30 minutes before they go in the pot (make the sauce meanwhile). Pat them dry and trim any overhanging fat or skin. If the skin looks rough or has a thin, waxy yellow film, scrub it with the salt and save every bit of that salt for the sauce.",
+      "timers": [
+        {
+          "label": "Temper",
+          "seconds": 1800
+        }
+      ],
+      "tip": "Taking the chill off lets the thick part near the bone cook through in the gentle simmer-and-steep without overcooking the outside."
+    },
+    {
+      "id": "s2",
+      "section": null,
+      "text": "Set the pot over medium-low heat with the oil and ginger and let the ginger sizzle and lightly caramelize, about 30 seconds. Add the scallion for 30 seconds more, then the star anise and the rose wine and Shaoxing wine (if using). Bring to a simmer for about 1 minute to cook off some of the alcohol.",
+      "timers": [
+        {
+          "label": "Cook off wine",
+          "seconds": 60
+        }
+      ],
+      "tip": null
+    },
+    {
+      "id": "s3",
+      "section": null,
+      "text": "Add the light soy sauce, dark soy sauce, sugar, salt and water. Bring back to a simmer, stirring until the sugar dissolves, then cook on low for 20 minutes.",
+      "timers": [
+        {
+          "label": "Sauce simmer",
+          "seconds": 1200
+        }
+      ],
+      "tip": "Skipping both wines? Use the extra ¾ cup water so the liquid level and the soy-to-liquid ratio stay the same."
+    },
+    {
+      "id": "s4",
+      "section": null,
+      "text": "Raise the heat to a slow boil (livelier than a simmer, not rolling). With tongs, lower the thighs in skin-side up, in a single layer if they fit, and make sure they're fully submerged. The liquid will cool; keep the heat at medium-high until it's back to a lazy simmer, 3–5 minutes.",
+      "timers": [
+        {
+          "label": "Back to simmer",
+          "seconds": 180
+        }
+      ],
+      "tip": null
+    },
+    {
+      "id": "s5",
+      "section": null,
+      "text": "Cover and adjust the heat to hold a bare simmer just below boiling, about 210°F (99°C), for 15 minutes. Baste any exposed skin with the sauce a few times, or turn the thighs skin-side down at the halfway mark and back up at the end.",
+      "timers": [
+        {
+          "label": "Covered simmer",
+          "seconds": 900
+        }
+      ],
+      "tip": "A hard boil tightens the meat and can split the skin; a lazy simmer plus the off-heat steep keeps the skin silky."
+    },
+    {
+      "id": "s6",
+      "section": null,
+      "text": "Turn off the heat and let the thighs steep, covered, for 15–20 minutes, until the thickest one reads 175–185°F (79–85°C) near the bone (not touching it) and the juices run clear. If it's short, cover and steep 5 minutes more.",
+      "timers": [
+        {
+          "label": "Steep",
+          "seconds": 900
+        }
+      ],
+      "tip": "Thighs stay juicy well past 165°F; the extra heat melts their connective tissue so the meat pulls cleanly off the bone."
+    },
+    {
+      "id": "s7",
+      "section": null,
+      "text": "Lift the thighs onto a plate skin-side up and rest 5–10 minutes, brushing the skin with a little sauce from the pot now and then so it stays moist and glossy as it cools. Serve whole, or chop through the bone into 1-inch strips with a cleaver, over the rice with a spoonful of the sauce.",
+      "timers": [
+        {
+          "label": "Rest",
+          "seconds": 300
+        }
+      ],
+      "tip": "Strain the leftover master sauce and freeze it with an inch of headspace; it seasons the next batch or any braise."
+    }
+  ],
+  "createdAt": "2026-11-14T19:30:00Z",
+  "updatedAt": "2026-11-14T19:30:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-14",
+      "summary": "Built from The Woks of Life web recipe (Bill). User changes: skin-on chicken thighs instead of a whole 4-lb chicken, so the master sauce is halved at the same ratios (8 cups of liquid for 6 bone-in thighs, as the author suggests for parts), the cavity-draining steps are dropped, the covered simmer goes from 25 to 15 min and the off-heat steep from 25 to 15–20 min, and doneness moves from 165°F in the thigh to 175–185°F near the bone for tender thighs. Both wines (rose and Shaoxing) are optional per the user's note (replace with water). Rounding: 7 ginger slices to 4, 3 star anise to 1½–2, ⅞ cup sugar to ¾–1 cup; tempering cut from 1 hour to 30 minutes for pieces.",
+      "notes": []
+    }
+  ]
+}

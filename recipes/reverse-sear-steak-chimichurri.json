@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "slug": "reverse-sear-steak-chimichurri",
+  "title": "Reverse-Sear Steak with Chimichurri",
+  "summary": "Your low-oven reverse sear: edge-to-edge medium-rare, a 75-second crust and zingy RecipeTin chimichurri.",
+  "profile": "Beef-forward and savory: the all-purpose steak seasoning brings the salt (about 1% on the meat) and a peppery, garlicky backbone, the hard sear adds deep roasted notes, and the chimichurri cuts the richness with sharp red wine vinegar, raw garlic, grassy parsley and optional chili heat. Texture target: evenly pink medium-rare from edge to edge (about 125–130°F in the center after the sear) with almost no gray band, under a thin, dark, crisp crust; the chimichurri is finely chopped and loose, never a puree. Delivers 2 servings per pound of steak in about 1¼ hours, mostly hands-off oven time, plus ¾ cup chimichurri (more than a pound of steak needs); serve sliced against the grain with the sauce spooned over or alongside. Sliced leftover steak keeps 3 days refrigerated; eat it cold or warm it gently in a 250°F (120°C) oven so it stays pink, and keep the chimichurri airtight in the fridge for up to 3 days.",
+  "status": "built",
+  "source": {
+    "type": "text",
+    "url": "https://www.recipetineats.com/skirt-steak-with-chimichurri-sauce/#h-what-goes-in-chimichurri-sauce",
+    "files": [
+      "sources/reverse-sear-steak-chimichurri/recipe-list.pdf"
+    ],
+    "author": "Your method; chimichurri from RecipeTin Eats (Nagi Maehashi)"
+  },
+  "image": null,
+  "servings": 2,
+  "yield": "1 lb steak + about ¾ cup chimichurri",
+  "time": {
+    "prep": 15,
+    "cook": 45,
+    "total": 75
+  },
+  "equipment": [
+    "food processor (or a sharp knife)",
+    "wire rack set in a rimmed sheet pan",
+    "instant-read thermometer",
+    "10- or 12-inch cast-iron skillet"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": "Chimichurri",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "parsley leaves",
+      "note": "tightly packed"
+    },
+    {
+      "id": "i2",
+      "section": "Chimichurri",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "fresh oregano leaves",
+      "note": "tightly packed; optional (still lovely without)"
+    },
+    {
+      "id": "i3",
+      "section": "Chimichurri",
+      "qty": 4,
+      "qtyMax": null,
+      "unit": "clove",
+      "item": "garlic",
+      "note": "minced"
+    },
+    {
+      "id": "i4",
+      "section": "Chimichurri",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "red pepper flakes",
+      "note": "optional; 0–2 tsp to taste"
+    },
+    {
+      "id": "i5",
+      "section": "Chimichurri",
+      "qty": 0.25,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "red wine vinegar",
+      "note": "65 ml"
+    },
+    {
+      "id": "i6",
+      "section": "Chimichurri",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "salt",
+      "note": "table salt; or 1 tsp Diamond Crystal / a heaping ½ tsp Morton kosher"
+    },
+    {
+      "id": "i7",
+      "section": "Chimichurri",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "black pepper",
+      "note": "to taste"
+    },
+    {
+      "id": "i8",
+      "section": "Chimichurri",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "extra-virgin olive oil",
+      "note": "125 ml"
+    },
+    {
+      "id": "i9",
+      "section": "Steak",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "lb",
+      "item": "Publix steak",
+      "note": "cut not specified in your notes (ribeye, NY strip or sirloin all work); reverse sear wants a thick steak, about 1¼–2 inches"
+    },
+    {
+      "id": "i10",
+      "section": "Steak",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "all-purpose steak seasoning",
+      "note": "your \"multi\" seasoning, 1 tbsp per pound of steak; assumes a salted blend (if yours is salt-free, add 1½ tsp Diamond Crystal per lb)"
+    },
+    {
+      "id": "i11",
+      "section": "Steak",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "neutral oil",
+      "note": "high smoke point (avocado, canola), for the sear"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": "Chimichurri",
+      "text": "Put the parsley, oregano, garlic, red pepper flakes, vinegar, salt and a few grinds of pepper in a food processor and pulse until the parsley is finely chopped but not pureed (or chop everything by hand). Transfer to a small bowl and gently stir in the olive oil. Let it stand at least 1 hour before serving (overnight is even better), so make it before the steak goes in.",
+      "timers": [
+        {
+          "label": "Stand",
+          "seconds": 3600
+        }
+      ],
+      "tip": "The hour lets the vinegar tame the raw garlic and the herbs flavor the oil."
+    },
+    {
+      "id": "s2",
+      "section": "Steak",
+      "text": "Heat the oven to 250°F (120°C) with a rack in the middle. Pat the steak dry and season it all over, edges included, with the seasoning (1 tbsp per pound). Set it on a wire rack over a rimmed sheet pan.",
+      "timers": [],
+      "tip": "Season right before it goes in or at least 40 minutes ahead (up to a day, uncovered in the fridge); in between, the drawn-out brine sits on the surface and fights the crust."
+    },
+    {
+      "id": "s3",
+      "section": "Steak",
+      "text": "Roast until an instant-read thermometer in the center of the thickest part reads 100°F, 20–50 minutes depending on thickness (start checking at 20 minutes for a 1¼-inch steak).",
+      "timers": [
+        {
+          "label": "Oven check",
+          "seconds": 1200
+        }
+      ],
+      "tip": "The low oven cooks the steak evenly edge to edge, so there's almost no gray band under the crust."
+    },
+    {
+      "id": "s4",
+      "section": "Steak",
+      "text": "Take the steak out, still on the rack, and let it rest uncovered until the center coasts up to about 115°F, 10–15 minutes. Meanwhile, heat the skillet over medium-high heat for a few minutes, then add the oil; it's ready when the oil shimmers and just starts to smoke.",
+      "timers": [
+        {
+          "label": "Rest",
+          "seconds": 600
+        }
+      ],
+      "tip": "Leave it uncovered: foil traps steam and softens the dry surface you want for the sear."
+    },
+    {
+      "id": "s5",
+      "section": "Steak",
+      "text": "Sear the steak 75 seconds per wide side over medium-high heat, without moving it, until deeply browned; flip once. The center should finish around 125–130°F, medium-rare.",
+      "timers": [
+        {
+          "label": "Sear side 1",
+          "seconds": 75
+        },
+        {
+          "label": "Sear side 2",
+          "seconds": 75
+        }
+      ],
+      "tip": "The oven already dried the surface, so a short, hot sear builds the crust without overcooking the pink layer underneath."
+    },
+    {
+      "id": "s6",
+      "section": "Steak",
+      "text": "Slice the steak against the grain right away (it rested before the sear, so it won't bleed much) and serve with the chimichurri spooned over or on the side.",
+      "timers": [],
+      "tip": null
+    }
+  ],
+  "createdAt": "2026-11-14T19:30:00Z",
+  "updatedAt": "2026-11-14T19:30:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-14",
+      "summary": "Built from your Recipe List notes (Reverse Sear steak) with the chimichurri from RecipeTin Eats. Kept your numbers (1 tbsp seasoning per lb, 250°F oven, pull at 100°F, rest to ~115°F, 75 s per wide side over medium-high); added pat-dry, rack over a sheet pan, thermometer, sear oil and slicing against the grain. Steak cut wasn't specified; the chimichurri's plain \"salt\" is read as table salt.",
+      "notes": []
+    }
+  ]
+}

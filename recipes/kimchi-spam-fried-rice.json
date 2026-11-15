@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "slug": "kimchi-spam-fried-rice",
+  "title": "Kimchi Spam Fried Rice 김치볶음밥",
+  "summary": "Crisp-edged Spam, tangy kimchi and toasty rice in one pan, finished with sesame oil and a runny fried egg.",
+  "profile": "Salty, savory and funky: crisp-edged Spam and fish sauce bring the salt and umami, kimchi and its juice bring sour tang and gentle chili heat, a sliced fresh chili adds a sharper bite, and onion and garlic sweeten the base, with toasted sesame oil and cilantro as the nutty, fresh finish. Right looks like separate, slightly chewy grains stained evenly red, a patch of crackly crust from the pan bottom, Spam cubes browned on most sides and kimchi tender but not mushy — never wet or clumped. Makes 3 servings in about 30 minutes, nearly all of it at the stove in one pan; serve at once, each plate topped with a fried egg whose yolk sauces the rice, the reserved scallions and cilantro, and hot sauce. Keeps 3 days refrigerated (fry eggs fresh) or about 2 months frozen; refrigerate within an hour of cooking and reheat in a hot oiled skillet, pressed flat to re-crisp, until steaming throughout (165°F).",
+  "status": "built",
+  "source": {
+    "type": "web",
+    "url": "https://www.seriouseats.com/kimchi-spam-fried-rice-recipe",
+    "files": [
+      "sources/reverse-sear-steak-chimichurri/recipe-list.pdf"
+    ],
+    "author": "J. Kenji López-Alt (Serious Eats)"
+  },
+  "image": null,
+  "servings": 3,
+  "yield": null,
+  "time": {
+    "prep": 10,
+    "cook": 20,
+    "total": 30
+  },
+  "equipment": [
+    "wok or 12-inch skillet",
+    "fine-mesh strainer set over a bowl"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": "Fried rice",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "cooked white rice",
+      "note": "day-old and cold (12 oz / 350 g)"
+    },
+    {
+      "id": "i2",
+      "section": "Fried rice",
+      "qty": 0.75,
+      "qtyMax": null,
+      "unit": "lb",
+      "item": "kimchi",
+      "note": "with its juices (about 1 cup packed / 340 g)"
+    },
+    {
+      "id": "i3",
+      "section": "Fried rice",
+      "qty": 3,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "canola oil",
+      "note": "divided: 2 tbsp for the Spam, 1 tbsp for the eggs"
+    },
+    {
+      "id": "i4",
+      "section": "Fried rice",
+      "qty": 12,
+      "qtyMax": null,
+      "unit": "oz",
+      "item": "Spam",
+      "note": "1 can, cut into ¼- to ½-inch dice"
+    },
+    {
+      "id": "i5",
+      "section": "Fried rice",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "large onion",
+      "note": "finely diced (about 1½ cups)"
+    },
+    {
+      "id": "i6",
+      "section": "Fried rice",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "clove",
+      "item": "garlic",
+      "note": "medium, minced (about 2 tsp)"
+    },
+    {
+      "id": "i7",
+      "section": "Fried rice",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "hot red or green chili",
+      "note": "such as jalapeño, serrano or Thai bird; stemmed and thinly sliced"
+    },
+    {
+      "id": "i8",
+      "section": "Fried rice",
+      "qty": 4,
+      "qtyMax": null,
+      "unit": null,
+      "item": "scallions",
+      "note": "white and pale green parts only, thinly sliced (about ¼ cup); divided"
+    },
+    {
+      "id": "i9",
+      "section": "Fried rice",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "fish sauce",
+      "note": null
+    },
+    {
+      "id": "i10",
+      "section": "Fried rice",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "black pepper",
+      "note": "freshly ground; season generously"
+    },
+    {
+      "id": "i11",
+      "section": "Fried rice",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "kosher salt",
+      "note": "Diamond Crystal; to taste, often none needed (Morton or table salt: use about half as much)"
+    },
+    {
+      "id": "i12",
+      "section": "Fried rice",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "toasted sesame oil",
+      "note": null
+    },
+    {
+      "id": "i13",
+      "section": "Fried rice",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "fresh cilantro",
+      "note": "leaves and fine stems, chopped (½ oz / 14 g); divided"
+    },
+    {
+      "id": "i14",
+      "section": "To serve",
+      "qty": 3,
+      "qtyMax": null,
+      "unit": null,
+      "item": "large eggs",
+      "note": "one per plate"
+    },
+    {
+      "id": "i15",
+      "section": "To serve",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "hot sauce",
+      "note": "for serving"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": "Fried rice",
+      "text": "Break the cold rice into individual grains with your hands. Squeeze the kimchi in a fine-mesh strainer set over a bowl, reserving the juice, then finely chop it. Prep everything else before you heat the pan — the cooking moves fast.",
+      "timers": [],
+      "tip": "Cold, day-old rice fries into separate grains; fresh rice steams and clumps — if it's all you have, spread it on a tray to cool and dry first."
+    },
+    {
+      "id": "s2",
+      "section": "Fried rice",
+      "text": "Heat 2 tablespoons of the canola oil in a wok or 12-inch skillet over medium-high heat until shimmering. Add the Spam in an even layer and cook, tossing every minute or so, until well browned and crisp on most sides, 5–7 minutes.",
+      "timers": [
+        {
+          "label": "Crisp Spam",
+          "seconds": 300
+        }
+      ],
+      "tip": "Let it sit between tosses — pan contact builds the crust, and it softens a touch once the wet kimchi goes in."
+    },
+    {
+      "id": "s3",
+      "section": "Fried rice",
+      "text": "Lower the heat to medium. Add the kimchi, onion, garlic, chili and most of the scallions (save about 1 tablespoon for garnish), and cook, stirring often, until the onion is translucent and the kimchi smells toasty, 2–4 minutes.",
+      "timers": [
+        {
+          "label": "Kimchi",
+          "seconds": 120
+        }
+      ],
+      "tip": "Dropping to medium keeps the garlic from scorching on the hot Spam fond while the kimchi softens."
+    },
+    {
+      "id": "s4",
+      "section": "Fried rice",
+      "text": "Raise the heat to medium-high and add the rice, breaking up any clumps. Pour in the reserved kimchi juice, add the fish sauce and a generous grind of the pepper, and toss until the juice is absorbed and the rice is hot, lightly toasted and a little chewy, 3–5 minutes. Taste and add salt only if needed, then press the rice flat and leave it untouched for 45 seconds to form a crisp bottom crust.",
+      "timers": [
+        {
+          "label": "Fry rice",
+          "seconds": 180
+        }
+      ],
+      "tip": "The juice goes in with the rice so every grain soaks up the flavor, then the hot pan drives off the moisture so it fries instead of steaming."
+    },
+    {
+      "id": "s5",
+      "section": "Fried rice",
+      "text": "Off the heat, drizzle the sesame oil over the rice and fold in most of the cilantro. Divide among plates, crispy side up.",
+      "timers": [],
+      "tip": "Sesame oil's aroma fades with heat, which is why it goes in last."
+    },
+    {
+      "id": "s6",
+      "section": "To serve",
+      "text": "Return the pan to medium-high heat with the remaining 1 tablespoon of canola oil. Crack in the eggs and fry until the whites are fully set and the edges are crisp and browned, 2–3 minutes (runny yolks are classic; cover the pan for 1–2 minutes more if you want them firm). Top each plate with an egg and the reserved scallions and cilantro, and serve right away with the hot sauce.",
+      "timers": [
+        {
+          "label": "Fry eggs",
+          "seconds": 120
+        }
+      ],
+      "tip": null
+    }
+  ],
+  "createdAt": "2026-11-14T19:30:00Z",
+  "updatedAt": "2026-11-14T19:30:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-14",
+      "summary": "Built from Serious Eats (J. Kenji López-Alt), re-sequenced to the user's order: Spam crisped in canola oil over medium-high → kimchi + garlic 2–4 min over medium → rice → sesame oil last. Differences from the source: the Spam stays in the pan instead of being set aside; garlic (with the chili and scallions) cooks with the kimchi and onion instead of in a well after the rice; the rice is fried in one go with everything (heat back up to medium-high) instead of toasted in two batches over high heat; all 2 tbsp oil goes in with the Spam instead of four ½-tbsp additions; kimchi juice, fish sauce and pepper go in with the rice; sesame oil and cilantro are added off the heat at the end. Added: Spam crisping time (source gave cues only), 1 tbsp oil and one egg per plate for the fried eggs (source: 'fried eggs, for serving'), and an egg doneness cue.",
+      "notes": []
+    }
+  ]
+}

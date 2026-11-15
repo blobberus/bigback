@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "slug": "pan-seared-chicken",
+  "title": "Pan-Seared Chicken Thighs or Breasts",
+  "summary": "Paprika-spiced chicken seared 6½ minutes, then finished covered in broth: juicy thighs or thick breasts, one pan.",
+  "profile": "Savory and warmly spiced: sweet paprika and oregano lead over a garlic- and onion-powder base, with black-pepper bite, a whisper of sugar and optional cayenne heat; salt is moderate (1 tsp table salt for 2–2½ lb) because the broth adds a little. The first side should carry a deep brown, spice-crusted sear while the broth steam finishes the meat juicy — thighs tender and yielding at 175°F or more, breasts moist and just opaque at 155–160°F — with a few spoonfuls of savory pan juices left in the skillet. Delivers 4 servings (6–8 thighs or 3–4 breasts) in about 50 minutes, 15 of them hands-off seasoning time; slice it over rice, salads, wraps or pasta. Keeps 4 days refrigerated or 3 months frozen; reheat covered in a skillet over medium-low with a splash of broth, or eat it cold, sliced, in salads.",
+  "status": "built",
+  "source": {
+    "type": "web",
+    "url": "https://www.alphafoodie.com/chicken-seasoning/",
+    "files": [
+      "sources/reverse-sear-steak-chimichurri/recipe-list.pdf"
+    ],
+    "author": "Your technique; seasoning from Alphafoodie (turmeric option from Feel Good Foodie)"
+  },
+  "image": null,
+  "servings": 4,
+  "yield": "6–8 thighs or 3–4 breasts",
+  "time": {
+    "prep": 10,
+    "cook": 20,
+    "total": 50
+  },
+  "equipment": [
+    "12-inch skillet with a lid",
+    "instant-read thermometer"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": "Seasoning",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "sweet paprika",
+      "note": null
+    },
+    {
+      "id": "i2",
+      "section": "Seasoning",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "dried oregano",
+      "note": null
+    },
+    {
+      "id": "i3",
+      "section": "Seasoning",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "garlic powder",
+      "note": null
+    },
+    {
+      "id": "i4",
+      "section": "Seasoning",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "onion powder",
+      "note": null
+    },
+    {
+      "id": "i5",
+      "section": "Seasoning",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "salt",
+      "note": "table salt; use 1¼ tsp Morton or 2 tsp Diamond Crystal kosher"
+    },
+    {
+      "id": "i6",
+      "section": "Seasoning",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "black pepper",
+      "note": "freshly ground"
+    },
+    {
+      "id": "i7",
+      "section": "Seasoning",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "pinch",
+      "item": "sugar",
+      "note": "up to ¼ tsp; optional"
+    },
+    {
+      "id": "i8",
+      "section": "Seasoning",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "cayenne pepper",
+      "note": "or chili powder; to taste, optional"
+    },
+    {
+      "id": "i9",
+      "section": "Chicken",
+      "qty": 2,
+      "qtyMax": 2.5,
+      "unit": "lb",
+      "item": "boneless chicken",
+      "note": "thighs or thick breasts, skinless or skin-on; patted dry"
+    },
+    {
+      "id": "i10",
+      "section": "Chicken",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "olive oil",
+      "note": "or neutral oil"
+    },
+    {
+      "id": "i11",
+      "section": "Chicken",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "low-sodium chicken broth",
+      "note": "≈ — your notes give no amount; enough to steam, not poach"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": "Seasoning",
+      "text": "Stir together the paprika, oregano, garlic powder, onion powder, salt, black pepper, sugar and cayenne (if using). This makes about 2½ tablespoons — half of Alphafoodie's jar batch.",
+      "timers": [],
+      "tip": "For a jar, double every amount (about 5 tbsp, enough for 5 lb of chicken); it keeps 4–6 months airtight — shake before using."
+    },
+    {
+      "id": "s2",
+      "section": "Chicken",
+      "text": "Pat the chicken dry and rub the seasoning evenly over both sides, about 1 tablespoon per pound. Let it sit at least 15 minutes, or refrigerate it up to 2 hours.",
+      "timers": [
+        {
+          "label": "Season",
+          "seconds": 900
+        }
+      ],
+      "tip": "Turmeric version (Feel Good Foodie): swap this blend for onion powder, cumin, coriander, paprika and turmeric with the same salt and pepper — amounts are on feelgoodfoodie.net/recipe/pan-seared-chicken-thighs."
+    },
+    {
+      "id": "s3",
+      "section": "Chicken",
+      "text": "Heat the oil in the skillet over medium heat until it shimmers. Lay in the chicken (smooth side down for breasts) and cook undisturbed for 6½ minutes, until the underside is deep brown and releases easily.",
+      "timers": [
+        {
+          "label": "First side",
+          "seconds": 390
+        }
+      ],
+      "tip": "Medium, not high, heat browns the paprika crust without scorching the garlic powder and sugar."
+    },
+    {
+      "id": "s4",
+      "section": "Chicken",
+      "text": "Flip the chicken, pour the broth into the pan around it and cover. Keep the heat at medium and cook 7–8 minutes for smaller thighs or 10–12 minutes for thick breasts, until thighs read at least 175°F and breasts 155–160°F in the thickest part and hold there while they rest.",
+      "timers": [
+        {
+          "label": "Thighs",
+          "seconds": 420
+        },
+        {
+          "label": "Breasts",
+          "seconds": 600
+        }
+      ],
+      "tip": "The lid traps steam so thick breasts cook through before the broth boils away; add a splash more if the pan goes dry early."
+    },
+    {
+      "id": "s5",
+      "section": "Chicken",
+      "text": "Move the chicken to a board and rest 5 minutes. If more than a few tablespoons of liquid remain in the pan, boil it down uncovered until glossy, then slice the chicken and spoon the juices over.",
+      "timers": [
+        {
+          "label": "Rest",
+          "seconds": 300
+        }
+      ],
+      "tip": null
+    }
+  ],
+  "createdAt": "2026-11-14T19:30:00Z",
+  "updatedAt": "2026-11-14T19:30:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-14",
+      "summary": "Built from your Recipe List technique with Alphafoodie's chicken seasoning (half its jar batch, ≈1 tbsp per lb). Your notes applied: medium heat, 6½ min undisturbed on the first side, flip, add broth, then 7–8 min for smaller thighs or 10–12 min for thick breasts. Assumed (not in your notes): ½ cup low-sodium broth and a lid for the broth stage, 1 tbsp oil to sear, boneless chicken. Added pull temps (thighs 175°F+, breasts 155–160°F with hold) and a 5-minute rest. feelgoodfoodie.net blocked automated reads, so the turmeric option lists its spices without amounts.",
+      "notes": []
+    }
+  ]
+}

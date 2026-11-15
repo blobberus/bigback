@@ -8,6 +8,48 @@
       "addedAt": "2026-11-14T10:00:00Z",
       "cooked": 1,
       "lastCooked": "2026-11-14T23:05:41Z"
+    },
+    "reverse-sear-steak-chimichurri": {
+      "tags": [],
+      "rating": null,
+      "proficiency": null,
+      "addedAt": "2026-11-15T00:56:14Z"
+    },
+    "pan-seared-chicken": {
+      "tags": [],
+      "rating": null,
+      "proficiency": null,
+      "addedAt": "2026-11-15T00:56:22Z"
+    },
+    "soy-sauce-chicken-thighs": {
+      "tags": [],
+      "rating": null,
+      "proficiency": null,
+      "addedAt": "2026-11-15T00:56:22Z"
+    },
+    "mapo-tofu": {
+      "tags": [],
+      "rating": null,
+      "proficiency": null,
+      "addedAt": "2026-11-15T00:56:22Z"
+    },
+    "kimchi-spam-fried-rice": {
+      "tags": [],
+      "rating": null,
+      "proficiency": null,
+      "addedAt": "2026-11-15T00:56:22Z"
+    },
+    "lobster-shrimp-fried-rice": {
+      "tags": [],
+      "rating": null,
+      "proficiency": null,
+      "addedAt": "2026-11-15T00:56:22Z"
+    },
+    "steak-and-scallop-linguine": {
+      "tags": [],
+      "rating": null,
+      "proficiency": null,
+      "addedAt": "2026-11-15T00:56:22Z"
     }
   },
   "playlists": []
