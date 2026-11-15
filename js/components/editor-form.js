@@ -429,8 +429,7 @@ export function mountRecipeForm(root, { recipe = null } = {}) {
       const f = el.files?.[0];
       if (!f) return;
       if (!/^image\//.test(f.type) && !/\.(heic|heif|jpe?g|png|webp|avif)$/i.test(f.name)) { toast('That doesn’t look like a photo.', { type: 'error' }); return; }
-      removeImage = false;
-      setHero(f);
+      setHero(f);          // a removed current photo stays removed if this new one is removed too
     }),
     on(form, 'keydown', 'input, [data-oneline]', (e, el) => {
       if (e.key !== 'Enter' || e.isComposing || el.type === 'file') return;

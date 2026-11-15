@@ -160,6 +160,27 @@ try {
   ok('a delete that finishes after you left keeps you where you went', await deleteAndLeave('#/settings') === '#/settings');
   ok('…unless that’s the deleted recipe’s own page', await deleteAndLeave('#/r/test-dish') === '#/');
 
+  /* photo: remove the current one, pick a new one, remove that too → no photo */
+  const pickPhoto = () => {
+    const dt = new DataTransfer();
+    dt.items.add(new File([new Uint8Array(8)], 'new.png', { type: 'image/png' }));
+    const input = sandbox.querySelector('[data-hero]');
+    input.files = dt.files;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+  const photoState = () => `${sandbox.querySelector('.ed-photo-pick img')?.alt || 'no photo'} | ${sandbox.querySelector('.ed-photo-bar .hint')?.textContent || ''}`;
+  let offForm = mountRecipeForm(sandbox, { recipe });
+  sandbox.querySelector('[data-act="photo-remove"]').click();
+  pickPhoto();
+  ok('a new photo replaces a removed one', photoState() === 'New photo preview | New photo · resized before upload', photoState());
+  sandbox.querySelector('[data-act="photo-remove"]').click();
+  ok('removing the new photo too leaves no photo (the old one doesn’t come back)', /^no photo \| The current photo will be removed/.test(photoState()), photoState());
+  sandbox.querySelector('[data-act="photo-restore"]').click();
+  ok('…and Undo brings the current photo back', photoState() === 'Current photo | Current photo', photoState());
+  pickPhoto(); sandbox.querySelector('[data-act="photo-remove"]').click();
+  ok('removing a new photo over a kept one goes back to the kept one', photoState() === 'Current photo | Current photo', photoState());
+  offForm(); sandbox.innerHTML = '';
+
   S.setPending({ id: 'test-up', kind: 'text', title: 'Ramen', text: 'ramen', files: [], createdAt: new Date().toISOString() });
   hashIs('#/pending/test-up');
   const offPending = await pendingView.render(sandbox, { id: 'test-up' });
