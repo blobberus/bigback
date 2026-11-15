@@ -63,8 +63,9 @@ export function buildRecipe(s, base, { reserved = [], removeImage = false, hasNe
   const prep = minutes(s.prep), cook = minutes(s.cook);
   const total = minutes(s.total) ?? autoTotal(prep, cook);
   const profile = s.profile.trim() || (base && base.profile == null ? null : '');
+  const oneLine = v => v.trim().replace(/\s*\n\s*/g, ' ');       // pasted text can bring line breaks
   const content = {
-    title: s.title.trim(), summary: s.summary.trim().replace(/\s*\n\s*/g, ' '), profile,
+    title: oneLine(s.title), summary: oneLine(s.summary), profile,
     servings: number(s.servings), yield: s.yield.trim() || null, time: { prep, cook, total },
     equipment: parseLines(s.equipment), ingredients, steps
   };

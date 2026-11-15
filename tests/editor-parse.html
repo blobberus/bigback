@@ -176,6 +176,10 @@ eq('stock credit kept on a text edit, dropped with a new or removed photo', [
   buildRecipe(form, stock).imageCredit?.author, buildRecipe(form, stock, { hasNewPhoto: true }).imageCredit,
   buildRecipe(form, stock, { removeImage: true }).imageCredit, 'imageCredit' in buildRecipe(form, sample, { hasNewPhoto: true })
 ], ['A', null, null, false]);
+eq('a title or summary pasted over several lines is saved as one line', [
+  buildRecipe({ ...form, title: ' Mapo\nTofu \n' }, null).title, buildRecipe({ ...form, title: 'Mapo\r\n  Tofu' }, stock).title,
+  buildRecipe({ ...form, summary: 'Numbing,\nhot.' }, stock).summary
+], ['Mapo Tofu', 'Mapo Tofu', 'Numbing, hot.']);
 
 /* ---------- render ---------- */
 const pass = results.filter(r => r.ok).length, fail = results.length - pass;
