@@ -40,10 +40,13 @@ export async function render(root) {
   await load();
   if (me !== renders || location.hash.split('?')[0] !== myPath) return;   // navigated away (or away and back) while loading
 
+  // Only touch the DOM when the markup changed: a library commit echoes the optimistic change
+  // back, and rebuilding the rows re-creates every mosaic image (lazy images flash their letter tile).
+  let shown = '';
   function paint() {
     const bySlug = new Map(idx.recipes.map(r => [r.slug, r]));
     const pls = lib.playlists.map(p => ({ ...p, items: p.recipes.map(s => bySlug.get(s)).filter(Boolean) }));
-    root.innerHTML = html`<div class="pls">
+    const markup = String(html`<div class="pls">
       ${connectHint()}
       ${pls.length ? html`
         <div class="pls-head">
@@ -57,8 +60,17 @@ export async function render(root) {
           <p>Group recipes for weeknights, holidays or meal prep. A recipe can live in as many as you like.</p>
           <button type="button" class="btn btn-primary" data-act="new">${raw(ICON.plus)}New playlist</button>
         </div>`}
-    </div>`;
+    </div>`);
+    if (markup === shown) return;
+    const a = document.activeElement, key = a && a !== root && root.contains(a) ? focusKey(a) : null;
+    root.innerHTML = shown = markup;
+    if (key) root.querySelector(key)?.focus({ preventScroll: true });   // same control, re-rendered
   }
+  const focusKey = el => {
+    const q = v => CSS.escape(v);
+    if (el.dataset.act) return `[data-act="${q(el.dataset.act)}"]${el.dataset.id ? `[data-id="${q(el.dataset.id)}"]` : ''}`;
+    return el.matches('a[href]') ? `a[href="${q(el.getAttribute('href'))}"]` : null;
+  };
 
   async function menu(id) {
     const pl = lib.playlists.find(p => p.id === id);
@@ -71,8 +83,11 @@ export async function render(root) {
       </div>`,
       onOpen: (wrap, close) => on(wrap, 'click', '[data-v]', (e, b) => close(b.dataset.v))
     });
-    if (choice === 'rename') askRenamePlaylist(pl);
-    else if (choice === 'delete') askDeletePlaylist(pl);
+    if (choice === 'rename') await askRenamePlaylist(pl);
+    else if (choice === 'delete') await askDeletePlaylist(pl);
+    // Back on this row's ⋯ once the sheets close (paint() carries it through the rename's repaint;
+    // after a delete the row is gone).
+    if (alive && choice) root.querySelector(`.pl-more[data-id="${CSS.escape(id)}"]`)?.focus({ preventScroll: true });
   }
 
   paint();

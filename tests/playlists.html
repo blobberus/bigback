@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Resolve the app's relative paths (recipes/…, media/…) from the repo root, as in index.html. -->
+  <base href="/">
+  <title>Playlists with a token · Bigback</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/library.css">
+  <style>
+    .t-sum { font-weight: 700; margin: 0 0 12px; }
+    .t-sum.bad { color: var(--danger); } .t-sum.good { color: var(--ok); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    td { padding: 6px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+    td:first-child { width: 2.5em; font-weight: 800; }
+    tr.pass td:first-child { color: var(--ok); } tr.fail td:first-child { color: var(--danger); }
+    #app { width: 390px; }
+  </style>
+</head>
+<body>
+<!-- Run: python scripts/smoke.py tests/playlists.html
+     The Playlists view with a fake GitHub token (tests/fake-github.js): the owner's playlists
+     are read from data/library.json, edits are only recorded. -->
+<header class="topbar"><a id="topbar-back" class="icon-btn" href="#/" aria-label="Back" hidden>←</a><h1 id="topbar-title">Bigback</h1><div id="topbar-actions"></div></header>
+<main id="view"><p class="muted">Running…</p></main>
+<div id="app" tabindex="-1"></div>
+<!-- The batched library commit (1.2 s) needs real time: this holds smoke.py's DOM dump until the release below. -->
+<img hidden alt="" src="/__smoke/hold">
+<script type="module">
+import { fakeGitHub } from './tests/fake-github.js';
+const results = [];
+const ok = (name, cond, detail = '') => { results.push({ name, ok: !!cond, detail: cond ? '' : detail }); if (!cond) console.error(`Test failed: ${name} ${detail}`); };
+const wait = ms => new Promise(r => setTimeout(r, ms));
+async function until(fn, ms = 4000) {
+  const t0 = performance.now();
+  while (performance.now() - t0 < ms) { try { if (fn()) return true; } catch { /* not there yet */ } await wait(25); }
+  return false;
+}
+const gh = fakeGitHub(), { commits } = gh;
+
+let off = null;
+try {
+  const root = document.getElementById('app');
+  const $ = s => root.querySelector(s);
+  const { render } = await import('./js/views/playlists.js');
+  off = await render(root);
+  const more = $('.pl-more');
+  if (!more) ok('rename case skipped: no playlists in data/library.json', true);
+  else {
+    const id = more.dataset.id;
+    let repaints = 0;
+    const mo = new MutationObserver(recs => { repaints += recs.filter(r => r.target === root).length; });
+    mo.observe(root, { childList: true });
+    more.focus(); more.click();
+    await until(() => document.querySelector('.action-row[data-v="rename"]'));
+    document.querySelector('.action-row[data-v="rename"]').click();
+    await until(() => document.querySelector('.sheet input.input'));
+    document.querySelector('.sheet input.input').value = 'Renamed in a test';
+    document.querySelector('.sheet-backdrop:last-of-type .sheet-actions .btn-primary').click();
+    await until(() => commits.length, 3000);
+    await wait(300);
+    mo.disconnect();
+    const row = $(`.pl-more[data-id="${id}"]`)?.closest('.pl-row');
+    ok('rename shows on the row', /Renamed in a test/.test(row?.querySelector('.pl-name')?.textContent || ''));
+    ok('…and is one library commit', commits.length === 1 && /rename playlist/.test(commits[0].message), JSON.stringify(commits));
+    ok('…the rows are rebuilt once, not again when the commit lands', repaints === 1, `${repaints} rebuilds`);
+    ok('…and focus is back on that row’s ⋯ button', document.activeElement === row?.querySelector('.pl-more'), `${document.activeElement?.tagName}.${document.activeElement?.className}`);
+  }
+} catch (e) {
+  ok('test page ran', false, String(e.stack || e));
+} finally {
+  off?.();
+  document.querySelectorAll('.sheet-backdrop').forEach(s => s.remove());
+  gh.restore();
+}
+
+const failed = results.filter(r => !r.ok);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+document.getElementById('app').innerHTML = '';
+document.getElementById('view').innerHTML =
+  `<h1>Playlists (token)</h1><p class="t-sum ${failed.length ? 'bad' : 'good'}">${results.length - failed.length} passed · ${failed.length} failed</p>` +
+  `<table>${results.map(r => `<tr class="${r.ok ? 'pass' : 'fail'}"><td>${r.ok ? 'ok' : 'FAIL'}</td><td>${esc(r.name)}${r.detail ? `<br><small>${esc(r.detail)}</small>` : ''}</td></tr>`).join('')}</table>`;
+fetch('/__smoke/release');
+</script>
+</body>
+</html>
