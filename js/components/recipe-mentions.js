@@ -8,7 +8,7 @@
  *       Self-contained: the amounts ride along in data-amt and the scale factor is read from
  *       recipe-state at tap time, so one global handler (installed on first render) serves every
  *       view. Tap → bubble right above the word; tap it again, tap anywhere else, scroll it away
- *       or press Esc to close.
+ *       or press Esc to close. Inside a sheet (cook mode's Ingredients) the bubble sits above it.
  *   tempButton(text, t) → html   a temperature in step text ("350°F", findTemps in units.js);
  *       the same bubble shows it in the other scale, plus oven-dial / fan / convection settings
  *       for oven temperatures
@@ -206,7 +206,7 @@ function open(el) {
   } catch { /* bad markup */ }
   if (!body) return;
   tip = document.createElement('div');
-  tip.className = 'rx-ingtip';
+  tip.className = el.closest('.sheet') ? 'rx-ingtip rx-ingtip-sheet' : 'rx-ingtip';   // cook mode's Ingredients sheet
   tip.id = 'rx-ingtip';
   tip.setAttribute('role', 'status');
   tip.innerHTML = toStr(body);

@@ -27,6 +27,7 @@ import { ingredientsHtml, bindIngredients } from '../js/components/recipe-ingred
 import { stepTextHtml } from '../js/components/recipe-steps.js';
 import { breakdown, unitInfo, findAmounts, findTemps, tempDetails } from '../js/units.js';
 import { toStr } from '../js/util.js';
+import { sheet } from '../js/ui.js';
 
 const results = [];
 const canon = v => JSON.stringify(v);
@@ -227,6 +228,18 @@ noteBox.innerHTML = toStr(ingredientsHtml({ ingredients: [{ id: 'i1', qty: 2, un
   { id: 'i2', qty: 1, unit: 'cup', item: 'water', note: 'warmed to 40C; or 2 tbsp milk' }] }, 'zz-temp'));
 truthy('note temperatures link; "40C" is not 40 cups', noteBox.querySelectorAll('[data-temp]').length === 2 && noteBox.querySelectorAll('.rx-note-amt').length === 1
   && noteBox.querySelector('.rx-note-amt').textContent === '2 tbsp');
+// Cook mode's Ingredients sheet: the same list inside a sheet (z 60) — the bubble must show above it.
+const done = sheet({ title: 'Ingredients', body: noteBox });
+const wrap = document.querySelector('.sheet-backdrop:last-of-type');
+wrap.classList.add('open'); wrap.querySelector('.sheet').style.transition = 'none';
+const st = noteBox.querySelector('[data-temp]');
+st.click();
+const inTip = document.querySelector('.rx-ingtip'), tr = inTip?.getBoundingClientRect();
+const hit = tr && document.elementFromPoint(tr.left + tr.width / 2, tr.top + tr.height / 2);
+truthy('a temperature tapped inside a sheet: its bubble shows on top of the sheet', inTip && inTip.contains(hit), `on top: ${hit?.className}`);
+window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));     // closes the bubble…
+document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));   // …then the sheet
+await done;
 offIng(); offMen();
 box.remove();
 sessionStorage.removeItem('bb.rx:zz-test');

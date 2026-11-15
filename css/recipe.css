@@ -205,6 +205,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
   display: grid; gap: 2px; border-radius: 10px; background: var(--ink); color: var(--bg);
   font-size: .84rem; line-height: 1.35; box-shadow: var(--shadow-lg); animation: rx-tip-in .14s ease-out;
 }
+.rx-ingtip-sheet { z-index: 65; }   /* tapped inside a sheet (60): above it, still under the toasts (70) */
 .rx-ingtip::after {
   content: ""; position: absolute; top: 100%; left: var(--arrow-x, 50%); transform: translateX(-50%);
   border: 6px solid transparent; border-top-color: var(--ink);
