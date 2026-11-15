@@ -20,7 +20,9 @@ export async function render(root, params = {}) {
   }
   if (mode === 'edit') {
     setTopbar({ title: 'Edit recipe', back: `#/r/${params.slug}` });
+    const here = location.hash;
     const recipe = await getRecipe(params.slug);
+    if (location.hash !== here) return;            // left while it loaded: #view is the next page's now
     if (!recipe) {
       root.innerHTML = html`<div class="empty">
         <p><strong>That recipe isn’t here.</strong></p>

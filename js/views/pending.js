@@ -123,7 +123,9 @@ function itemHtml(item) {
 
 export async function render(root, { id } = {}) {
   setTopbar({ title: 'Inbox', back: '#/add' });            // the inbox list lives on the Add page
+  const here = location.hash;
   const item = id ? await getPending(id, { force: true }) : null;
+  if (location.hash !== here) return;              // left while it loaded: #view is the next page's now
   if (!item) return notFound(root);
   root.innerHTML = itemHtml(item);
 

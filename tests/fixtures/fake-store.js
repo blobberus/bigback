@@ -4,7 +4,7 @@
  * so forms can be driven end to end with no token and nothing ever reaching GitHub.
  *   calls → [[name, ...args]]                every write the page asked for
  *   hold(name) / release(name)               the next `name` call waits until released
- *   setPending(item)                         what getPending() returns
+ *   setPending(item) / setRecipe(r)          what getPending() / getRecipe() return (holdable too)
  */
 export class NotConnectedError extends Error {
   constructor() { super('Connect GitHub in Settings to save changes.'); this.name = 'NotConnectedError'; }
@@ -30,12 +30,13 @@ export const saveRecipe = (r, opts) => call('saveRecipe', r.slug || 'test-recipe
 export const deleteRecipe = (...a) => call('deleteRecipe', undefined, a);
 export const deletePending = (...a) => call('deletePending', undefined, a);
 
-let pending = null;
+let pending = null, recipe = null;
 export const setPending = item => { pending = item; };
-export const getPending = async () => pending;
+export const setRecipe = r => { recipe = r; };
+export const getPending = (...a) => call('getPending', pending, a);
+export const getRecipe = (...a) => call('getRecipe', recipe, a);
 export const getJournal = async slug => ({ slug, entries: [] });
 export const getIndex = async () => ({ recipes: [], pending: [] });
-export const getRecipe = async () => null;
 export const onChange = () => () => {};
 export const mediaUrl = p => (p ? `../${p}` : '');
 export const rawUrl = mediaUrl;

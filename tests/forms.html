@@ -216,6 +216,34 @@ try {
   confirmTop(); await wait(30);
   ok('…and so does deleting it', location.hash === '#/add', location.hash);
   offPending2(); sandbox.innerHTML = '';
+
+  /* a page still loading when you leave doesn't paint over the next one (or keep its handlers) */
+  const addView = await import('../js/views/add.js');
+  const leaveWhileLoading = async (hash, name, renderIt) => {
+    hashIs(hash);
+    S.hold(name);
+    const done = renderIt();
+    await wait(10);
+    hashIs('#/convert');                                    // the router moved on: next view rendered
+    sandbox.innerHTML = '<p id="next-page">Convert</p><button type="button" data-act="delete">Delete</button>';
+    S.release(name);
+    const cleanup = await done;
+    await wait(10);
+    sandbox.querySelector('[data-act="delete"]').click(); await frame();
+    const live = [...document.querySelectorAll('.sheet-backdrop')].filter(w => !w.inert);   // closing ones are inert
+    const sheetOpened = live.length > 0;
+    live.forEach(w => w.click());
+    await wait(250);
+    const intact = !!sandbox.querySelector('#next-page');
+    cleanup?.(); sandbox.innerHTML = '';
+    return [intact, sheetOpened];
+  };
+  ok('an upload page that loads after you left leaves the next page alone', JSON.stringify(await leaveWhileLoading('#/pending/test-up', 'getPending',
+    () => pendingView.render(sandbox, { id: 'test-up' }))) === '[true,false]');
+  S.setRecipe(recipe);
+  ok('…and so does the edit form', JSON.stringify(await leaveWhileLoading('#/edit/test-dish', 'getRecipe',
+    () => addView.render(sandbox, { mode: 'edit', slug: 'test-dish' }))) === '[true,false]');
+  localStorage.removeItem('bb.draft:edit:test-dish');
 } catch (e) {
   ok('fake-store suite threw', false, String(e?.stack || e));
 }

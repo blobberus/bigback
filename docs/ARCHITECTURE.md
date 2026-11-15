@@ -39,6 +39,8 @@ Push to main ──▶ .github/workflows/pages.yml (validate, rebuild index, dep
 View contract: `export async function render(root, params) → cleanup?`. Use
 `setTopbar()`, render with `root.innerHTML = html\`…\``, bind with `on(root, …)`.
 Subscribe to `store.onChange` for re-render and return the unsubscribe as cleanup.
+A view that awaits a read before painting checks `location.hash` is unchanged first: if you
+left meanwhile, `root` already holds the next page (and the router never runs that cleanup).
 
 ## CSS
 `css/base.css` holds tokens + shared components (`.btn`, `.chip`, `.input`, `.field`,
