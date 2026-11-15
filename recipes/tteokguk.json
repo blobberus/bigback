@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "slug": "tteokguk",
+  "title": "Tteokguk 떡국 (Korean Rice Cake Soup)",
+  "summary": "Korea's New Year soup: chewy rice cakes in a garlicky beef broth with egg ribbons, yellow egg strips and toasted gim.",
+  "profile": "Clean and savory rather than rich: a garlicky beef broth seasoned with fish sauce (or soup soy sauce) and salt, finished with nutty toasted sesame oil, black pepper and fresh green onion, with no acid and heat only from the optional red chili. The rice cakes should be soft and chewy all the way through (no hard centers, not swollen or mushy), the beef tender, the egg whites set in soft white ribbons through a mostly clear broth, and the garnish of thin, unbrowned yellow yolk strips and crisp crushed gim goes on in the bowl. Delivers 2–3 large bowls in about 55 minutes, about 10 of them chopping; the garnishes are made while the broth simmers, and the 30-minute cold soak for frozen rice cakes runs alongside the broth, so it adds no time. Serve right away with kimchi and other side dishes. Best eaten immediately, since rice cakes left in the broth go soggy; to work ahead, refrigerate the beef broth up to 3 days or freeze it up to 3 months, keep the garnishes separate, and cook the rice cakes and egg whites in the reboiled broth just before serving.",
+  "status": "built",
+  "source": {
+    "type": "web",
+    "url": "https://www.maangchi.com/recipe/tteokguk",
+    "files": [
+      "sources/tteokguk/maangchi-tteokguk.pdf"
+    ],
+    "author": "Maangchi"
+  },
+  "image": null,
+  "servings": 3,
+  "yield": "2–3 large bowls",
+  "time": {
+    "prep": 10,
+    "cook": 45,
+    "total": 55
+  },
+  "equipment": [
+    "heavy 4- to 5-quart pot with a lid",
+    "8- to 10-inch nonstick skillet",
+    "zip-top plastic bag (for crushing the gim)",
+    "ladle"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": "Soup",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "lb",
+      "item": "sliced tteok rice cakes",
+      "note": "store-bought or homemade; if frozen, soak in cold water 30 minutes and drain"
+    },
+    {
+      "id": "i2",
+      "section": "Soup",
+      "qty": 7,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "water",
+      "note": null
+    },
+    {
+      "id": "i3",
+      "section": "Soup",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "lb",
+      "item": "beef",
+      "note": "flank steak or brisket, chopped into small pieces"
+    },
+    {
+      "id": "i4",
+      "section": "Soup",
+      "qty": 3,
+      "qtyMax": 4,
+      "unit": "clove",
+      "item": "garlic",
+      "note": "minced"
+    },
+    {
+      "id": "i5",
+      "section": "Soup",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "fish sauce",
+      "note": "or soup soy sauce (guk-ganjang), to taste"
+    },
+    {
+      "id": "i6",
+      "section": "Soup",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "kosher salt",
+      "note": "Diamond Crystal; a pinch each for the egg yolks and whites, the rest to taste in the soup (Morton ≈ 0.6×, table salt ≈ 0.5× the volume)"
+    },
+    {
+      "id": "i7",
+      "section": "Soup",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "toasted sesame oil",
+      "note": null
+    },
+    {
+      "id": "i8",
+      "section": "Soup",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "ground black pepper",
+      "note": null
+    },
+    {
+      "id": "i9",
+      "section": "Soup",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "large green onion (dae-pa)",
+      "note": "or 3 green onions; washed and sliced thinly on a diagonal"
+    },
+    {
+      "id": "i10",
+      "section": "Garnishes",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "sheet",
+      "item": "gim (dried seaweed paper, aka nori)",
+      "note": null
+    },
+    {
+      "id": "i11",
+      "section": "Garnishes",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": null,
+      "item": "eggs",
+      "note": null
+    },
+    {
+      "id": "i12",
+      "section": "Garnishes",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "vegetable oil",
+      "note": null
+    },
+    {
+      "id": "i13",
+      "section": "Garnishes",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "red pepper",
+      "note": "optional, chopped; a fresh red chili (red bell pepper gives the color without heat)"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": null,
+      "text": "If the rice cakes are frozen, soak them in cold water for 30 minutes, then drain. Not frozen? Skip this step.",
+      "timers": [
+        {
+          "label": "Soak",
+          "seconds": 1800
+        }
+      ],
+      "tip": "Start the soak first: it finishes while the beef broth simmers, so it adds nothing to the total time."
+    },
+    {
+      "id": "s2",
+      "section": "Broth",
+      "text": "Bring the water to a boil in a heavy pot over high heat. Add the beef and garlic and cook 5 minutes, then turn the heat down to medium, cover and cook until the beef is tender and has flavored the water, 20–25 minutes.",
+      "timers": [
+        {
+          "label": "Beef boil",
+          "seconds": 300
+        },
+        {
+          "label": "Covered simmer",
+          "seconds": 1200
+        }
+      ],
+      "tip": "Brisket gives a richer, slightly fattier broth; flank a leaner, cleaner one."
+    },
+    {
+      "id": "s3",
+      "section": "Garnishes",
+      "text": "While the broth simmers, toast the gim on both sides until it's bright green and very crisp. Put it in a plastic bag, crush it by hand and set aside.",
+      "timers": [],
+      "tip": "No gas burner? Toast it in a dry skillet over medium heat for a few seconds per side."
+    },
+    {
+      "id": "s4",
+      "section": "Garnishes",
+      "text": "Separate the eggs, putting the yolks and whites into separate bowls. Add a pinch of the salt to each and mix with a fork, then pick the stringy chalaza out of the yolks.",
+      "timers": [],
+      "tip": "Removing the chalaza keeps the yolk sheet smooth, with no white streaks."
+    },
+    {
+      "id": "s5",
+      "section": "Garnishes",
+      "text": "Heat a nonstick skillet over medium heat, add the vegetable oil and swirl to coat, then wipe out the excess with a paper towel, leaving a thin film. Turn off the heat, pour in the yolks and tilt the pan so they spread thin and even. Let it cook on the hot pan about 1 minute, flip and give it another minute, until set with no glossy spots; slide it out, slice into thin strips and set aside.",
+      "timers": [
+        {
+          "label": "First side",
+          "seconds": 60
+        },
+        {
+          "label": "Second side",
+          "seconds": 60
+        }
+      ],
+      "tip": "Cooking on the pan's leftover heat keeps the sheet evenly yellow with no browning, and that bright color is the garnish's job."
+    },
+    {
+      "id": "s6",
+      "section": "Soup",
+      "text": "With the broth at a boil, add the drained rice cakes, the fish sauce and a little salt, and stir with a ladle. Cover and cook until all the rice cakes float and are soft all the way through, 7–8 minutes. Pour in the egg whites little by little and cook 30 seconds, until they set into soft white ribbons.",
+      "timers": [
+        {
+          "label": "Rice cakes",
+          "seconds": 420
+        }
+      ],
+      "tip": "The rice cakes are bland, so the broth has to taste well seasoned on its own: taste once they're soft and add salt until it does."
+    },
+    {
+      "id": "s7",
+      "section": "Soup",
+      "text": "Stir in the sesame oil, black pepper and green onion, then take the pot off the heat. Ladle into bowls and garnish with the egg strips, crushed gim and red pepper, if using. Serve right away, with kimchi and other side dishes if you like; the rice cakes go soggy if the soup sits.",
+      "timers": [],
+      "tip": "Sesame oil and green onion go in last, off the boil, so their aroma stays fresh."
+    }
+  ],
+  "createdAt": "2026-11-14T20:30:00Z",
+  "updatedAt": "2026-11-14T20:30:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-14",
+      "summary": "Built from Maangchi's web recipe (printed PDF, 6 pages: ingredients for 2–3 servings and 9 directions; a few photos didn't load, the text is complete). Faithful, no changes. Clarifications: the 30-minute cold soak for frozen rice cakes (an ingredient note in the source) is its own first step, started before the broth so it adds no time and isn't counted in the total; the unmeasured salt (\"salt\" in the list, \"kosher salt\" in step 7) is Diamond Crystal, a pinch each for the yolks and whites, then to taste in the soup; \"red pepper\" read as a fresh red chili for garnish; servings set to 3 (source: 2–3). Combined the 9 directions into 7 steps and added doneness cues (yolk sheet set without browning, whites set into ribbons).",
+      "notes": []
+    }
+  ]
+}

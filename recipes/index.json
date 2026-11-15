@@ -1,6 +1,22 @@
 {
   "recipes": [
     {
+      "slug": "chicken-alfredo",
+      "title": "Chicken Alfredo",
+      "summary": "Fettuccine in a buttery Parmesan cream sauce with mellow early garlic, topped with juicy broth-finished chicken.",
+      "image": null,
+      "time": {
+        "prep": 15,
+        "cook": 30,
+        "total": 45
+      },
+      "servings": 6,
+      "status": "built",
+      "sourceType": "web",
+      "updatedAt": "2026-11-14T20:30:00Z",
+      "openNotes": 0
+    },
+    {
       "slug": "crispy-skillet-chicken-thighs",
       "title": "Crispy Skillet Chicken Thighs with Lemon-Garlic Pan Sauce",
       "summary": "Shatter-crisp skin, juicy meat, and a 3-minute pan sauce from the fond. Sample recipe — delete anytime.",
@@ -127,29 +143,31 @@
       "sourceType": "pdf",
       "updatedAt": "2026-11-14T19:30:00Z",
       "openNotes": 0
+    },
+    {
+      "slug": "tteokguk",
+      "title": "Tteokguk 떡국 (Korean Rice Cake Soup)",
+      "summary": "Korea's New Year soup: chewy rice cakes in a garlicky beef broth with egg ribbons, yellow egg strips and toasted gim.",
+      "image": null,
+      "time": {
+        "prep": 10,
+        "cook": 45,
+        "total": 55
+      },
+      "servings": 3,
+      "status": "built",
+      "sourceType": "web",
+      "updatedAt": "2026-11-14T20:30:00Z",
+      "openNotes": 0
     }
   ],
   "pending": [
-    {
-      "id": "20261114-190000-ab01",
-      "kind": "link",
-      "title": "Chicken Alfredo",
-      "url": "https://bellyfull.net/chicken-alfredo-recipe/",
-      "createdAt": "2026-11-14T19:00:00Z"
-    },
     {
       "id": "20261114-190004-ab05",
       "kind": "text",
       "title": "Ramen",
       "url": null,
       "createdAt": "2026-11-14T19:00:04Z"
-    },
-    {
-      "id": "20261114-190005-ab06",
-      "kind": "link",
-      "title": "떡국 (tteokguk)",
-      "url": "https://www.maangchi.com/recipe/tteokguk",
-      "createdAt": "2026-11-14T19:00:05Z"
     },
     {
       "id": "20261114-190007-ab08",

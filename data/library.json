@@ -50,6 +50,18 @@
       "rating": null,
       "proficiency": null,
       "addedAt": "2026-11-15T00:56:22Z"
+    },
+    "chicken-alfredo": {
+      "tags": [],
+      "rating": null,
+      "proficiency": null,
+      "addedAt": "2026-11-15T01:18:00Z"
+    },
+    "tteokguk": {
+      "tags": [],
+      "rating": null,
+      "proficiency": null,
+      "addedAt": "2026-11-15T01:18:01Z"
     }
   },
   "playlists": []

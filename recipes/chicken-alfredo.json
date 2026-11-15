@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "slug": "chicken-alfredo",
+  "title": "Chicken Alfredo",
+  "summary": "Fettuccine in a buttery Parmesan cream sauce with mellow early garlic, topped with juicy broth-finished chicken.",
+  "profile": "Rich, buttery and creamy, seasoned mostly by salty, nutty Parmesan, with mellow, sweet garlic (minced very fine and softened in the butter first) layered over garlic powder and dried Italian herbs; there's no acid or heat beyond black pepper, so salt and cheese carry it. The sauce should be smooth and glossy and coat every strand of al dente fettuccine without pooling, graininess or greasy separation (it tightens as it stands, so loosen it with pasta water), and the chicken should be golden on its seared side and juicy all the way through from the covered broth finish, sliced ½ inch thick on top. Delivers 6 bowls in about 45 minutes; serve with garlic bread, a simple side salad, cucumber-tomato salad or roasted asparagus. Best made and eaten right away: the chicken can be cooked up to 1 day ahead, but don't make the sauce ahead; leftovers keep up to 3 days airtight in the fridge and reheat gently on the stovetop over low heat, though the sauce will probably separate some.",
+  "status": "built",
+  "source": {
+    "type": "web",
+    "url": "https://bellyfull.net/chicken-alfredo-recipe/",
+    "files": [
+      "sources/chicken-alfredo/bellyfull-chicken-alfredo.pdf"
+    ],
+    "author": "Belly Full; chicken cooked with your broth technique"
+  },
+  "image": null,
+  "servings": 6,
+  "yield": "6 bowls of fettuccine topped with sliced chicken",
+  "time": {
+    "prep": 15,
+    "cook": 30,
+    "total": 45
+  },
+  "equipment": [
+    "large pot",
+    "colander",
+    "12-inch nonstick skillet with a lid",
+    "whisk",
+    "instant-read thermometer",
+    "aluminum foil",
+    "fine grater (for the Parmesan)"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": "Noodles",
+      "qty": 16,
+      "qtyMax": null,
+      "unit": "oz",
+      "item": "dried fettuccine",
+      "note": "1 lb"
+    },
+    {
+      "id": "i2",
+      "section": "Noodles",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "kosher salt",
+      "note": "Diamond Crystal; about 2 tbsp for the pasta water (1¼ tbsp Morton or 1 tbsp table salt)"
+    },
+    {
+      "id": "i3",
+      "section": "Chicken",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "lb",
+      "item": "boneless, skinless chicken",
+      "note": "breasts (as written) or thighs; the broth method covers both"
+    },
+    {
+      "id": "i4",
+      "section": "Chicken",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "Italian seasoning",
+      "note": null
+    },
+    {
+      "id": "i5",
+      "section": "Chicken",
+      "qty": 0.75,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "kosher salt",
+      "note": "Diamond Crystal; use a scant ½ tsp Morton or ⅜ tsp table salt"
+    },
+    {
+      "id": "i6",
+      "section": "Chicken",
+      "qty": 0.25,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "black pepper",
+      "note": null
+    },
+    {
+      "id": "i7",
+      "section": "Chicken",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "extra-virgin olive oil",
+      "note": null
+    },
+    {
+      "id": "i8",
+      "section": "Chicken",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "low-sodium chicken broth",
+      "note": "≈, as in your Pan-Seared Chicken; enough to steam, not poach"
+    },
+    {
+      "id": "i9",
+      "section": "Sauce",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "butter",
+      "note": "1 stick, cut into large cubes or slices"
+    },
+    {
+      "id": "i10",
+      "section": "Sauce",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "clove",
+      "item": "garlic",
+      "note": "minced very fine"
+    },
+    {
+      "id": "i11",
+      "section": "Sauce",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "heavy whipping cream",
+      "note": null
+    },
+    {
+      "id": "i12",
+      "section": "Sauce",
+      "qty": 0.75,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "garlic powder",
+      "note": null
+    },
+    {
+      "id": "i13",
+      "section": "Sauce",
+      "qty": 0.75,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "Italian seasoning",
+      "note": null
+    },
+    {
+      "id": "i14",
+      "section": "Sauce",
+      "qty": 0.25,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "salt",
+      "note": "table salt; or ½ tsp Diamond Crystal / ⅓ tsp Morton"
+    },
+    {
+      "id": "i15",
+      "section": "Sauce",
+      "qty": 0.25,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "black pepper",
+      "note": "plus more to serve"
+    },
+    {
+      "id": "i16",
+      "section": "Sauce",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "freshly grated Parmesan",
+      "note": "plus more to serve"
+    },
+    {
+      "id": "i17",
+      "section": "To serve",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "fresh parsley",
+      "note": "chopped, to garnish (optional)"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": "Noodles",
+      "text": "Bring a large pot of water (about 4 quarts) to a boil with 2 tablespoons of the salt. Add the fettuccine and cook until al dente per the package, usually about 10 minutes. Scoop out ½ cup of the cooking water, then drain well and set aside.",
+      "timers": [
+        {
+          "label": "Pasta",
+          "seconds": 600
+        }
+      ],
+      "tip": "Drained noodles clump if they wait through the 20-plus-minute chicken; for loose, hot pasta, drop them when the chicken comes off to rest and they finish with the sauce."
+    },
+    {
+      "id": "s2",
+      "section": "Chicken",
+      "text": "Pat the chicken dry and season both sides with the Italian seasoning, salt and pepper. Heat the olive oil in the skillet over medium heat until it shimmers and swirl to coat, then lay in the chicken (smooth side down for breasts) and cook undisturbed for 6½ minutes, until the underside is golden-brown and releases easily.",
+      "timers": [
+        {
+          "label": "First side",
+          "seconds": 390
+        }
+      ],
+      "tip": "Medium, not high, heat browns the chicken steadily without scorching the dried herbs in the seasoning."
+    },
+    {
+      "id": "s3",
+      "section": "Chicken",
+      "text": "Flip the chicken, pour the broth into the pan around it and cover. Keep the heat at medium and cook 7–8 minutes for smaller thighs or 10–12 minutes for thick breasts, until thighs read at least 175°F and breasts 155–160°F in the thickest part and hold there while they rest.",
+      "timers": [
+        {
+          "label": "Thighs",
+          "seconds": 420
+        },
+        {
+          "label": "Breasts",
+          "seconds": 600
+        }
+      ],
+      "tip": "The lid traps steam so thick breasts cook through before the broth boils away; add a splash more if the pan goes dry early."
+    },
+    {
+      "id": "s4",
+      "section": "Chicken",
+      "text": "Move the chicken to a cutting board, tent with foil and rest 5 minutes. Meanwhile, if more than a few tablespoons of liquid remain in the skillet, boil it down uncovered until only a glossy tablespoon or two is left, and leave it there for the sauce. Slice the chicken ½ inch thick and keep it tented.",
+      "timers": [
+        {
+          "label": "Rest",
+          "seconds": 300
+        }
+      ],
+      "tip": "The reduced broth and browned bits season the Alfredo the way the seared fond does in the original."
+    },
+    {
+      "id": "s5",
+      "section": "Sauce",
+      "text": "Set the same skillet over medium-low heat and melt the butter. Add the very finely minced garlic and stir until fragrant and softened but not browned, about 1 minute, then whisk in the cream.",
+      "timers": [
+        {
+          "label": "Garlic",
+          "seconds": 60
+        }
+      ],
+      "tip": "Minced very fine and softened in the butter before the cream goes in, the garlic turns mellow and sweet and melts into the sauce instead of staying sharp."
+    },
+    {
+      "id": "s6",
+      "section": "Sauce",
+      "text": "Whisk in the garlic powder, Italian seasoning, salt and pepper until smooth. Bring to a gentle simmer (don't let it boil) and cook 3–4 minutes, whisking constantly, until it starts to thicken.",
+      "timers": [
+        {
+          "label": "Simmer",
+          "seconds": 180
+        }
+      ],
+      "tip": "It thickens much more once the Parmesan goes in, so here it only needs to lightly coat a spoon."
+    },
+    {
+      "id": "s7",
+      "section": "Sauce",
+      "text": "Stir in the Parmesan just until melted and the sauce is smooth. If it ends up too thick, loosen it with the reserved pasta water a few tablespoons at a time.",
+      "timers": [],
+      "tip": "Freshly grated matters: pre-shredded Parmesan is coated in anti-caking starch and melts grainy."
+    },
+    {
+      "id": "s8",
+      "section": "Assemble",
+      "text": "Take the sauce off the heat and immediately toss it with the fettuccine. Divide among bowls, top each with a few slices of chicken and garnish with parsley, more Parmesan and black pepper if you like.",
+      "timers": [],
+      "tip": "Skillet too full to toss? Pour the sauce over the noodles in the empty pasta pot and toss there."
+    }
+  ],
+  "createdAt": "2026-11-14T20:30:00Z",
+  "updatedAt": "2026-11-14T20:30:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-14",
+      "summary": "Built from Belly Full's web recipe (printed PDF, 5 pages: Noodles/Chicken/Sauce lists, 10 steps, storage notes). Your changes: (1) the garlic is minced very fine and goes in early, softened in the melted butter for about 1 minute before the cream, instead of being whisked in with the dry seasonings after the cream; (2) the chicken uses your broth technique from Pan-Seared Chicken instead of the source's medium-high heat, 5–7 minutes per side with butter: medium heat, 6½ minutes undisturbed, flip, ≈½ cup low-sodium broth, covered 7–8 minutes for smaller thighs or 10–12 for thick breasts, thighs 175°F+ / breasts 155–160°F with hold, 5-minute rest (source: 3). Thighs or breasts, still 1 lb with the source's Italian seasoning, salt, pepper and olive oil. Dropped the source's 1 tbsp chicken butter: the broth now finishes the second side and the sauce already has ½ cup. Any broth left in the skillet is boiled down and kept for the sauce, which the source also makes in the chicken pan. Added: pasta-water salt (2 tbsp Diamond Crystal for about 4 qt), parsley to the list (the source only names it as a garnish), and a tip to start the pasta when the chicken rests. Combined the 10 steps into 8.",
+      "notes": []
+    }
+  ]
+}
