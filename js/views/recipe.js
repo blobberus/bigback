@@ -198,7 +198,7 @@ export async function render(root, { slug }) {
 
   function hero(r) {
     if (r.image) {
-      return html`<figure class="rx-hero"><img src="${mediaUrl(r.image)}" data-fallback="${rawUrl(r.image)}" alt="${r.title}" decoding="async"></figure>`;
+      return html`<figure class="rx-hero"><img src="${mediaUrl(r.image)}" data-fallback="${rawUrl(r.image)}" alt="${r.title}" fetchpriority="high" decoding="async"></figure>`;
     }
     return html`<div class="rx-hero rx-hero-ph" aria-hidden="true">${icon('pan')}</div>`;
   }

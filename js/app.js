@@ -156,24 +156,29 @@ async function boot() {
   window.addEventListener('offline', () => { offline(); toast('Offline — showing saved copies'); });
   offline();
 
-  // After the first view is up (or 4 s at most), so they don't compete with it for the network.
-  Promise.race([firstView, new Promise(r => setTimeout(r, 4000))]).then(() => {
-    // Kitchen tools are global — mounted once, survive navigation.
+  // Below: work that shouldn't compete with the first view for the network (4 s at most).
+  const settle = p => Promise.race([p, new Promise(r => setTimeout(r, 4000))]);
+
+  // Kitchen tools are global — mounted once, survive navigation.
+  settle(firstView).then(() => {
     for (const [file, fn] of [['./timers.js', 'mount'], ['./stopwatch.js', 'mount'], ['./wakelock.js', 'initWakeLock']]) {
       import(file).then(m => m[fn]?.()).catch(e => console.error(file, e));
     }
-    // First visit: the install downloads the whole shell, which is no longer on this page's way.
-    // Later launches: the browser checks sw.js on its own; Home Screen apps resume from memory
-    // without a page load, so also check whenever the app comes back to the foreground.
-    if (useSW) navigator.serviceWorker.register('sw.js').then(reg => {
-      let last = Date.now();
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState !== 'visible' || Date.now() - last < 30000) return;
-        last = Date.now();
-        reg.update().catch(() => {});
-      });
-    }).catch(() => {});
   });
+
+  // First visit: the install downloads the whole shell, so it waits for the view and its eager
+  // photo (a recipe's hero; list thumbnails are lazy). Later launches: the browser checks sw.js
+  // on its own; Home Screen apps resume from memory without a page load, so also check
+  // whenever the app comes back to the foreground.
+  const eagerImages = () => Promise.all([...document.querySelectorAll('#view img:not([loading="lazy"])')].map(i => i.decode().catch(() => {})));
+  if (useSW) settle(firstView.then(eagerImages)).then(() => navigator.serviceWorker.register('sw.js')).then(reg => {
+    let last = Date.now();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible' || Date.now() - last < 30000) return;
+      last = Date.now();
+      reg.update().catch(() => {});
+    });
+  }).catch(() => {});
 }
 
 boot();
