@@ -65,6 +65,12 @@
         "lobster-shrimp-fried-rice"
       ],
       "createdAt": "2026-11-15T09:25:17Z"
+    },
+    {
+      "id": "pl-yin5",
+      "name": "Steak",
+      "recipes": [],
+      "createdAt": "2026-11-15T09:26:07Z"
     }
   ]
 }
