@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Converter · Bigback</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/tools.css">
+  <style>td { padding: 4px 8px; border-top: 1px solid var(--line); font-size: .85rem; } #sandbox { max-width: 390px; }</style>
+</head>
+<body>
+<!-- Run: python scripts/smoke.py tests/convert.html -->
+<header class="topbar"><h1 id="topbar-title"></h1><div id="topbar-actions"></div></header>
+<main id="view"><p class="muted">Running…</p></main>
+<div id="sandbox"></div>
+<script type="module">
+import { CONVERTERS, convertUnit, parseAmount, fmtAmount, kitchenHint } from '../js/units.js';
+import { render } from '../js/views/convert.js';
+
+const results = [];
+const canon = v => JSON.stringify(v);
+function eq(name, got, want) {
+  const ok = canon(got) === canon(want);
+  results.push({ name, ok, detail: ok ? '' : `want ${canon(want)} got ${canon(got)}` });
+  if (!ok) console.error(`Test failed: ${name} | want ${canon(want)} | got ${canon(got)}`);
+}
+
+/* ---------- math ---------- */
+const C = (kind, v, a, b) => fmtAmount(convertUnit(kind, v, a, b));
+eq('weight', [C('weight', 1, 'lb', 'g'), C('weight', 1, 'kg', 'lb'), C('weight', 8, 'oz', 'g'), C('weight', 100, 'lb', 'g'), C('weight', 2, 'g', 'g')],
+  ['453.6', '2.205', '226.8', '45360', '2']);
+eq('volume', [C('volume', 1, 'cup', 'ml'), C('volume', 1, 'tbsp', 'tsp'), C('volume', 1, 'cup', 'tbsp'), C('volume', 1, 'gallon', 'ml'), C('volume', 1, 'tsp', 'gallon'), C('volume', 500, 'ml', 'cup')],
+  ['236.6', '3', '16', '3785', '0.001302', '2.113']);
+eq('temperature', [C('temp', 350, 'F', 'C'), C('temp', 180, 'C', 'F'), C('temp', -40, 'C', 'F'), C('temp', 32, 'F', 'C'), C('temp', 212, 'F', 'F')],
+  ['176.7', '356', '-40', '0', '212']);
+eq('amounts as cooks type them', ['2', '1.5', '1,5', '.5', '1/2', '1 1/2', '1½', '½', '-18', '2.', '', 'abc', '1 1/'].map(parseAmount).map(v => (Number.isNaN(v) ? 'NaN' : v)),
+  [2, 1.5, 1.5, 0.5, 0.5, 1.5, 1.5, 0.5, -18, 2, 'NaN', 'NaN', 'NaN']);
+eq('kitchen hints for US results only', [kitchenHint('volume', 0.4227, 'cup'), kitchenHint('volume', 2.113, 'cup'), kitchenHint('volume', 3, 'tsp'),
+  kitchenHint('volume', 236.6, 'ml'), kitchenHint('weight', 0.75, 'lb'), kitchenHint('temp', 176.7, 'C')],
+  ['≈ ⅜ cup', '≈ 2⅛ cups', '', '', '= ¾ lb', '']);
+eq('every unit has a label', Object.values(CONVERTERS).every(c => c.units.every(u => u[0] && u[1] && u[2])), true);
+
+/* ---------- the page ---------- */
+localStorage.removeItem('bb.convert');
+const box = document.querySelector('#sandbox');
+const off = await render(box);
+const row = k => box.querySelector(`.cv-row[data-kind="${k}"]`);
+const amt = (k, s) => row(k).querySelector(`.cv-amt[data-side="${s}"]`);
+const unit = (k, s) => row(k).querySelector(`.cv-unit[data-side="${s}"]`);
+const type = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+const pick = (el, v) => { el.value = v; el.dispatchEvent(new Event('change', { bubbles: true })); };
+
+eq('three rows, each with two amounts and two unit menus', ['weight', 'volume', 'temp'].map(k => row(k) && row(k).querySelectorAll('input').length + row(k).querySelectorAll('select').length), [4, 4, 4]);
+eq('starts with an example per row', [amt('weight', 'b').value, amt('volume', 'b').value, amt('temp', 'b').value], ['453.6', '236.6', '176.7']);
+type(amt('volume', 'a'), '2');
+eq('typing on the left updates the right at once', amt('volume', 'b').value, '473.2');
+type(amt('volume', 'b'), '100');
+eq('typing on the right updates the left, with a kitchen hint', [amt('volume', 'a').value, row('volume').querySelector('[data-hint="a"]').textContent], ['0.4227', '≈ ⅜ cup']);
+pick(unit('volume', 'a'), 'tbsp');
+eq('changing a unit keeps the number you typed', [amt('volume', 'b').value, amt('volume', 'a').value], ['100', '6.763']);
+type(amt('weight', 'a'), '1 1/2');
+eq('fractions work', amt('weight', 'b').value, '680.4');
+type(amt('weight', 'a'), '1 1/');
+eq('mid-typing keeps the last result', [amt('weight', 'b').value, amt('weight', 'a').classList.contains('is-bad')], ['680.4', false]);
+type(amt('weight', 'a'), 'abc');
+eq('nonsense clears the other side and is flagged', [amt('weight', 'b').value, amt('weight', 'a').classList.contains('is-bad')], ['', true]);
+type(amt('weight', 'a'), '');
+eq('empty clears it quietly', [amt('weight', 'b').value, amt('weight', 'a').classList.contains('is-bad')], ['', false]);
+type(amt('temp', 'a'), '425');
+const saved = JSON.parse(localStorage.getItem('bb.convert'));
+eq('units and the last amount are remembered', [saved.volume.a, saved.volume.from, saved.volume.raw, saved.temp.raw], ['tbsp', 'b', '100', '425']);
+off();
+box.innerHTML = '';
+await render(box);
+eq('…and restored on the next visit', [unit('volume', 'a').value, amt('volume', 'b').value, amt('volume', 'a').value, amt('temp', 'b').value], ['tbsp', '100', '6.763', '218.3']);
+localStorage.removeItem('bb.convert');
+
+const failed = results.filter(r => !r.ok).length;
+document.querySelector("#view").innerHTML = `<p><strong>${results.length - failed}/${results.length} passed</strong></p><table>${results.map(r =>
+  `<tr><td>${r.ok ? '✓' : '✗'}</td><td>${r.name}${r.detail ? ` — ${r.detail}` : ''}</td></tr>`).join('')}</table>`;
+</script>
+</body>
+</html>

@@ -25,7 +25,7 @@ Push to main ──▶ .github/workflows/pages.yml (validate, rebuild index, dep
 | `timers.js` | countdown timers: `startTimer({label, seconds, slug, stepId})` | WS4 |
 | `stopwatch.js` | global stopwatch button/panel | WS4 |
 | `wakelock.js` | Screen Wake Lock manager | WS4 |
-| `units.js` | US ⇄ metric breakdown for an ingredient amount (`breakdown(ing, factor)`); temperatures in text (`findTemps`, `tempDetails`: °C/°F, oven dial, fan, convection) | core |
+| `units.js` | US ⇄ metric breakdown for an ingredient amount (`breakdown(ing, factor)`); temperatures in text (`findTemps`, `tempDetails`: °C/°F, oven dial, fan, convection); the converter page's tables and math (`CONVERTERS`, `convertUnit`, `parseAmount`, `fmtAmount`, `kitchenHint`) | core |
 | `components/recipe-mentions.js` | ingredient names in steps → tap shows the amount (`mentionMatcher`, `bindMentions`) | WS2 |
 | `views/library.js` | list, search, filters, sort, playlist view | WS1 |
 | `views/playlists.js` | playlist management | WS1 |
@@ -34,6 +34,7 @@ Push to main ──▶ .github/workflows/pages.yml (validate, rebuild index, dep
 | `views/add.js` | chooser, custom form, upload form, edit | WS3 |
 | `views/pending.js` | inbox item detail / delete | WS3 |
 | `views/settings.js` | token, repo, wake lock, theme, site password | WS4 |
+| `views/convert.js` | weight / volume / temperature converter (bottom-nav "Convert") | WS8 |
 
 View contract: `export async function render(root, params) → cleanup?`. Use
 `setTopbar()`, render with `root.innerHTML = html\`…\``, bind with `on(root, …)`.

@@ -251,3 +251,31 @@ body { padding-bottom: calc(var(--tools-b) + var(--tools-h, 56px) + 16px); }
 .st-tips strong { color: var(--ink); }
 .st-glyph { display: inline-block; width: 17px; height: 17px; margin: 0 1px; vertical-align: -3px; color: var(--accent); }
 .st-refresh { margin: 10px 0 14px; }
+
+/* ---------- converter (#/convert, views/convert.js) ----------
+   One card per kind; each side is the amount over its unit picker, "=" between. */
+.cv { display: grid; gap: 14px; max-width: 560px; margin: 0 auto; }
+.cv-row { padding: 12px 14px 8px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+.cv-h { margin: 0 0 10px; font: 800 .72rem/1 var(--font-body); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+.cv-pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: start; }
+.cv-eq { padding-top: 12px; font-size: 1.3rem; font-weight: 600; color: var(--muted); }
+.cv-side { display: grid; gap: 6px; min-width: 0; }
+.cv-amt {
+  width: 100%; min-width: 0; height: 52px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: var(--r);
+  background: var(--bg); color: var(--ink); font-size: 1.45rem; font-weight: 650; font-variant-numeric: tabular-nums;
+}
+.cv-amt:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+.cv-amt.is-bad { border-color: var(--danger); }
+.cv-unit-wrap { position: relative; display: block; }
+.cv-unit-wrap::after {                                   /* chevron: the native arrow is hidden for a consistent look */
+  content: ""; position: absolute; right: 13px; top: 50%; width: 7px; height: 7px; margin-top: -6px; pointer-events: none;
+  border: solid var(--ink-2); border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.cv-unit {
+  width: 100%; min-height: 44px; padding: 0 32px 0 12px; border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--surface-2); color: var(--ink); font-size: 16px; font-weight: 600; cursor: pointer;
+  -webkit-appearance: none; appearance: none; text-overflow: ellipsis;
+}
+.cv-unit:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.cv-hint { min-height: 1.2em; margin: 0 2px; font-size: .8rem; font-weight: 650; color: var(--accent); }
+.cv-foot { margin: 2px 12px; text-align: center; font-size: .8rem; line-height: 1.4; color: var(--muted); }

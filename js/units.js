@@ -15,6 +15,9 @@
  *       converted as a difference (25°F → 14°C).
  *   tempDetails(t) → { main, lines }   "177°C"; for oven settings also the oven-dial rounding,
  *       fan and convection settings ("Oven dial ≈ 180°C · fan 160°C", "Convection: 325°F")
+ *   Converter page (views/convert.js): CONVERTERS (weight / volume / temp rows and their units),
+ *       convertUnit(kind, value, from, to), parseAmount("1 1/2") → 1.5, fmtAmount(236.588) → "236.6",
+ *       kitchenHint('volume', 0.4227, 'cup') → "≈ ⅜ cup"
  */
 import { fmtQty } from './util.js';
 
@@ -275,4 +278,57 @@ export function tempDetails({ lo, hi = null, scale, oven = false, delta = false 
     lines.push(`Fan oven: ${deg(...shift(lo, hi, -20), 'C')}`);
   }
   return { main, lines };
+}
+
+/* ---------- converter (views/convert.js) ---------- */
+/** One row per kind: units as [key, label, short singular, short plural]; `start` = the example shown first. */
+export const CONVERTERS = {
+  weight: {
+    label: 'Weight', start: { a: 'lb', b: 'g', v: '1' },
+    units: [['g', 'Grams', 'g'], ['kg', 'Kilograms', 'kg'], ['oz', 'Ounces', 'oz'], ['lb', 'Pounds', 'lb']]
+  },
+  volume: {
+    label: 'Volume', start: { a: 'cup', b: 'ml', v: '1' },
+    units: [['tsp', 'Teaspoons', 'tsp'], ['tbsp', 'Tablespoons', 'tbsp'], ['floz', 'Fluid ounces', 'fl oz'], ['cup', 'Cups', 'cup', 'cups'],
+      ['pint', 'Pints', 'pt'], ['quart', 'Quarts', 'qt'], ['gallon', 'Gallons', 'gal'], ['ml', 'Milliliters', 'ml'], ['l', 'Liters', 'l']]
+  },
+  temp: {
+    label: 'Temperature', start: { a: 'F', b: 'C', v: '350' },
+    units: [['F', 'Fahrenheit', '°F'], ['C', 'Celsius', '°C']]
+  }
+};
+const US_KITCHEN = new Set(['tsp', 'tbsp', 'floz', 'cup', 'pint', 'quart', 'gallon', 'oz', 'lb']);
+
+/** value in `from` → value in `to` (same kind). */
+export function convertUnit(kind, value, from, to) {
+  if (from === to) return value;
+  if (kind === 'temp') return from === 'F' ? f2c(value) : c2f(value);
+  const T = kind === 'weight' ? WT : VOL;
+  return value * T[from] / T[to];
+}
+
+/** What a cook types: "2", "1.5", "1,5", "1/2", "1 1/2", "1½", "½", "-18" → number; NaN otherwise. */
+export function parseAmount(s) {
+  s = String(s ?? '').trim();
+  if (!s) return NaN;
+  const neg = /^[-−–]/.test(s);
+  const n = num(s.replace(/^[-−–]\s*/, '').replace(/\s+/g, ' ').replace(/^[.,]/, '0.').replace(/[.,]$/, ''));
+  return neg ? -n : n;
+}
+
+/** 4 significant figures, no exponent or thousands separators: 236.6, 3785, 0.2029, 45360. */
+export function fmtAmount(v) {
+  if (!Number.isFinite(v)) return '';
+  const r = Number(v.toPrecision(4));
+  return String(Object.is(r, -0) || Math.abs(r) < 1e-12 ? 0 : r);
+}
+
+/** "≈ ⅜ cup" for a US kitchen unit when the decimal isn't already a clean measure; '' otherwise. */
+export function kitchenHint(kind, value, unit) {
+  if (kind === 'temp' || !US_KITCHEN.has(unit) || !(value > 0) || value >= 100) return '';
+  const n = nice(value);
+  if (Number.isInteger(value) || String(fmtAmount(value)) === n.t) return '';
+  const exact = Math.abs(num(n.t) - value) <= value * 0.002;      // ¾ lb is 0.75 lb; 2.113 cups is only about 2⅛
+  const u = CONVERTERS[kind].units.find(x => x[0] === unit);
+  return `${exact ? '= ' : '≈ '}${n.t} ${value > 1 + 1e-9 && u[3] ? u[3] : u[2]}`;
 }
