@@ -17,6 +17,22 @@
       "openNotes": 0
     },
     {
+      "slug": "double-reverse-sear-steak",
+      "title": "Double Reverse Sear Steak",
+      "summary": "Nearly no gray steak sear. Requires skillet, oven, and high smoke point oil.",
+      "image": "media/double-reverse-sear-steak/hero-mwhn4x6g.jpg",
+      "time": {
+        "prep": 10,
+        "cook": 30,
+        "total": 40
+      },
+      "servings": 2,
+      "status": "custom",
+      "sourceType": "custom",
+      "updatedAt": "2026-11-15T09:37:10Z",
+      "openNotes": 0
+    },
+    {
       "slug": "kimchi-spam-fried-rice",
       "title": "Kimchi Spam Fried Rice 김치볶음밥",
       "summary": "Crisp-edged Spam, tangy kimchi and toasty rice in one pan, finished with sesame oil and a runny fried egg.",

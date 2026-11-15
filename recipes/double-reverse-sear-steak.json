@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "slug": "double-reverse-sear-steak",
+  "title": "Double Reverse Sear Steak",
+  "summary": "Nearly no gray steak sear. Requires skillet, oven, and high smoke point oil.",
+  "profile": "",
+  "status": "custom",
+  "source": {
+    "type": "custom",
+    "url": null,
+    "files": [],
+    "author": null
+  },
+  "image": "media/double-reverse-sear-steak/hero-mwhn4x6g.jpg",
+  "servings": 2,
+  "yield": "1 steak",
+  "time": {
+    "prep": 10,
+    "cook": 30,
+    "total": 40
+  },
+  "equipment": [
+    "12 inch skillet",
+    "Internal temperature monitor"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": null,
+      "qty": 1.5,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "salt",
+      "note": null
+    },
+    {
+      "id": "i2",
+      "section": null,
+      "qty": 12,
+      "qtyMax": null,
+      "unit": "oz",
+      "item": "steak",
+      "note": null
+    },
+    {
+      "id": "i3",
+      "section": null,
+      "qty": 4,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "canola oil",
+      "note": null
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": null,
+      "text": "Heat oven to 215F.",
+      "timers": [],
+      "tip": null
+    },
+    {
+      "id": "s2",
+      "section": null,
+      "text": "Heat skillet on high heat with canola oil.",
+      "timers": [],
+      "tip": null
+    },
+    {
+      "id": "s3",
+      "section": null,
+      "text": "Thoroughly remove moister and generously salt steak.",
+      "timers": [],
+      "tip": "salt steak right before placing on pan to minimize surface moisture."
+    },
+    {
+      "id": "s4",
+      "section": null,
+      "text": "When oil is highly smoking, sear steak on both sides for 1 minute each to achieve a near complete sear.",
+      "timers": [
+        {
+          "label": "Sear steak",
+          "seconds": 60
+        }
+      ],
+      "tip": "Note that the steak will continue to sear in the oven"
+    },
+    {
+      "id": "s5",
+      "section": null,
+      "text": "Immediately place hot skillet with steak into heated oven. Flip when core temperature reaches 85F.",
+      "timers": [],
+      "tip": null
+    },
+    {
+      "id": "s6",
+      "section": null,
+      "text": "Remove steak when it reaches 105F internal temperature and let it sit until it reaches 120F.",
+      "timers": [],
+      "tip": null
+    }
+  ],
+  "createdAt": "2026-11-15T09:37:10Z",
+  "updatedAt": "2026-11-15T09:37:10Z",
+  "changelog": []
+}
