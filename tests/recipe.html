@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Resolve the app's relative paths (recipes/…, media/…) from the repo root, as in index.html. -->
   <base href="/">
-  <title>Recipe page with a token · Bigback</title>
+  <title>Recipe page + cook mode with a token · Bigback</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/library.css">
   <link rel="stylesheet" href="css/recipe.css">
@@ -16,17 +16,17 @@
     td { padding: 6px 8px; border-top: 1px solid var(--line); vertical-align: top; }
     td:first-child { width: 2.5em; font-weight: 800; }
     tr.pass td:first-child { color: var(--ok); } tr.fail td:first-child { color: var(--danger); }
-    #app { width: 390px; }
+    #view { max-width: 390px; margin: 0; }
   </style>
 </head>
 <body>
 <!-- Run: python scripts/smoke.py tests/recipe.html
-     The recipe view with a (fake) GitHub token, so the write paths run (tests/fake-github.js:
+     The recipe and cook views with a (fake) GitHub token, so the write paths run (tests/fake-github.js:
      reads serve the repo's files, commits are only recorded, the token is removed again before
      the page reports). Nothing leaves the machine. -->
 <header class="topbar"><a id="topbar-back" class="icon-btn" href="#/" aria-label="Back" hidden>←</a><h1 id="topbar-title">Bigback</h1><div id="topbar-actions"></div></header>
-<main id="view"><p class="muted">Running…</p></main>
-<div id="app" tabindex="-1"></div>
+<!-- The view renders into #view (focusable, as in index.html); the results replace it at the end. -->
+<main id="view" tabindex="-1"><p class="muted">Running…</p></main>
 <!-- The batched library commit (1.2 s) needs real time: this holds smoke.py's DOM dump until the release below. -->
 <img hidden alt="" src="/__smoke/hold">
 <script type="module">
@@ -50,7 +50,7 @@ const SLUG = 'tteokguk';
 let off = null;
 try {
   sessionStorage.removeItem(`bb.rx:${SLUG}`);
-  const root = document.getElementById('app');
+  const root = document.getElementById('view');
   const { render } = await import('./js/views/recipe.js');
   off = await render(root, { slug: SLUG });
   const $ = s => root.querySelector(s);
@@ -110,6 +110,21 @@ try {
   ok('a recipe without steps: no cook-mode button that leads to "No steps to cook yet"',
     $('.rx-title') && !$('.rx-cook-btn') && !document.querySelector('#topbar-actions [href$="/cook"]'), $('.rx-cook-btn')?.outerHTML || 'topbar link');
   ok('…and no "Tap a number to check it off" hint with no numbers', !$('[data-steps-meta]').textContent.trim(), $('[data-steps-meta]').textContent);
+  off(); off = null;
+
+  /* cook mode: a note saved from its sheet */
+  const cook = await import('./js/views/cook.js');
+  off = await cook.render(root, { slug: SLUG });
+  const nb = $('[data-act="step-note"]');
+  nb.focus(); nb.click();
+  await until(() => document.querySelector('.ck-note-sheet textarea'));
+  const cta = document.querySelector('.ck-note-sheet textarea'), before = commits.length;
+  cta.value = 'more garlic next time'; cta.dispatchEvent(new Event('input', { bubbles: true }));
+  document.querySelector('.ck-note-sheet [type="submit"]').click();
+  await until(() => commits.length > before && !document.querySelector('.sheet-backdrop.open'));
+  await wait(400);
+  ok('cook mode: a step note is saved from its sheet', commits.at(-1)?.paths.includes(`journal/${SLUG}.json`), JSON.stringify(commits.at(-1)));
+  ok('…and focus is back on "Note on this step" (the step re-rendered under the sheet)', document.activeElement?.dataset?.act === 'step-note', where());
 } catch (e) {
   ok('test page ran', false, String(e.stack || e));
 } finally {
@@ -121,9 +136,8 @@ try {
 
 const failed = results.filter(r => !r.ok);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-document.getElementById('app').innerHTML = '';
 document.getElementById('view').innerHTML =
-  `<h1>Recipe page (token)</h1><p class="t-sum ${failed.length ? 'bad' : 'good'}">${results.length - failed.length} passed · ${failed.length} failed</p>` +
+  `<h1>Recipe page + cook mode (token)</h1><p class="t-sum ${failed.length ? 'bad' : 'good'}">${results.length - failed.length} passed · ${failed.length} failed</p>` +
   `<table>${results.map(r => `<tr class="${r.ok ? 'pass' : 'fail'}"><td>${r.ok ? 'ok' : 'FAIL'}</td><td>${esc(r.name)}${r.detail ? `<br><small>${esc(r.detail)}</small>` : ''}</td></tr>`).join('')}</table>`;
 fetch('/__smoke/release');
 </script>

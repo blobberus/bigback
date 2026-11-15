@@ -194,7 +194,15 @@ export async function render(root, { slug }) {
     if (!file) return;
     if (file.type && !/^image\//.test(file.type)) { toast('That file isn’t an image.', { type: 'error' }); return; }
     await openPhotoUploader({ slug, recipe, file });
+    refocus('photo');
   }
+
+  /** Saving from a sheet re-renders the step under it, so the button that opened the sheet is
+   *  gone and focus fell to the page: hand it to the re-rendered button. */
+  const refocus = act => {
+    const a = document.activeElement;
+    if (!a || a === document.body || a === root) root.querySelector(`[data-act="${act}"]`)?.focus({ preventScroll: true });
+  };
 
   /* ---------- input ---------- */
   const onClick = async (e, el) => {
@@ -202,8 +210,8 @@ export async function render(root, { slug }) {
       case 'next': return go(1);
       case 'prev': return go(-1);
       case 'ingredients': return openIngredients();
-      case 'step-note': return writeNote(steps[i]);
-      case 'recipe-note': return writeNote(null);
+      case 'step-note': return Promise.resolve(writeNote(steps[i])).then(() => refocus('step-note'));
+      case 'recipe-note': return Promise.resolve(writeNote(null)).then(() => refocus('recipe-note'));
       case 'photo':
         if (!isConnected()) return reportError(new NotConnectedError());
         return root.querySelector('[data-photo-input]')?.click();
