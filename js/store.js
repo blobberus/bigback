@@ -121,6 +121,8 @@ function revalidate(path) {
   const n = writes.get(path);
   fetchLive(path).then(data => {
     if (writes.get(path) !== n) return;                  // a local write is newer
+    // Library edits still waiting to be committed: the flush merges them into the live copy.
+    if (path === P.library && queue.length) return;
     if (data === undefined) {
       if (!fallbacks.has(path)) return;                  // only ever written here (e.g. an inbox item)
       data = clone(fallbacks.get(path));
@@ -181,19 +183,31 @@ export const getLock = opts => load(P.lock, null, opts);
 /** Idle-time warm-up: the index's recipes (and journals) this device has no copy of yet, two at
  *  a time, into the snapshot only (not memory, so revalidateAll stays small). A recipe opened
  *  later then paints at once (and offline) and is refreshed behind as usual. Stops at the first
- *  network failure or full storage. */
-export async function warmRecipes({ parallel = 2 } = {}) {
+ *  network failure, full storage, or once the snapshots reach `budget` characters: localStorage
+ *  is shared with drafts, timers and settings, which must never be the ones that fail to save. */
+export async function warmRecipes({ parallel = 2, budget = 2e6 } = {}) {
   const idx = await getIndex();
   const has = p => { try { return mem.has(p) || localStorage.getItem(SNAP + p) != null; } catch { return true; } };
   const todo = idx.recipes.flatMap(r => [[P.recipe(r.slug), null], [P.journal(r.slug), { slug: r.slug, entries: [] }]])
     .filter(([p]) => !has(p));
-  let stop = false;
+  let used = 0;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(SNAP)) used += k.length + (localStorage.getItem(k)?.length || 0);
+    }
+  } catch { return; }
+  let stop = used >= budget;
   const worker = async () => {
     for (let job; !stop && (job = todo.shift());) {
       const [p, fallback] = job, n = writes.get(p);
       try {
         const data = await fetchLive(p);
-        if (!has(p) && writes.get(p) === n) localStorage.setItem(SNAP + p, JSON.stringify(data === undefined ? fallback : data));
+        if (has(p) || writes.get(p) !== n) continue;
+        const text = JSON.stringify(data === undefined ? fallback : data);
+        if (used + text.length > budget) { stop = true; break; }
+        localStorage.setItem(SNAP + p, text);
+        used += SNAP.length + p.length + text.length;
       } catch { stop = true; }
     }
   };

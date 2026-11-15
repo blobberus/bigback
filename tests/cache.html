@@ -21,7 +21,7 @@
 <!-- WebCrypto needs real time: this holds smoke.py's DOM dump until the release below. -->
 <img hidden alt="" src="/__smoke/hold">
 <script type="module">
-import { getRecipe, getJournal, getLibrary, setRating, flushLibrary, onChange, peekLock, warmRecipes } from '../js/store.js';
+import { getIndex, getRecipe, getJournal, getLibrary, setRating, flushLibrary, onChange, peekLock, warmRecipes, revalidateAll } from '../js/store.js';
 import { unlockGate, makeLock, remember, forgetDevice } from '../js/lock.js';
 
 const results = [];
@@ -75,6 +75,14 @@ const snapOf = path => localStorage.getItem('bb.cache:' + path);
 const events = [];
 onChange(ev => events.push(ev));
 const refreshed = path => events.some(e => e.type === 'refresh' && e.paths?.includes(path));
+/** Make this the index in the store's memory (a forced read, answered here): a snapshot alone
+ *  wouldn't do once the index has been read on this page. */
+async function useIndex(slugs) {
+  const p = getIndex({ force: true });
+  await tick(5);
+  while (answer('recipes/index.json', 200, { recipes: slugs.map(slug => ({ slug })), pending: [] })) { /* this read and any refresh sharing it */ }
+  await p;
+}
 
 try {
   localStorage.setItem('bb.prefs', JSON.stringify({ ...JSON.parse(saved['bb.prefs'] || '{}'), token: '' }));
@@ -143,6 +151,11 @@ try {
   await tick(30);
   const lib = await getLibrary();
   ok('refresh started before a local edit is dropped', lib.recipes['t-x']?.rating === 7 && !lib.recipes.other && !refreshed('data/library.json'));
+  revalidateAll();                                 // one that starts while the edit still waits to be committed
+  answer('data/library.json', 200, { schemaVersion: 1, recipes: { other: { tags: [], rating: 3 } }, playlists: [] });
+  await tick(30);
+  const lib2 = await getLibrary();
+  ok('…and so is one started while the edit waits to be committed (no flicker back)', lib2.recipes['t-x']?.rating === 7 && !lib2.recipes.other);
   flushLibrary().catch(() => {});                  // send the batch now (into the stub) so no timer fires after the restore
   localStorage.setItem('bb.prefs', JSON.stringify({ ...JSON.parse(localStorage.getItem('bb.prefs')), token: '' }));
 
@@ -166,7 +179,7 @@ try {
   const w2 = getRecipe('w-2');
   ok('a warmed recipe then opens at once', (await settled(w2)) && (await w2).v === 1);
 
-  localStorage.setItem('bb.cache:recipes/index.json', JSON.stringify({ recipes: [{ slug: 'w-3' }, { slug: 'w-4' }, { slug: 'w-5' }], pending: [] }));
+  await useIndex(['w-3', 'w-4', 'w-5']);
   const offBefore = calls.length;
   let offDone = false;
   const offWarm = warmRecipes().then(() => { offDone = true; });
@@ -177,6 +190,15 @@ try {
   await offWarm;
   ok('offline → stops instead of trying every recipe', calls.slice(offBefore).length <= 2 && snapOf('recipes/w-3.json') === null,
     calls.slice(offBefore).join(', '));
+  await useIndex(['w-6']);
+  let budDone = false;
+  const budWarm = warmRecipes({ budget: 50 }).then(() => { budDone = true; });
+  while (!budDone) {                                // the live files would fit storage, but not the budget
+    answer('recipes/w-6.json', 200, { slug: 'w-6', text: 'x'.repeat(200) }); answer('journal/w-6.json', 404);
+    await tick(5);
+  }
+  await budWarm;
+  ok('warm-up stays inside its storage budget (drafts, timers and settings keep their room)', snapOf('recipes/w-6.json') === null);
 
   /* ---------- lock gate ---------- */
   const FAST = { iterations: 2000 };
