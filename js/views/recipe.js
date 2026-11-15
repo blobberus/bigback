@@ -50,6 +50,7 @@ export async function render(root, { slug }) {
   let seq = 0;
   let io = null;
   let timers = null;
+  let savedFrom = null;     // composer whose Save had focus: busy() disables (so blurs) that button
 
   /* ---------- painting ---------- */
   async function paint() {
@@ -95,16 +96,23 @@ export async function render(root, { slug }) {
       </div>`;
   }
 
-  // Keep a half-typed note focused (and the caret in place) across re-renders.
+  // Keep a half-typed note focused (and the caret in place) across re-renders. When the
+  // re-render closed that composer (the note was saved), focus its step's "Add note" button
+  // instead of letting it fall off the page.
   function captureFocus() {
     const a = document.activeElement;
-    if (!a || !root.contains(a) || !a.dataset?.composer) return null;
-    return { key: a.dataset.composer, start: a.selectionStart, end: a.selectionEnd };
+    const form = a && root.contains(a) ? a.closest('[data-composer-form]') : null;
+    const key = form ? form.dataset.composerForm : !a || a === document.body ? savedFrom : null;
+    savedFrom = null;
+    if (key == null) return null;
+    return { key, typing: !!form && !!a.dataset.composer, start: a?.selectionStart, end: a?.selectionEnd };
   }
   function restoreFocus(f) {
     if (!f) return;
-    const ta = root.querySelector(`textarea[data-composer="${CSS.escape(f.key)}"]`);
-    if (!ta) return;
+    const key = CSS.escape(f.key);
+    const ta = root.querySelector(`textarea[data-composer="${key}"]`);
+    if (!ta) return root.querySelector(`[data-act="note-open"][data-key="${key}"]`)?.focus({ preventScroll: true });
+    if (!f.typing) return ta.form.querySelector('[type="submit"]')?.focus({ preventScroll: true });
     ta.focus({ preventScroll: true });
     try { ta.setSelectionRange(f.start, f.end); } catch { /* ignore */ }
   }
@@ -368,10 +376,12 @@ export async function render(root, { slug }) {
     const closeComposer = s => { const drafts = { ...s.drafts }, open = { ...s.open }; delete drafts[key]; delete open[key]; return { ...s, drafts, open }; };
     rxPatch(slug, closeComposer);
     ta.readOnly = true;
+    if (document.activeElement === btn) savedFrom = key;
     try {
       await busy(btn, addNote(slug, step ? { stepId: step.id, stepText: step.text, text } : { text }));
       toast('Note saved', { type: 'ok' });
     } catch (err) {
+      savedFrom = null;
       ta.readOnly = false;
       rxPatch(slug, s => ({ ...s, drafts: { ...s.drafts, [key]: ta.value }, open: step ? { ...s.open, [key]: true } : s.open }));
       reportError(err);

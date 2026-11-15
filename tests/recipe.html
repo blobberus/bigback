@@ -92,6 +92,33 @@ try {
   await wait(300);
   ok('closing the sheet puts focus back on the Edit button', document.activeElement === edit && root.contains(edit), document.activeElement?.outerHTML.slice(0, 80));
   mo.disconnect();
+
+  /* step notes: saved from the keyboard (focus in the text) and with the Save button */
+  const where = () => { const a = document.activeElement; return `${a?.tagName}.${a?.className} ${a?.dataset?.act || ''}`; };
+  for (const [sid, how] of [['s1', 'keyboard'], ['s2', 'button']]) {
+    $(`[data-act="note-open"][data-key="${sid}"]`).click();
+    await until(() => $(`textarea[data-composer="${sid}"]`));
+    const ta = $(`textarea[data-composer="${sid}"]`), save = ta.form.querySelector('[type="submit"]');
+    ta.focus(); ta.value = `note ${how}`; ta.dispatchEvent(new Event('input', { bubbles: true }));
+    const before = commits.length;
+    if (how === 'keyboard') ta.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true, bubbles: true }));
+    else { save.focus(); save.click(); }
+    await until(() => commits.length > before && !$(`textarea[data-composer="${sid}"]`));
+    await wait(100);
+    ok(`a step note saved (${how}) shows under its step`, [...root.querySelectorAll(`#step-${sid} .rx-note-text`)].some(x => x.textContent === `note ${how}`));
+    const a = document.activeElement;
+    ok(`…and focus moves to that step's "Add another note" button (${how})`, a?.dataset?.act === 'note-open' && a.dataset.key === sid, where());
+  }
+  {
+    const ta = $('textarea[data-composer="recipe"]'), save = ta.form.querySelector('[type="submit"]'), before = commits.length;
+    ta.value = 'kids loved it'; ta.dispatchEvent(new Event('input', { bubbles: true }));
+    save.focus(); save.click();
+    await until(() => commits.length > before && /kids loved it/.test($('[aria-labelledby="rx-h-notes"] .rx-notes')?.textContent || ''));
+    await wait(100);
+    const a = document.activeElement;
+    ok('a recipe note saved with the button: the empty composer stays, focus back on its Save button',
+      !$('textarea[data-composer="recipe"]').value && a?.type === 'submit' && a.closest('[data-composer-form="recipe"]'), where());
+  }
 } catch (e) {
   ok('test page ran', false, String(e.stack || e));
 } finally {
