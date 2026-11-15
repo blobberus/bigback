@@ -5,7 +5,9 @@
  *   stepTextHtml(step, n, { match }) → html       durations parsed from the text that no explicit
  *                                                 timer covers become inline timer links; with
  *                                                 match = mentionMatcher(ingredients) (recipe-mentions.js)
- *                                                 ingredient names become amount links
+ *                                                 ingredient names become amount links; temperatures
+ *                                                 ("350°F") become conversion links (tempButton)
+ *   tempsHtml(text) → html                         just the temperature links (tips, ingredient notes)
  *   timerButtonsHtml(step, n) → html               one button per step.timers[] ("Dry brine · 15:00")
  *   bindTimers(root, slug) → off (off.refresh())   tap → startTimer; live remaining time on
  *                                                 running timers of this recipe (onTimers + 1s tick)
@@ -16,7 +18,8 @@ import { html, parseDurations, fmtClock, fmtMinutes } from '../util.js';
 import { on, toast } from '../ui.js';
 import { startTimer, onTimers, listTimers } from '../timers.js';
 import { icon } from './recipe-icons.js';
-import { mentionButton } from './recipe-mentions.js';
+import { mentionButton, tempButton } from './recipe-mentions.js';
+import { findTemps } from '../units.js';
 
 export function groupBySection(list = []) {
   const groups = [];
@@ -56,11 +59,17 @@ export function stepTextHtml(step, n, { match } = {}) {
   const text = step.text || '';
   const out = [];
   let pos = 0;
-  const spans = [...inlineDurations(step), ...(match ? match(text).map(m => ({ ...m, ing: true })) : [])]
+  const spans = [...inlineDurations(step), ...(match ? match(text).map(m => ({ ...m, ing: true })) : []),
+    ...findTemps(text).map(t => ({ ...t, temp: true }))]
     .sort((a, b) => a.index - b.index);
   for (const d of spans) {
     if (d.index < pos) continue;
     out.push(text.slice(pos, d.index));
+    if (d.temp) {
+      out.push(tempButton(text.slice(d.index, d.index + d.length), d));
+      pos = d.index + d.length;
+      continue;
+    }
     if (d.ing) {
       out.push(mentionButton(text.slice(d.index, d.index + d.length), d));
       pos = d.index + d.length;
@@ -70,6 +79,18 @@ export function stepTextHtml(step, n, { match } = {}) {
     const idle = fmtClock(d.seconds * 1000);
     out.push(html`<button type="button" class="rx-dur" data-act="timer" data-timer data-inline data-step="${step.id}" data-label="${label}" data-seconds="${d.seconds}" data-idle="${idle}">${icon('timer')}<span class="rx-dur-text">${text.slice(d.index, d.index + d.length)}</span><span class="sr-only rx-timer-sr"> (start timer)</span><span class="rx-timer-time" hidden></span></button>`);
     pos = d.index + d.length;
+  }
+  out.push(text.slice(pos));
+  return html`${out}`;
+}
+
+export function tempsHtml(text) {
+  text = String(text || '');
+  const out = [];
+  let pos = 0;
+  for (const t of findTemps(text)) {
+    out.push(text.slice(pos, t.index), tempButton(text.slice(t.index, t.index + t.length), t));
+    pos = t.index + t.length;
   }
   out.push(text.slice(pos));
   return html`${out}`;

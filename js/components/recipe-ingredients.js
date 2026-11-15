@@ -9,7 +9,8 @@
  *   qtyText(ing, factor) → "1½–2 cups" ('' when qty is null)
  * Tapping the circle or the text checks an ingredient off. Convertible amounts are buttons that
  * open a breakdown under the row instead (other US measures + metric, units.js): the main amount
- * ("3 tbsp") and any written in the note ("or ½ tsp dried"). Note amounts are shown as written,
+ * ("3 tbsp") and any written in the note ("or ½ tsp dried"); a temperature in the note ("about
+ * 65°F") opens the conversion bubble (recipe-mentions.js). Note amounts are shown as written,
  * not scaled. Open panels are remembered per recipe for this page load, so they survive
  * re-renders when scaling.
  */
@@ -17,7 +18,8 @@ import { html, fmtQty, scaleQty, clamp } from '../util.js';
 import { on } from '../ui.js';
 import { icon } from './recipe-icons.js';
 import { rxState, rxPatch, toggleId } from './recipe-state.js';
-import { breakdown, findAmounts } from '../units.js';
+import { breakdown, findAmounts, findTemps } from '../units.js';
+import { tempButton } from './recipe-mentions.js';
 
 const convOpen = new Map();      // slug → Set(panel keys open: "i3" main amount, "i3-n0" first note amount)
 const openSet = slug => { if (!convOpen.has(slug)) convOpen.set(slug, new Set()); return convOpen.get(slug); };
@@ -99,14 +101,22 @@ const convBtn = (key, label, open, cls = '') =>
 const convPanel = (key, conv, open, caption = '') =>
   html`<div class="rx-conv" id="rx-conv-${key}"${open ? '' : ' hidden'}>${caption ? html`<p class="rx-conv-cap">${caption}</p>` : ''}${convHtml(conv)}</div>`;
 
-/** Note text with its convertible amounts as buttons → { html, panels }. */
+/** Note text with its convertible amounts and temperatures as buttons → { html, panels }. */
 function noteParts(ing, open, scaled) {
   const note = String(ing.note || ''), parts = [], panels = [];
+  const temps = findTemps(note);
+  const inTemp = a => temps.some(t => a.index < t.index + t.length && t.index < a.index + a.length);   // "180C" isn't 180 cups
+  const spans = [...findAmounts(note, ing.item).filter(a => !inTemp(a)).map((a, k) => ({ ...a, k })), ...temps.map(t => ({ ...t, temp: true }))]
+    .sort((a, b) => a.index - b.index);
   let pos = 0;
-  findAmounts(note, ing.item).forEach((a, k) => {
-    const key = `${ing.id}-n${k}`, label = note.slice(a.index, a.index + a.length);
-    parts.push(note.slice(pos, a.index), convBtn(key, label, open.has(key), ' rx-note-amt'));
-    panels.push(convPanel(key, breakdown(a), open.has(key), scaled ? `${label} — as written, not scaled` : label));
+  spans.forEach(a => {
+    const label = note.slice(a.index, a.index + a.length);
+    if (a.temp) parts.push(note.slice(pos, a.index), tempButton(label, a));
+    else {
+      const key = `${ing.id}-n${a.k}`;
+      parts.push(note.slice(pos, a.index), convBtn(key, label, open.has(key), ' rx-note-amt'));
+      panels.push(convPanel(key, breakdown(a), open.has(key), scaled ? `${label} — as written, not scaled` : label));
+    }
     pos = a.index + a.length;
   });
   parts.push(note.slice(pos));

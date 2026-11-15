@@ -16,7 +16,7 @@ import { editMeta, metaSummary } from '../components/meta-editor.js';
 import { icon } from '../components/recipe-icons.js';
 import { rxState, rxPatch, setDraft, toggleId } from '../components/recipe-state.js';
 import { ingredientsHtml, bindIngredients } from '../components/recipe-ingredients.js';
-import { groupBySection, stepTextHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
+import { groupBySection, stepTextHtml, tempsHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
 import { mentionMatcher, bindMentions } from '../components/recipe-mentions.js';
 import {
   fmtDate, cookLog, cookedLine, noteListHtml, composerHtml, connectHint, photoGridHtml, photoThumbsHtml,
@@ -245,7 +245,7 @@ export async function render(root, { slug }) {
         <div class="rx-step-body">
           <p class="rx-step-text">${stepTextHtml(s, n, { match })}</p>
           ${timerButtonsHtml(s)}
-          ${s.tip ? html`<aside class="rx-tip"><span class="rx-tip-label">Why</span>${s.tip}</aside>` : ''}
+          ${s.tip ? html`<aside class="rx-tip"><span class="rx-tip-label">Why</span>${tempsHtml(s.tip)}</aside>` : ''}
           ${photoThumbsHtml(photos)}
           ${noteListHtml(notes)}
           ${open

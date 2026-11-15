@@ -21,6 +21,7 @@ body[data-view="cook"] { --tools-b: calc(var(--safe-b) + 96px); }   /* .ck-nav i
 }
 #tools.sw-open { grid-template-columns: minmax(0, 1fr); grid-template-areas: "tray" "sw"; }
 #tools:empty { display: none; }
+html.kb-open #tools { visibility: hidden; }   /* keyboard up: see .bottomnav in base.css */
 @media (min-width: 700px) {
   #tools { left: auto; width: min(420px, calc(100% - 2 * var(--tools-x))); }
 }

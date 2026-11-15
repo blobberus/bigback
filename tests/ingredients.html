@@ -25,7 +25,7 @@
 import { mentionMatcher, bindMentions } from '../js/components/recipe-mentions.js';
 import { ingredientsHtml, bindIngredients } from '../js/components/recipe-ingredients.js';
 import { stepTextHtml } from '../js/components/recipe-steps.js';
-import { breakdown, unitInfo, findAmounts } from '../js/units.js';
+import { breakdown, unitInfo, findAmounts, findTemps, tempDetails } from '../js/units.js';
 import { toStr } from '../js/util.js';
 
 const results = [];
@@ -117,6 +117,36 @@ eq('1¼ tsp: no fuzzy "≈ ⅜ tbsp"', B(1.25, 'tsp', 'salt'), ['6.2 ml']);
 eq('T is a tablespoon, t a teaspoon; spelled-out units', ['T', 't', 'Tablespoons', 'fl. oz', 'Grams', 'pinch'].map(u => unitInfo(u)?.key ?? null),
   ['tbsp', 'tsp', 'tbsp', 'floz', 'g', null]);
 
+/* ---------- temperatures ---------- */
+const T = s => findTemps(s).map(t => [s.slice(t.index, t.index + t.length), t.lo, t.hi, t.scale, t.oven]);
+eq('temperatures: symbols, spacing, words, bare F, ranges', [
+  'Preheat the oven to 425°F.', 'Bake at 350 °F for 30 minutes', 'Heat the oven to 180°C (160°C fan).', 'Roast at 325–350°F',
+  'Bake at 325°F to 350°F', 'Preheat oven to 400 degrees F', 'Set the oven to 250F', 'Heat to 375 F', 'Heat the oven to 220 ℃'
+].map(T), [
+  [['425°F', 425, null, 'F', true]], [['350 °F', 350, null, 'F', true]], [['180°C', 180, null, 'C', true], ['160°C', 160, null, 'C', true]],
+  [['325–350°F', 325, 350, 'F', true]], [['325°F to 350°F', 325, 350, 'F', true]], [['400 degrees F', 400, null, 'F', true]],
+  [['250F', 250, null, 'F', true]], [['375 F', 375, null, 'F', false]], [['220 ℃', 220, null, 'C', true]]
+]);
+eq('oven settings vs internal / oil temperatures', [
+  'Roast in a 250°F oven until it reads 125°F inside.', 'Heat the oil to 350°F in a Dutch oven.', 'Pull at 130 °F for medium-rare.'
+].map(T), [
+  [['250°F', 250, null, 'F', true], ['125°F', 125, null, 'F', false]], [['350°F', 350, null, 'F', false]], [['130 °F', 130, null, 'F', false]]
+]);
+eq('a written-out conversion is not a second link', ['Preheat the oven to 425°F (220°C).', 'Bake at 350°F/175°C', 'Cook to 130°F (about 54°C), then rest'].map(T),
+  [[['425°F', 425, null, 'F', true]], [['350°F', 350, null, 'F', true]], [['130°F', 130, null, 'F', false]]]);
+eq('a change in temperature converts as a difference', [
+  findTemps('Lower the oven by 25°F for convection.').map(t => [t.lo, t.delta, t.oven]), findTemps('It climbs about 10°F as it rests.').map(t => t.delta),
+  findTemps('Run it 15°F hotter next time.').map(t => t.delta), tempDetails({ lo: 25, scale: 'F', delta: true })
+], [[[25, true, false]], [true], [true], { main: '14°C', lines: ['A change in temperature, not a reading'] }]);
+eq('not temperatures: cups, turns, calories, pan sizes', ['Add 2 C flour', 'Add 12 C water', 'Rotate the pan 180° and cook', 'about 100 Calories', 'a 9x13 pan', 'use 20 Fl oz'].map(T),
+  [[], [], [], [], [], []]);
+eq('oven °F: °C, oven dial, fan, convection', tempDetails({ lo: 350, scale: 'F', oven: true }),
+  { main: '177°C', lines: ['Oven dial ≈ 180°C · fan 160°C', 'Convection: 325°F'] });
+eq('oven °C: °F dial and convection, fan', tempDetails({ lo: 200, scale: 'C', oven: true }),
+  { main: '392°F', lines: ['Oven dial ≈ 400°F · convection 375°F', 'Fan oven: 180°C'] });
+eq('food temperatures: just the other scale; ranges', [tempDetails({ lo: 125, scale: 'F' }), tempDetails({ lo: 325, hi: 350, scale: 'F' })],
+  [{ main: '52°C', lines: [] }, { main: '163–177°C', lines: [] }]);
+
 /* ---------- DOM: row taps, amount panels, mention bubble ---------- */
 const recipe = { slug: 'zz-test', ingredients: CHICKEN, steps: [] };
 const box = document.querySelector('#sandbox');
@@ -179,6 +209,24 @@ truthy('word removed from the page → bubble goes too', !document.querySelector
 link.click();
 window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
 truthy('Escape closes it', !document.querySelector('.rx-ingtip'));
+
+const tp = document.createElement('p');
+tp.innerHTML = toStr(stepTextHtml({ id: 's9', text: 'Preheat the oven to 425°F. Melt the butter.', timers: [] }, 9, { match: mentionMatcher(CHICKEN) }));
+document.body.append(tp);
+tp.scrollIntoView({ block: 'center' });
+const tb = tp.querySelector('[data-temp]');
+truthy('a step temperature is a button, next to ingredient links', tb?.textContent.startsWith('425°F') && tp.querySelector('[data-ingref]'));
+tb.click();
+const tipText = document.querySelector('.rx-ingtip')?.textContent || '';
+truthy('tap → °C plus oven dial, fan and convection', /218°C/.test(tipText) && /220°C · fan 200°C/.test(tipText) && /Convection: 400°F/.test(tipText), tipText);
+tb.click();
+truthy('tap again closes it', !document.querySelector('.rx-ingtip'));
+tp.remove();
+const noteBox = document.createElement('div');
+noteBox.innerHTML = toStr(ingredientsHtml({ ingredients: [{ id: 'i1', qty: 2, unit: 'tbsp', item: 'butter', note: 'softened, about 65°F' },
+  { id: 'i2', qty: 1, unit: 'cup', item: 'water', note: 'warmed to 40C; or 2 tbsp milk' }] }, 'zz-temp'));
+truthy('note temperatures link; "40C" is not 40 cups', noteBox.querySelectorAll('[data-temp]').length === 2 && noteBox.querySelectorAll('.rx-note-amt').length === 1
+  && noteBox.querySelector('.rx-note-amt').textContent === '2 tbsp');
 offIng(); offMen();
 box.remove();
 sessionStorage.removeItem('bb.rx:zz-test');

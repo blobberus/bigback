@@ -72,6 +72,11 @@ recipe yourself.
 python scripts/build_index.py && python scripts/validate.py   # must end "0 errors"
 git push
 ```
+**Temperature check:** every `temperature … write it like 250°F (120°C)` warning is a recipe
+that saved a temperature as `250F` / `250 degrees` / `°F` with no °C. Fix each in that recipe's
+text (recipe-ingest skill, Steps → Temperatures: degree sign + conversion), keep ids, bump
+`updatedAt`, add a changelog line, then one commit for all of them:
+`git commit -m "Write temperatures as °F (°C)"`. Don't touch the changelog's old text.
 Push rejected (the phone committed meanwhile) → `git pull --rebase`; on conflicts:
 - `recipes/index.json` → never hand-merge: `python scripts/build_index.py`, `git add` it.
 - `journal/<slug>.json` → take the remote copy (during a rebase that's

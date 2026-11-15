@@ -9,11 +9,15 @@
  *       recipe-state at tap time, so one global handler (installed on first render) serves every
  *       view. Tap → bubble right above the word; tap it again, tap anywhere else, scroll it away
  *       or press Esc to close.
+ *   tempButton(text, t) → html   a temperature in step text ("350°F", findTemps in units.js);
+ *       the same bubble shows it in the other scale, plus oven-dial / fan / convection settings
+ *       for oven temperatures
  *   bindMentions() → off    optional; closes the bubble on view cleanup
  */
 import { html, toStr, fmtQty } from '../util.js';
 import { rxState } from './recipe-state.js';
 import { qtyText } from './recipe-ingredients.js';
+import { tempDetails } from '../units.js';
 
 /* Words that describe an ingredient but aren't what a step calls it ("cold unsalted butter" → "butter"). */
 const DESCRIPTORS = new Set(`fresh freshly large small medium big extra extra-large jumbo virgin extra-virgin boneless
@@ -144,6 +148,17 @@ export function mentionButton(text, span) {
   return html`<button type="button" class="rx-ingref" data-ingref="${span.ids.join(' ')}" data-amt="${amt}" data-slug="${span.slug || ''}" aria-expanded="false">${text}<span class="sr-only"> (amount)</span></button>`;
 }
 
+export function tempButton(text, t) {
+  installMentions();
+  const data = JSON.stringify({ lo: t.lo, hi: t.hi ?? null, scale: t.scale, oven: !!t.oven, delta: !!t.delta });
+  return html`<button type="button" class="rx-ingref rx-tempref" data-temp="${data}" aria-expanded="false">${text}<span class="sr-only"> (in ${t.scale === 'F' ? 'Celsius' : 'Fahrenheit'})</span></button>`;
+}
+
+function tempHtml(t) {
+  const d = tempDetails(t);
+  return html`<span class="rx-ingtip-line"><strong>${d.main}</strong></span>${d.lines.map(l => html`<span class="rx-ingtip-sub">${l}</span>`)}`;
+}
+
 function bubbleHtml(ings, f) {
   const multi = ings.length > 1;
   return html`${ings.map(i => html`<span class="rx-ingtip-line">${multi && i.section ? html`<span class="rx-ingtip-sec">${i.section}:</span> ` : ''}<strong>${qtyText(i, f)}</strong> ${i.item}</span>`)}${
@@ -181,15 +196,20 @@ function place() {
 
 function open(el) {
   close();
-  let ings = [];
-  try { ings = JSON.parse(el.dataset.amt || '[]').map(x => ({ qty: x.q, qtyMax: x.m, unit: x.u, item: x.i, section: x.s })); } catch { /* bad markup */ }
-  ings = ings.filter(i => qtyText(i));
-  if (!ings.length) return;
+  let body = '';
+  try {
+    if (el.dataset.temp) body = tempHtml(JSON.parse(el.dataset.temp));
+    else {
+      const ings = JSON.parse(el.dataset.amt || '[]').map(x => ({ qty: x.q, qtyMax: x.m, unit: x.u, item: x.i, section: x.s })).filter(i => qtyText(i));
+      if (ings.length) body = bubbleHtml(ings, factorFor(el.dataset.slug));
+    }
+  } catch { /* bad markup */ }
+  if (!body) return;
   tip = document.createElement('div');
   tip.className = 'rx-ingtip';
   tip.id = 'rx-ingtip';
   tip.setAttribute('role', 'status');
-  tip.innerHTML = toStr(bubbleHtml(ings, factorFor(el.dataset.slug)));
+  tip.innerHTML = toStr(body);
   document.body.append(tip);
   btn = el;
   el.setAttribute('aria-expanded', 'true');
@@ -204,7 +224,7 @@ export function installMentions() {
   if (installed) return;
   installed = true;
   document.addEventListener('click', e => {
-    const el = e.target.closest?.('[data-ingref]');
+    const el = e.target.closest?.('[data-ingref], [data-temp]');
     if (!el) return;
     e.preventDefault();
     if (btn === el) close(); else open(el);

@@ -84,6 +84,14 @@ pan/stage), not one sentence per step and not a wall of text.
 - Lead with the action; include heat level, explicit temperatures `425°F (220°C)`, a time
   range, and the sensory cue that matters more than the clock ("until deep golden and it
   releases on its own, 18–22 minutes").
+- **Temperatures** are always written `250°F (120°C)`: degree sign, then the other scale in
+  parentheses, in steps, tips, notes and the profile. Sources (and the owner's own typing) often
+  say `250F`, `250 F`, `250 degrees` or `350°`; fix them. Oven settings convert to the nearest
+  10°C, like an oven dial (350°F → 180°C, 425°F → 220°C, 250°F → 120°C); food, oil, water and
+  sugar temperatures to the whole degree (130°F → 54°C, 165°F → 74°C; ranges `125–130°F
+  (52–54°C)`). Already inside parentheses, use a slash: `(165°F / 74°C)`. Temperature changes
+  convert as changes: `lower it by 25°F (14°C)`. `python scripts/validate.py` warns about any it finds. On the site every
+  temperature is also tap-to-convert (°C, oven dial, fan, convection: js/units.js `findTemps`).
 - Quantities in the text only when an ingredient is split ("half the parmesan (¼ cup)").
 - Name ingredients in steps by the last word(s) of their list name ("the butter", "the stock"
   for "cold unsalted butter" / "chicken stock"): the site turns those words into tap-for-amount
@@ -115,7 +123,8 @@ the flavor — that's what notes + recipe-refinement are for.
 
 ## Custom-recipe enrichment (`status: "custom"`)
 The user typed it — it's theirs. Keep their title, wording, amounts and step order; fix
-only typos and obvious unit slips (log them).
+only typos and obvious unit slips (log them), and write temperatures as `250°F (120°C)`
+(Steps → Temperatures).
 - Keep every existing ingredient/step id exactly; only add new ones as next-unused numbers.
 - Normalize ingredients: split "2 cups flour, sifted" into qty/unit/item/note.
 - Add: `profile`, `summary` (if blank), `timers` for every duration, `tip`s where a why
@@ -135,7 +144,7 @@ Serves 8."* → `recipes/moms-baked-ziti.json`:
   "slug": "moms-baked-ziti",
   "title": "Mom's Baked Ziti with Sausage",
   "summary": "Saucy sausage ziti with a creamy ricotta middle and a browned, stretchy mozzarella top. Feeds a crowd.",
-  "profile": "Savory and gently sweet from Italian sausage simmered into crushed tomatoes, with oregano and garlic in the background and a salty, nutty lift from parmesan; the ricotta layer keeps it creamy and mild rather than sharp. The pasta should be tender but intact under a blistered, browned mozzarella top, and the pan should slice into squares that hold their shape after resting. Delivers one 9x13-inch pan (8 servings) in about 1 hour 20 minutes, half of it hands-off; serve with a green salad or garlic bread. Keeps 4 days refrigerated or 3 months frozen; reheat covered at 350°F (175°C) for 20–25 minutes with a splash of water around the edges.",
+  "profile": "Savory and gently sweet from Italian sausage simmered into crushed tomatoes, with oregano and garlic in the background and a salty, nutty lift from parmesan; the ricotta layer keeps it creamy and mild rather than sharp. The pasta should be tender but intact under a blistered, browned mozzarella top, and the pan should slice into squares that hold their shape after resting. Delivers one 9x13-inch pan (8 servings) in about 1 hour 20 minutes, half of it hands-off; serve with a green salad or garlic bread. Keeps 4 days refrigerated or 3 months frozen; reheat covered at 350°F (180°C) for 20–25 minutes with a splash of water around the edges.",
   "status": "built",
   "source": { "type": "text", "url": null, "files": [], "author": "Mom (family recipe card)" },
   "image": null,

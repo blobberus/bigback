@@ -108,6 +108,19 @@ try {
     && foot.getBoundingClientRect().bottom <= s.box.getBoundingClientRect().bottom + 1
     && foot.getBoundingClientRect().top < s.box.getBoundingClientRect().bottom - 30);
   s.wrap.click(); await s.p;
+
+  // keyboard up on a page (no sheet): the bottom nav steps aside instead of sliding around
+  const nav = document.createElement('nav'); nav.className = 'bottomnav'; document.body.append(nav);
+  const field = document.createElement('textarea'); document.querySelector('#view').append(field);
+  Object.defineProperty(vvp, 'height', { configurable: true, get: () => de.clientHeight - 300 });   // fake keyboard
+  field.focus({ preventScroll: true }); await frame(); await frame();
+  ok('typing with the keyboard up → kb-open, nav steps aside', de.classList.contains('kb-open') && getComputedStyle(nav).visibility === 'hidden');
+  field.blur(); await frame(); await frame();
+  ok('…and it comes back when typing stops', !de.classList.contains('kb-open') && getComputedStyle(nav).visibility === 'visible');
+  delete vvp.height;
+  field.focus({ preventScroll: true }); await frame(); await frame();
+  ok('a focused field without a keyboard (desktop) changes nothing', !de.classList.contains('kb-open'));
+  field.remove(); nav.remove();
 } catch (e) {
   ok('suite threw', false, String(e?.stack || e));
 }

@@ -19,6 +19,28 @@ STEP_ID = re.compile(r"^s\d+$")
 SOURCE_TYPES = {"custom", "pdf", "youtube", "instagram", "tiktok", "web", "image", "text"}
 NOTE_STATUS = {"open", "applied", "kept"}
 
+# Temperatures are written "250°F (120°C)": a degree sign, and the other scale in parentheses.
+_DEG = "[°º˚]"
+_T = rf"\d{{2,3}}(?:\.\d)?(?:\s?{_DEG}\s?[FC]?)?(?:\s?(?:–|-|to)\s?\d{{2,3}}(?:\.\d)?)?\s?{_DEG}\s?[FC]"
+TEMP_PAIRED = re.compile(rf"{_T}\s*(?:\(\s*(?:about |≈ ?|~)?{_T}[^)]*\)|/\s?{_T})")
+TEMP_SIGNED = re.compile(_T)
+# "250F", "250 F", "180C" (attached only: "12 C" is cups), "350 degrees (F)", "350 deg F"
+TEMP_BARE = re.compile(r"(?<![\w.,/°º˚])\d{2,3}(?:\s?(?:–|-|to)\s?\d{2,3})?"
+                       r"(?:\s?F(?![A-Za-z])|C(?![A-Za-z])|\s?(?:degrees?|deg\.?)(?:\s?(?:F|C|Fahrenheit|Celsius)(?![A-Za-z]))?)")
+
+
+def temp_issues(text):
+    """Temperatures in `text` that aren't written "250°F (120°C)"."""
+    out = []
+    for m in TEMP_BARE.finditer(text or ""):
+        t = m.group(0)
+        if re.search(r"deg", t) and not re.search(r"[FC]\w*$", t) and int(re.match(r"\d+", t).group(0)) < 200:
+            continue                                   # "turn it 180 degrees"
+        out.append(f'"{t}" (no degree sign)')
+    for m in TEMP_SIGNED.finditer(TEMP_PAIRED.sub(" ", text or "")):
+        out.append(f'"{m.group(0)}" (no conversion)')
+    return out
+
 errors, warnings = [], []
 err = lambda where, msg: errors.append(f"{where}: {msg}")
 warn = lambda where, msg: warnings.append(f"{where}: {msg}")
@@ -87,6 +109,16 @@ def check_recipe(p):
         for t in st.get("timers") or []:
             if not isinstance(t.get("seconds"), int) or t["seconds"] <= 0:
                 err(where, f"step {sid} timer seconds must be a positive integer")
+
+    texts = [("summary", r.get("summary")), ("profile", r.get("profile"))]
+    texts += [(f"ingredient {i.get('id')} note", i.get("note")) for i in r.get("ingredients") or []]
+    for st in r.get("steps") or []:
+        texts += [(f"step {st.get('id')}", st.get("text")), (f"step {st.get('id')} tip", st.get("tip"))]
+    texts += [("equipment", e) for e in r.get("equipment") or [] if isinstance(e, str)]
+    for field, text in texts:
+        if isinstance(text, str):
+            for issue in temp_issues(text):
+                warn(where, f"{field}: temperature {issue}; write it like 250°F (120°C)")
     return r
 
 

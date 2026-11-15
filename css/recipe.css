@@ -217,6 +217,7 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 .rx-ingtip.is-below::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--ink); }
 .rx-ingtip strong { font-weight: 800; }
 .rx-ingtip-sec, .rx-ingtip-scale { opacity: .78; }
+.rx-ingtip-sub { font-size: .78rem; opacity: .82; }
 .rx-ingtip-scale { font-size: .75rem; }
 @keyframes rx-tip-in { from { opacity: 0; transform: translateY(3px); } }
 @media (prefers-reduced-motion: reduce) { .rx-ingtip { animation: none; } }

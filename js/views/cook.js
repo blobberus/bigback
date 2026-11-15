@@ -15,7 +15,7 @@ import { isConnected } from '../prefs.js';
 import { icon } from '../components/recipe-icons.js';
 import { rxState, rxPatch, setDraft, toggleId } from '../components/recipe-state.js';
 import { ingredientsHtml, bindIngredients } from '../components/recipe-ingredients.js';
-import { stepTextHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
+import { stepTextHtml, tempsHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
 import { mentionMatcher, bindMentions } from '../components/recipe-mentions.js';
 import { cookedLine, cookLog, clip, openPhotoUploader } from '../components/recipe-journal.js';
 
@@ -64,7 +64,7 @@ export async function render(root, { slug }) {
           ${s.section ? html`<p class="ck-section">${s.section}</p>` : ''}
           <p class="ck-text">${stepTextHtml(s, n, { match: mentionMatcher(recipe.ingredients, { slug }) })}</p>
           ${timerButtonsHtml(s)}
-          ${s.tip ? html`<aside class="rx-tip ck-tip"><span class="rx-tip-label">Why</span>${s.tip}</aside>` : ''}
+          ${s.tip ? html`<aside class="rx-tip ck-tip"><span class="rx-tip-label">Why</span>${tempsHtml(s.tip)}</aside>` : ''}
           ${last ? doneCard() : ''}
           <button type="button" class="rx-addnote ck-note" data-act="step-note">${icon('note')}Note on this step</button>
           ${next ? html`<p class="ck-upnext"><span>Up next</span>${clip(next.text, 90)}</p>` : ''}

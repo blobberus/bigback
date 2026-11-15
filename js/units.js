@@ -8,6 +8,13 @@
  *       fractions; "≈" marks a rounding error over ~2 %.
  *   findAmounts(text, item) → [{ index, length, qty, qtyMax, unit }]   convertible amounts written
  *       in free text, e.g. an ingredient note: "or ½ tsp dried", "use 1¼ tsp Morton", "about 2.5 lb"
+ *   findTemps(text) → [{ index, length, lo, hi, scale: 'F' | 'C', oven, delta }]   "350°F", "325–350 °F",
+ *       "180°C", "350 degrees F", "250F"; oven = an oven setting by context ("Preheat the oven to"),
+ *       not an internal / oil / water temperature. Bare "350°" (no F/C) isn't matched, nor the
+ *       written-out conversion in "250°F (120°C)". delta = a change ("lower it by 25°F", "10°F hotter"),
+ *       converted as a difference (25°F → 14°C).
+ *   tempDetails(t) → { main, lines }   "177°C"; for oven settings also the oven-dial rounding,
+ *       fan and convection settings ("Oven dial ≈ 180°C · fan 160°C", "Convection: 325°F")
  */
 import { fmtQty } from './util.js';
 
@@ -199,4 +206,73 @@ export function findAmounts(text, item = '') {
     if (breakdown(ing)) out.push({ index, length: m[0].length - pre.length, ...ing });
   }
   return out;
+}
+
+/* ---------- temperatures ---------- */
+const T_NUM = String.raw`(\d{2,3}(?:\.\d)?)`;
+const T_SYM = '[°º˚]';
+// (prefix)(a)(°F)?( – b)? then the unit: °F · ° F · degrees F · deg F · F · ℉ (and the same for C).
+const TEMP = new RegExp(String.raw`(^|[^\w.,/])${T_NUM}(?:\s?${T_SYM}\s?(?:[FC](?![a-z]))?)?(?:\s*(?:-|–|—|to)\s*${T_NUM})?` +
+  String.raw`(?:(?:\s?${T_SYM}\s?|\s?degrees?\s|\s?deg\.?\s?|\s?)([FC]|[Ff]ahrenheit|[Cc]elsius|[Cc]entigrade)(?![A-Za-z])|\s?([℉℃]))`, 'g');
+const HAS_DEG = /[°º˚℉℃]|deg/;
+const ECHO = /^\s*(?:\(\s*(?:about |≈ ?|~)?|\/\s?)$/;
+const OVEN = /\b(?:oven|preheat|bake[sd]?|baking|roast(?:s|ed|ing)?|broil)/i;
+// Words just before the number that make it a food / oil / water temperature, in the same sentence.
+const NOT_OVEN = /\b(?:internal|thermometer|reads?|registers?|reach(?:es)?|until|oil|water|fry|frying|candy|syrup|sugar|milk|cent(?:er|re)|middle|thickest|core)\b[^.;!?]*$/i;
+// A change, not a reading: "lower the oven by 25°F", "it climbs 10°F as it rests", "15°F hotter".
+const DELTA_BEFORE = /\b(?:by|another|climbs?|rises?|rais(?:e|es|ed)|lower(?:s|ed)?|drops?|reduce[sd]?|extra)\s+(?:about\s+|around\s+|roughly\s+|~\s?)?$/i;
+const DELTA_AFTER = /^\s*(?:more|less|higher|lower|hotter|cooler|warmer|colder)\b/i;
+const f2c = f => (f - 32) * 5 / 9, c2f = c => c * 9 / 5 + 32;
+
+export function findTemps(text) {
+  text = String(text || '');
+  const out = [];
+  let prev = null;                                     // { end, scale } of the last temperature
+  for (const m of text.matchAll(TEMP)) {
+    const [whole, pre, a, b, word, sym] = m;
+    const scale = sym ? (sym === '℉' ? 'F' : 'C') : word[0].toUpperCase();
+    const amt = whole.slice(pre.length);
+    // A bare letter: "350 F" / "250F" is a temperature; "12 C" is cups, so C only when attached ("180C").
+    if (!HAS_DEG.test(amt) && word === 'C' && /\sC$/.test(amt)) continue;
+    const lo = Number(a), hi = b != null && Number(b) > lo ? Number(b) : null;
+    if (scale === 'F' ? lo > 650 : lo > 350) continue;
+    const index = m.index + pre.length;
+    // "250°F (120°C)" / "350°F/175°C": the second is the written-out conversion, not a new temperature.
+    const echo = prev && prev.scale !== scale && ECHO.test(text.slice(prev.end, index));
+    prev = { end: index + amt.length, scale };
+    if (echo) continue;
+    const end = index + amt.length;
+    const delta = DELTA_BEFORE.test(text.slice(Math.max(0, index - 30), index)) || DELTA_AFTER.test(text.slice(end, end + 12));
+    const asF = scale === 'F' ? lo : c2f(lo);
+    const oven = !delta && asF >= 200 && asF <= 550 && OVEN.test(text) && !NOT_OVEN.test(text.slice(Math.max(0, index - 48), index));
+    out.push({ index, length: amt.length, lo, hi, scale, oven, delta });
+  }
+  return out;
+}
+
+const deg = (lo, hi, scale) => {
+  const a = Math.round(lo), b = hi != null ? Math.round(hi) : null;
+  return `${a}${b != null && b !== a ? `–${b}` : ''}°${scale}`;
+};
+const to10 = v => Math.round(v / 10) * 10, to25 = v => Math.round(v / 25) * 25;
+const shift = (lo, hi, d) => [lo + d, hi != null ? hi + d : null];
+
+export function tempDetails({ lo, hi = null, scale, oven = false, delta = false }) {
+  if (delta) {                                          // a difference scales, it doesn't shift
+    const k = scale === 'F' ? 5 / 9 : 9 / 5;
+    return { main: deg(lo * k, hi != null ? hi * k : null, scale === 'F' ? 'C' : 'F'), lines: ['A change in temperature, not a reading'] };
+  }
+  const conv = scale === 'F' ? f2c : c2f;
+  const main = deg(conv(lo), hi != null ? conv(hi) : null, scale === 'F' ? 'C' : 'F');
+  const lines = [];
+  if (oven && scale === 'F') {
+    const dial = [to10(f2c(lo)), hi != null ? to10(f2c(hi)) : null];
+    lines.push(`Oven dial ≈ ${deg(...dial, 'C')} · fan ${deg(...shift(...dial, -20), 'C')}`);
+    lines.push(`Convection: ${deg(...shift(lo, hi, -25), 'F')}`);
+  } else if (oven) {
+    const dial = [to25(c2f(lo)), hi != null ? to25(c2f(hi)) : null];
+    lines.push(`Oven dial ≈ ${deg(...dial, 'F')} · convection ${deg(...shift(...dial, -25), 'F')}`);
+    lines.push(`Fan oven: ${deg(...shift(lo, hi, -20), 'C')}`);
+  }
+  return { main, lines };
 }

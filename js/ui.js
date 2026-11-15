@@ -6,7 +6,7 @@
  *       body: html string/raw or Node. Resolves null on dismiss. sheet.el is available via onOpen(el).
  *       Modal: role=dialog + aria-modal, named by its title (or `label`), background inert,
  *       focus moved in / restored, Tab trapped, Escape closes the top sheet (if dismissable).
- *       Stays above the phone's on-screen keyboard. A sticky footer (see .picker-sheet in
+ *       Stays above the phone's on-screen keyboard (html.kb-open marks the keyboard being up). A sticky footer (see .picker-sheet in
  *       library.css) keeps the action buttons on screen in long sheets.
  *   confirmSheet(message, { ok:'Delete', danger:true }) → Promise<boolean>
  *   promptSheet(title, { value, placeholder, ok, multiline }) → Promise<string|null>
@@ -72,27 +72,32 @@ function syncScrollLock() {
 }
 
 /* On-screen keyboard: phones lay it over the page instead of shrinking the page (iOS always,
-   Android Chrome by default), so a bottom sheet would sit behind it with its text box hidden.
-   While a sheet is open the backdrop is fitted to the visual viewport (--vv-top / --vv-h on
-   <html>), which lifts the sheet to just above the keyboard; html.kb-open drops the home-bar
-   padding meanwhile, and the focused field is scrolled into view inside the sheet. */
+   Android Chrome by default). Things pinned to the bottom of the page then sit behind it, and
+   slide up and down with every scroll as the visible area pans over the page.
+   - html.kb-open while it's up (a text field has focus and the visible area is much shorter than
+     the page's viewport): the bottom nav and timer button step aside, the editor's save bar
+     rejoins the page flow (base / tools / editor.css), sheets drop their home-bar padding.
+   - While a sheet is open its backdrop is fitted to the visual viewport (--vv-top / --vv-h on
+     <html>), which lifts the sheet to just above the keyboard, and the focused field is
+     scrolled into view inside the sheet. */
 const vv = window.visualViewport;
+const TYPING = 'textarea, select, [contenteditable=""], [contenteditable="true"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([type="color"])';
 let vvFrame = 0;
 function fitViewport() {
   vvFrame = 0;
   const de = document.documentElement, st = de.style;
-  if (!vv || !openSheets.length || Math.abs(vv.scale - 1) > 0.01) {   // pinch-zoomed: leave it be
-    st.removeProperty('--vv-top'); st.removeProperty('--vv-h'); de.classList.remove('kb-open');
-    return;
-  }
+  const zoomed = !vv || Math.abs(vv.scale - 1) > 0.01;                // pinch-zoomed: leave it be
+  de.classList.toggle('kb-open', !zoomed && de.clientHeight - vv.height > 120 && !!document.activeElement?.matches?.(TYPING));
+  if (zoomed || !openSheets.length) { st.removeProperty('--vv-top'); st.removeProperty('--vv-h'); return; }
   st.setProperty('--vv-top', `${Math.round(vv.offsetTop)}px`);
   st.setProperty('--vv-h', `${Math.round(vv.height)}px`);
-  de.classList.toggle('kb-open', de.clientHeight - vv.height > 120);
   revealFocus();
 }
 const queueFit = () => { if (!vvFrame) vvFrame = requestAnimationFrame(fitViewport); };
 vv?.addEventListener('resize', queueFit);
 vv?.addEventListener('scroll', queueFit);
+document.addEventListener('focusin', queueFit);
+document.addEventListener('focusout', queueFit);
 
 /** Scroll the top sheet so its focused text field sits above any sticky footer (Done / Apply). */
 function revealFocus() {

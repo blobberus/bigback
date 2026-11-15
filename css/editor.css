@@ -142,7 +142,9 @@
 }
 .ed-more[open] > summary::after { margin-bottom: -2px; transform: rotate(-135deg); }
 
-/* sticky save bar, sits just above the bottom nav */
+/* sticky save bar, sits just above the bottom nav; while the keyboard is up (html.kb-open) it
+   rejoins the page flow at the end of the form, so it doesn't float over the text you type */
+html.kb-open .ed-savebar { position: static; }
 .ed-savebar {
   position: sticky; bottom: calc(var(--nav-h) + var(--safe-b)); z-index: 5;
   display: flex; align-items: center; gap: 12px; margin: 4px calc(-1 * var(--gap)) 0; padding: 10px var(--gap);
