@@ -6,7 +6,8 @@
  * page). The last step offers a photo (which logs the cook) and a note. The current step is
  * remembered per slug in sessionStorage (components/recipe-state.js), and so are half-typed
  * notes: closing the note sheet keeps the draft (per step, or 'recipe'), shared with the
- * recipe page's composers; a successful save clears it.
+ * recipe page's composers; a successful save clears it. Next checks the step off on the recipe
+ * page; Finish checks off the last one and clears the resume point.
  * A render that is still loading when you move on paints and binds nothing (the router drops
  * the cleanup of a render it has already left).
  * Exit (×), Finish and Esc go back to the recipe page you came from (history.back(), so its ←
@@ -206,6 +207,9 @@ export async function render(root, { slug }) {
       case 'photo':
         if (!isConnected()) return reportError(new NotConnectedError());
         return root.querySelector('[data-photo-input]')?.click();
+      case 'finish':   // the last step is done too, and there's nothing left to resume
+        rxPatch(slug, s => ({ ...s, done: toggleId(s.done, steps[i].id, true), step: null }));
+        break;
       default:
     }
   };

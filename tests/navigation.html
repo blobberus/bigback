@@ -142,6 +142,18 @@ try {
     } else ok('playlist case skipped: no playlist with recipes', true);
   }
   {
+    const a = await app('#/r/mapo-tofu');
+    const n = a.view().querySelectorAll('.rx-step').length;
+    a.$('.rx-cook-btn').click();
+    await until(() => a.$('.ck'));
+    for (let k = 0; k < 40 && a.$('[data-act="next"]'); k++) a.$('[data-act="next"]').click();
+    a.$('[data-act="finish"]').click();
+    await until(() => a.$('.rx-cook-btn'));
+    const meta = a.$('[data-steps-meta]').textContent.replace(/\s+/g, ' ').trim();
+    ok('cooking through to Finish checks off every step, last one included', n > 1 && meta.startsWith(`${n} of ${n} done`), meta);
+    ok('…and the recipe page offers a fresh start, not "Resume cooking · step N"', /Start cook mode/.test(a.$('.rx-cook-btn').textContent), a.$('.rx-cook-btn').textContent.trim());
+  }
+  {
     const a = await app('#/r/tteokguk');
     ok('a recipe opened directly (deep link): ← is the Recipes list', topBack(a).getAttribute('href') === '#/', topBack(a).getAttribute('href'));
     topBack(a).click();
