@@ -280,5 +280,13 @@ body { padding-bottom: calc(var(--tools-b) + var(--tools-h, 56px) + 16px); }
   -webkit-appearance: none; appearance: none; text-overflow: ellipsis;
 }
 .cv-unit:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* one-tap fractions / ± (the iPhone number pad has neither "/" nor "-") */
+.cv-keys { display: flex; gap: 6px; margin: 4px 0 4px; }
+.cv-key {
+  min-width: 44px; min-height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface-2); color: var(--ink-2); font-size: 1.05rem; font-weight: 650; cursor: pointer;
+  touch-action: manipulation;
+}
+.cv-key:active { background: var(--accent-soft); color: var(--accent); }
 .cv-hint { min-height: 1.2em; margin: 0 2px; font-size: .8rem; font-weight: 650; color: var(--accent); }
 .cv-foot { margin: 2px 12px; text-align: center; font-size: .8rem; line-height: 1.4; color: var(--muted); }

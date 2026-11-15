@@ -15,7 +15,7 @@
 <div id="sandbox"></div>
 <script type="module">
 import { CONVERTERS, convertUnit, parseAmount, fmtAmount, kitchenHint } from '../js/units.js';
-import { render, midTyping } from '../js/views/convert.js';
+import { render, midTyping, withFraction, flipSign } from '../js/views/convert.js';
 
 const results = [];
 const canon = v => JSON.stringify(v);
@@ -99,6 +99,18 @@ amt('temp', 'b').focus(); type(amt('temp', 'b'), '-');
 eq('a lone minus on the other side leaves the row as it was', [amt('temp', 'a').value, amt('temp', 'b').classList.contains('is-bad')], ['180', false]);
 eq('midTyping', ['-', '−', '.', '2.', '1/', '1 1', '1 1/', '1 1/2/', 'abc', '1..', ''].map(s => midTyping(s, true)).concat(midTyping('-', false)),
   [true, true, true, true, true, true, true, false, false, false, false, false]);
+
+/* ---------- fraction and sign keys (the iPhone number pad has no "/" or "-") ---------- */
+eq('withFraction / flipSign', [withFraction('', '½'), withFraction('2', '½'), withFraction('2½', '¼'), withFraction('1 1/2', '¾'), withFraction('0.5', '⅓'),
+  flipSign('40'), flipSign('-40'), flipSign('')], ['½', '2½', '2¼', '1¾', '⅓', '-40', '40', '-']);
+pick(unit('volume', 'a'), 'cup'); pick(unit('volume', 'b'), 'ml');
+amt('volume', 'a').focus(); type(amt('volume', 'a'), '2');
+row('volume').querySelector('[data-key="½"]').click();
+eq('a fraction key adds to the amount being typed, keeping focus', [amt('volume', 'a').value, amt('volume', 'b').value, document.activeElement === amt('volume', 'a')], ['2½', '591.5', true]);
+amt('temp', 'a').focus(); type(amt('temp', 'a'), '40');
+row('temp').querySelector('[data-key="neg"]').click();
+eq('± flips the temperature', [amt('temp', 'a').value, amt('temp', 'b').value], ['-40', '-40']);
+eq('fractions on weight and volume, ± on temperature', ['weight', 'volume', 'temp'].map(k => row(k).querySelectorAll('.cv-key').length), [5, 5, 1]);
 localStorage.removeItem('bb.convert');
 
 const failed = results.filter(r => !r.ok).length;

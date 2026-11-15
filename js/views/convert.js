@@ -8,6 +8,8 @@
  *   - Amounts take decimals or fractions ("1.5", "1,5", "1 1/2", "½"); a US kitchen result also
  *     shows the nearest measure ("≈ ⅜ cup").
  *   - Tapping an amount selects it, so the next digits replace it.
+ *   - Fraction keys (¼ ⅓ ½ ⅔ ¾) on weight and volume and ± on temperature, since the iPhone number
+ *     pad has no "/" or "-"; they act on the amount being typed and keep the keyboard up.
  *   - Units and the last amount per row are remembered on this device (localStorage bb.convert).
  * Math and unit tables: units.js (CONVERTERS, convertUnit, parseAmount, fmtAmount, kitchenHint).
  */
@@ -53,10 +55,26 @@ function sideHtml(kind, st, side) {
   </div>`;
 }
 
+/* The iPhone number pad has no "/", space or "-": one-tap fractions for weight and volume, a
+   sign flip for temperature. They act on the amount you're typing in (or typed in last). */
+const FRACS = ['¼', '⅓', '½', '⅔', '¾'];
+const keysHtml = kind => html`<div class="cv-keys" role="group" aria-label="${kind === 'temp' ? 'Sign' : 'Fractions'}">${kind === 'temp'
+  ? html`<button type="button" class="cv-key" data-key="neg" aria-label="Negative or positive">±</button>`
+  : FRACS.map(f => html`<button type="button" class="cv-key" data-key="${f}" aria-label="Add ${f}">${f}</button>`)}</div>`;
+
+/** "2" + ½ → "2½"; "2½" + ¼ → "2¼" (the fraction is replaced); "" + ½ → "½". */
+export function withFraction(raw, frac) {
+  const v = parseAmount(raw);
+  const whole = Number.isFinite(v) && v >= 1 ? Math.floor(v + 1e-9) : 0;
+  return `${whole || ''}${frac}`;
+}
+export const flipSign = raw => (/^\s*[-−–]/.test(raw) ? raw.replace(/^\s*[-−–]\s*/, '') : `-${raw.trim()}`);
+
 function rowHtml(kind, st) {
   return html`<section class="cv-row" data-kind="${kind}" aria-labelledby="cv-${kind}-h">
     <h2 class="cv-h" id="cv-${kind}-h">${CONVERTERS[kind].label}</h2>
     <div class="cv-pair">${sideHtml(kind, st, 'a')}<span class="cv-eq" aria-hidden="true">=</span>${sideHtml(kind, st, 'b')}</div>
+    ${keysHtml(kind)}
   </section>`;
 }
 
@@ -94,7 +112,18 @@ export async function render(root) {
   KINDS.forEach(compute);
 
   let justFocused = null;
+  const focusSide = {};     // per row: the amount box last focused (keys act on it)
   const offs = [
+    // Keys keep the keyboard up: no focus change on press.
+    on(root, 'pointerdown', '.cv-key', e => e.preventDefault()),
+    on(root, 'click', '.cv-key', (e, b) => {
+      const kind = b.closest('.cv-row').dataset.kind, st = state[kind];
+      const side = focusSide[kind] || st.from;
+      const el = rowOf(kind).querySelector(`.cv-amt[data-side="${side}"]`);
+      el.value = b.dataset.key === 'neg' ? flipSign(el.value) : withFraction(el.value, b.dataset.key);
+      if (document.activeElement === el) el.setSelectionRange(el.value.length, el.value.length);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }),
     on(root, 'input', '.cv-amt', (e, el) => {
       const kind = el.closest('.cv-row').dataset.kind, st = state[kind];
       st.from = el.dataset.side; st.raw = el.value;
@@ -111,6 +140,7 @@ export async function render(root) {
     // Tap an amount → it's selected, so typing replaces it (the mouseup would undo a plain select()).
     on(root, 'focusin', '.cv-amt', (e, el) => {
       justFocused = el;
+      focusSide[el.closest('.cv-row').dataset.kind] = el.dataset.side;
       setTimeout(() => { if (document.activeElement === el) el.setSelectionRange(0, el.value.length); }, 0);
     }),
     on(root, 'mouseup', '.cv-amt', (e, el) => { if (justFocused === el) { e.preventDefault(); justFocused = null; } }),
