@@ -1,13 +1,14 @@
 /**
  * tests/fake-github.js — a stand-in GitHub API so test pages can run the app's write paths
  * (library batches, notes, photos) with a token, without the network.
- *   const gh = fakeGitHub()   wraps window.fetch: api.github.com reads serve the repo's own files
- *                             (the page needs <base href="/">), commits are only recorded in
+ *   const gh = fakeGitHub({ files })   wraps window.fetch: api.github.com reads serve the repo's own
+ *                             files (the page needs <base href="/">) or a fixture from files
+ *                             { 'recipes/x.json': obj }, commits are only recorded in
  *                             gh.commits [{ message, paths }]; sets a fake token in bb.prefs
  *   gh.restore()              puts bb.prefs back and drops the store's bb.cache:* snapshots
  *                             (smoke.py runs every route in one browser profile)
  */
-export function fakeGitHub() {
+export function fakeGitHub({ files = {} } = {}) {
   const realFetch = window.fetch.bind(window);
   const commits = [];
   let n = 0;
@@ -17,7 +18,9 @@ export function fakeGitHub() {
     if (!url.startsWith('https://api.github.com/')) return realFetch(u, o);
     const p = url.replace(/^https:\/\/api\.github\.com\/repos\/[^/]+\/[^/]+/, '').split('?')[0], method = o.method || 'GET';
     if (p.startsWith('/contents/')) {
-      const r = await realFetch(decodeURIComponent(p.slice('/contents/'.length)), { cache: 'no-store' });
+      const path = decodeURIComponent(p.slice('/contents/'.length));
+      if (files[path]) return new Response(JSON.stringify(files[path]));
+      const r = await realFetch(path, { cache: 'no-store' });
       return r.ok ? new Response(await r.text()) : json({ message: 'Not Found' }, 404);
     }
     if (p.startsWith('/git/ref/')) return json({ object: { sha: 'c0' } });

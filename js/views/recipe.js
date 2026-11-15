@@ -2,7 +2,8 @@
  * views/recipe.js — recipe page (#/r/<slug>).
  * Hero, title, summary, times, source → your meta + cooking log (days with journal photos) → flavor profile →
  * equipment → scaled, checkable ingredients → numbered steps (tap the number = done) with
- * timers and step notes → recipe notes → photo journal → changelog.
+ * timers and step notes → recipe notes → photo journal → changelog. A recipe without steps has
+ * no cook-mode button (topbar or page).
  * Re-renders on store changes to this recipe's files (a library-only change just updates the
  * rating / tags line in place). Cooking state (checked, done, scale)
  * and half-typed notes live in sessionStorage (components/recipe-state.js), shared with cook mode.
@@ -62,7 +63,7 @@ export async function render(root, { slug }) {
     setTopbar({
       title: recipe.title || 'Recipe', back,
       actions: html`
-        <a class="icon-btn" href="#/r/${slug}/cook" aria-label="Cook mode" title="Cook mode">${icon('flame')}</a>
+        ${(recipe.steps || []).length ? html`<a class="icon-btn" href="#/r/${slug}/cook" aria-label="Cook mode" title="Cook mode">${icon('flame')}</a>` : ''}
         <a class="icon-btn" href="#/edit/${slug}" aria-label="Edit recipe" title="Edit recipe">${icon('edit')}</a>`
     });
     const focus = captureFocus();
@@ -189,7 +190,8 @@ export async function render(root, { slug }) {
   }
 
   function cookButton(r) {
-    const at = (r.steps || []).findIndex(s => s.id === rxState(slug).step);
+    if (!(r.steps || []).length) return '';           // nothing to cook step by step yet
+    const at = r.steps.findIndex(s => s.id === rxState(slug).step);
     const label = at > 0 ? `Resume cooking · step ${at + 1}` : 'Start cook mode';
     return html`<a class="btn btn-primary btn-block rx-cook-btn" href="#/r/${slug}/cook">${icon('flame')} ${label}</a>`;
   }
@@ -261,6 +263,7 @@ export async function render(root, { slug }) {
 
   function stepsMeta(st, steps) {
     const done = steps.filter(s => st.done.includes(s.id)).length;
+    if (!steps.length) return '';
     if (!done) return html`<span>Tap a number to check it off</span>`;
     return html`<span>${done} of ${steps.length} done</span><button type="button" class="rx-link-btn" data-act="steps-reset">${icon('reset')} Reset</button>`;
   }

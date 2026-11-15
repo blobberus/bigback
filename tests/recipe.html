@@ -40,7 +40,11 @@ async function until(fn, ms = 4000) {
   return false;
 }
 
-const gh = fakeGitHub(), { commits } = gh;
+const BARE = 'zz-no-steps';
+const gh = fakeGitHub({ files: { [`recipes/${BARE}.json`]: {
+  schemaVersion: 1, slug: BARE, title: 'Typed in, no steps yet', summary: '', status: 'custom', source: { type: 'custom' },
+  image: null, servings: null, time: {}, equipment: [], ingredients: [{ id: 'i1', qty: 2, unit: 'cup', item: 'rice' }], steps: [], changelog: []
+} } }), { commits } = gh;
 const SLUG = 'tteokguk';
 
 let off = null;
@@ -98,6 +102,14 @@ try {
     ok('a recipe note saved with the button: the empty composer stays, focus back on its Save button',
       !$('textarea[data-composer="recipe"]').value && a?.type === 'submit' && a.closest('[data-composer-form="recipe"]'), where());
   }
+  ok('a recipe with steps offers cook mode (page button + topbar)', $('.rx-cook-btn') && document.querySelector(`#topbar-actions [href="#/r/${SLUG}/cook"]`));
+  off(); off = null;
+
+  /* a recipe typed in without steps yet */
+  off = await render(root, { slug: BARE });
+  ok('a recipe without steps: no cook-mode button that leads to "No steps to cook yet"',
+    $('.rx-title') && !$('.rx-cook-btn') && !document.querySelector('#topbar-actions [href$="/cook"]'), $('.rx-cook-btn')?.outerHTML || 'topbar link');
+  ok('…and no "Tap a number to check it off" hint with no numbers', !$('[data-steps-meta]').textContent.trim(), $('[data-steps-meta]').textContent);
 } catch (e) {
   ok('test page ran', false, String(e.stack || e));
 } finally {
