@@ -3,7 +3,8 @@
  * Hero, title, summary, times, source → your meta + cooking log (days with journal photos) → flavor profile →
  * equipment → scaled, checkable ingredients → numbered steps (tap the number = done) with
  * timers and step notes → recipe notes → photo journal → changelog.
- * Re-renders on store changes to this recipe's files. Cooking state (checked, done, scale)
+ * Re-renders on store changes to this recipe's files (a library-only change just updates the
+ * rating / tags line in place). Cooking state (checked, done, scale)
  * and half-typed notes live in sessionStorage (components/recipe-state.js), shared with cook mode.
  * A render that is still loading when you move on (Back, another recipe) paints nothing and binds
  * nothing: the router drops the cleanup of a render it has already left.
@@ -37,8 +38,10 @@ const PAST_TITLE = 'rx-past-title';
 const isList = h => /^(?:playlist\/[\w-]+)?$/.test(h.replace(/^#\/?/, '').split('?')[0]);
 let renders = 0;            // newest render of this view
 
+const LIB = 'data/library.json';
+
 export async function render(root, { slug }) {
-  const mine = new Set([`recipes/${slug}.json`, `journal/${slug}.json`, 'data/library.json']);
+  const mine = new Set([`recipes/${slug}.json`, `journal/${slug}.json`, LIB]);
   const openDetails = new Set();
   const me = ++renders, path = location.hash.split('?')[0];
   const stale = () => me !== renders || location.hash.split('?')[0] !== path;
@@ -66,6 +69,17 @@ export async function render(root, { slug }) {
     restoreFocus(focus);
     timers?.refresh();
     observeTitle();
+  }
+
+  /** Library-only change (rating, proficiency, tags, pin from the Edit sheet): the entry shows in
+   *  one line, so update that in place — no full repaint (hero and journal photos re-created,
+   *  focus knocked off the Edit button) for every tap, twice (optimistic, then committed). */
+  async function paintMeta() {
+    const lib = await getLibrary();
+    const box = root.querySelector('.rx-you-meta');
+    if (stale() || !data?.recipe || !box) return;
+    data = { ...data, entry: entryFor(lib, slug) };
+    box.innerHTML = metaSummary(data.entry);
   }
 
   function paintMissing() {
@@ -393,7 +407,10 @@ export async function render(root, { slug }) {
     }),
     on(root, 'change', 'input[data-photo-input]', onPhotoPicked),
     on(document, 'click', '#topbar-back', e => goBack(e, from)),
-    onChange(ev => { if (ev.paths?.some(p => mine.has(p))) paint().catch(reportError); })
+    onChange(ev => {
+      const hit = (ev.paths || []).filter(p => mine.has(p));
+      if (hit.length) (hit.every(p => p === LIB) ? paintMeta() : paint()).catch(reportError);
+    })
   ];
   root.addEventListener('toggle', onToggle, true);
 
