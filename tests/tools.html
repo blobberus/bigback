@@ -123,6 +123,11 @@
     document.querySelector('[data-sw="reset"]').click();
     sw = stored('bb.stopwatch');
     check('reset clears state', sw.running === false && sw.accumulated === 0 && sw.laps.length === 0);
+    S.toggleStopwatch(); await wait(250);
+    document.querySelector('[data-sw="startpause"]').click(); await wait(120); document.querySelector('[data-sw="startpause"]').click();
+    const rb = document.querySelector('[data-sw="reset"]'); rb.focus(); rb.click();
+    check('reset hands keyboard focus to Start (it disables itself)', rb.disabled && document.activeElement === document.querySelector('.sw-main'));
+    S.toggleStopwatch(); await wait(250);
     check('--tools-h published', /px$/.test(document.documentElement.style.getPropertyValue('--tools-h')));
 
     /* ---- wake lock ---- */

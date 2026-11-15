@@ -177,7 +177,11 @@ export function mount() {
     if (act === 'toggle') setOpen(!open, true);
     else if (act === 'startpause') startPause();
     else if (act === 'lap') lap();
-    else if (act === 'reset') reset();
+    else if (act === 'reset') {
+      const kept = document.activeElement === el;
+      reset();
+      if (kept) els.main.focus();          // Reset just disabled itself: keyboard focus goes to Start
+    }
   });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && open && !document.querySelector('.sheet-backdrop')) setOpen(false, true);
