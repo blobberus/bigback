@@ -110,6 +110,7 @@
 .ed-pv-sec + .ed-pv-ing, .ed-pv-gap + .ed-pv-ing, .ed-pv-list > .ed-pv-ing:first-child { border-top: 0; }
 .ed-pv-amt { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ed-pv-amt.is-none { font-weight: 400; color: var(--muted); }
+.ed-pv-item { min-width: 0; overflow-wrap: anywhere; }        /* a pasted link mustn't widen the page */
 .ed-pv-note { color: var(--muted); }
 .ed-pv-sec { margin: 14px 0 2px; font-size: .74rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-2); }
 .ed-pv-gap { height: 10px; }
@@ -264,7 +265,7 @@ html.kb-open .ed-savebar { position: static; }
 .pd-link-body span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .85rem; color: var(--muted); }
 .pd-link-ext { flex: none; width: 18px; height: 18px; color: var(--muted); }
 .pd-plain { overflow-wrap: anywhere; color: var(--ink-2); }
-.pd-files { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pd-files { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin: 0; padding: 0; list-style: none; }   /* long names ellipsize */
 .pd-file-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .pd-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-bottom: 8px; }
 .pd-thumb { display: block; color: var(--muted); font-size: .8rem; text-decoration: none; aspect-ratio: 1; overflow: hidden; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface-2); }

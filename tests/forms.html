@@ -7,6 +7,7 @@
   <!-- Modules imported by this page get a fake store (the app in the iframes keeps the real one). -->
   <script type="importmap">{ "imports": { "../js/store.js": "./fixtures/fake-store.js" } }</script>
   <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/editor.css">
   <style>
     body { padding-bottom: 24px; }
     td { padding: 4px 8px; border-top: 1px solid var(--line); font-size: .85rem; vertical-align: top; }
@@ -74,6 +75,16 @@ try {
     }
   }
   localStorage.removeItem('bb.timers'); localStorage.removeItem('bb.stopwatch');
+
+  /* long unbroken text (a pasted link) never widens the page */
+  const f = await load('#/add/custom', 360), d = f.contentDocument, de = d.documentElement;
+  const ing = d.querySelector('#ed-ing');
+  ing.value = '2 cups flour (see https://www.kingarthurbaking.com/learn/guides/flour-weight-chart?utm_source=share)\n1 tbsp oil';
+  ing.dispatchEvent(new f.contentWindow.Event('input', { bubbles: true }));
+  await wait(300);                                          // the preview is debounced
+  ok('a link pasted into an ingredient doesn’t make the 360px page scroll sideways', !!d.querySelector('.ed-pv-item') && de.scrollWidth <= de.clientWidth,
+    `scrollWidth ${de.scrollWidth} > ${de.clientWidth}`);
+  f.remove();
 } catch (e) {
   ok('suite threw', false, String(e?.stack || e));
 }
@@ -181,9 +192,13 @@ try {
   ok('removing a new photo over a kept one goes back to the kept one', photoState() === 'Current photo | Current photo', photoState());
   offForm(); sandbox.innerHTML = '';
 
-  S.setPending({ id: 'test-up', kind: 'text', title: 'Ramen', text: 'ramen', files: [], createdAt: new Date().toISOString() });
+  S.setPending({ id: 'test-up', kind: 'file', title: 'Lasagna', files: ['inbox/test-up/Grandmas_lasagna_recipe_card_scan_final_version_2.pdf'], createdAt: new Date().toISOString() });
   hashIs('#/pending/test-up');
+  sandbox.style.width = '328px';                            // a 360px phone less the page padding
   const offPending = await pendingView.render(sandbox, { id: 'test-up' });
+  const wide = [...sandbox.querySelectorAll('*')].filter(el => !(el instanceof SVGElement) && box(el).right > box(sandbox).right + 0.5);
+  ok('a long file name in an upload is cut short, not wider than the page', !wide.length, wide.map(el => `${el.tagName.toLowerCase()}.${el.className} → ${Math.round(box(el).right)}px`).join(', '));
+  sandbox.style.width = '';
   S.hold('deletePending');
   sandbox.querySelector('[data-act="delete"]').click(); await frame();
   confirmTop(); await wait(20);
