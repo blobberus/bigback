@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Resolve the app's relative paths (recipes/…, media/…) from the repo root, as in share.html. -->
+  <base href="/">
+  <title>Sharing a recipe · Bigback</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/recipe.css">
+  <style>
+    .t-sum { font-weight: 700; margin: 0 0 12px; }
+    .t-sum.bad { color: var(--danger); } .t-sum.good { color: var(--ok); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    td { padding: 6px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+    td:first-child { width: 2.5em; font-weight: 800; }
+    tr.pass td:first-child { color: var(--ok); } tr.fail td:first-child { color: var(--danger); }
+    #view { max-width: 390px; margin: 0; }
+  </style>
+</head>
+<body data-view="recipe">
+<!-- Run: python scripts/smoke.py tests/share.html
+     1) The public page (js/share.js) as a visitor without a token: the site's copy of
+        data/library.json is a fixture, the repo's copy (GitHub API) another, so "shared on the
+        site", "shared a moment ago (only the repo knows)" and "not shared" all run.
+     2) The owner's side with a (fake) token, tests/fake-github.js: recipe page → Share → create
+        and stop a link; commits are only recorded. Nothing leaves the machine. -->
+<header class="topbar"><a id="topbar-back" class="icon-btn" href="#/" aria-label="Back" hidden>←</a><h1 id="topbar-title">Bigback</h1><div id="topbar-actions"></div></header>
+<main id="view" tabindex="-1"><p class="muted">Running…</p></main>
+<!-- Library commits and the sheet's animations need real time: hold smoke.py's DOM dump until the release below. -->
+<img hidden alt="" src="/__smoke/hold">
+<script type="module">
+import { fakeGitHub } from './tests/fake-github.js';
+const results = [];
+const ok = (name, cond, detail = '') => { results.push({ name, ok: !!cond, detail: cond ? '' : detail }); if (!cond) console.error(`Test failed: ${name} ${detail}`); };
+const wait = ms => new Promise(r => setTimeout(r, ms));
+async function until(fn, ms = 4000) {
+  const t0 = performance.now();
+  while (performance.now() - t0 < ms) { try { if (fn()) return true; } catch { /* not there yet */ } await wait(25); }
+  return false;
+}
+const dropSnaps = () => Object.keys(localStorage).filter(k => k.startsWith('bb.cache:')).forEach(k => localStorage.removeItem(k));
+const SLUGS = ['mapo-tofu', 'mildly-spicy-vodka-rigatoni', 'pan-seared-chicken'];
+
+// A visitor: no token on this device.
+const prefsBefore = localStorage.getItem('bb.prefs');
+const visitor = JSON.parse(prefsBefore || '{}'); delete visitor.token;
+localStorage.setItem('bb.prefs', JSON.stringify(visitor));
+dropSnaps();
+
+const SITE_LIB = { schemaVersion: 1, playlists: [], recipes: {
+  'mapo-tofu': { tags: ['secret-tag'], rating: 9, proficiency: 4, sharedAt: '2026-11-18T10:00:00Z' },
+  'mildly-spicy-vodka-rigatoni': { tags: [], rating: null, proficiency: null },
+  'pan-seared-chicken': { tags: [], rating: null, proficiency: null }
+} };
+const REPO_LIB = structuredClone(SITE_LIB);
+REPO_LIB.recipes['mildly-spicy-vodka-rigatoni'].sharedAt = '2026-11-18T10:05:00Z';
+const realFetch = window.fetch.bind(window);
+const asked = [];
+window.fetch = async (u, o) => {
+  const url = new URL(String(u), document.baseURI);
+  asked.push(url.href);
+  if (url.origin === location.origin && url.pathname === '/data/library.json') return new Response(JSON.stringify(SITE_LIB));
+  if (url.hostname === 'api.github.com') {
+    if (url.pathname.endsWith('/contents/data/library.json')) return new Response(JSON.stringify(REPO_LIB));
+    return new Response('{"message":"Not Found"}', { status: 404 });
+  }
+  return realFetch(u, o);
+};
+const apiAsked = () => asked.some(u => u.startsWith('https://api.github.com/'));
+
+const root = document.getElementById('view');
+const $ = s => root.querySelector(s), $$ = s => [...root.querySelectorAll(s)];
+let off = null, gh = null;
+try {
+  const { renderShared } = await import('./js/share.js');
+  const mapo = await (await realFetch('recipes/mapo-tofu.json')).json();
+
+  /* ---------- the public page ---------- */
+  off = await renderShared(root, 'mapo-tofu');
+  ok('shared recipe: title, every ingredient and every step', $('.rx-title')?.textContent === mapo.title
+    && $$('.rx-ing').length === mapo.ingredients.length && $$('.rx-step').length === mapo.steps.length,
+    `${$('.rx-title')?.textContent} ${$$('.rx-ing').length} ${$$('.rx-step').length}`);
+  ok('read-only: no notes, composer, photo journal, rating card, changelog or cook mode',
+    !$('textarea, form, input[type="file"], .rx-you, [data-act="note-open"], [data-act="photo-add"], .rx-log, .rx-cook-btn')
+    && !/Notes & feedback|Photo journal|Changelog/.test(root.textContent));
+  const shown = root.textContent + document.querySelector('.topbar').textContent;   // not body: it holds this script
+  ok('the owner’s tags and rating never show', !/secret-tag|9\/10/.test(shown), shown.match(/.{0,30}(?:secret-tag|9\/10).{0,30}/)?.[0]);
+  ok('no links into the vault and nothing in the topbar but the name',
+    !document.querySelector('a[href^="#/"]:not(#topbar-back)') && !document.getElementById('topbar-actions').children.length);
+  ok('page title is the recipe', document.title.startsWith(mapo.title), document.title);
+  ok('timers and ingredient amount links work as on the recipe page', $$('[data-timer]').length > 0 && $$('[data-ingref]').length > 0);
+  const num = $('.rx-num');
+  num.click();
+  ok('tap a step number → checked off, on this device only', num.getAttribute('aria-pressed') === 'true' && /1 of \d+ done/.test($('[data-steps-meta]').textContent));
+  ok('…the site’s copy said "shared": no GitHub API call', !apiAsked(), asked.join(' '));
+  off(); off = null;
+
+  asked.length = 0;
+  off = await renderShared(root, 'mildly-spicy-vodka-rigatoni');
+  ok('shared a moment ago (site not redeployed yet) → checked against the repo and shown',
+    /^Mildly Spicy/.test($('.rx-title')?.textContent || '') && asked.some(u => u.startsWith('https://api.github.com/') && u.includes('/contents/data/library.json')),
+    asked.join(' '));
+  ok('metric amounts carry their US measure here too', /\(1¾ tsp\*/.test(root.textContent));
+  off(); off = null;
+
+  asked.length = 0;
+  off = await renderShared(root, 'pan-seared-chicken');
+  ok('not shared → "isn’t shared", and its recipe file is never fetched',
+    /isn’t shared/.test($('.rx-missing h2')?.textContent || '') && !$('.rx-ing') && !asked.some(u => u.includes('recipes/pan-seared-chicken')), asked.join(' '));
+  ok('…the topbar shows the site name again', document.getElementById('topbar-title').textContent === 'Bigback');
+  off(); off = null;
+
+  asked.length = 0;
+  off = await renderShared(root, '../data/lock');
+  ok('a malformed slug: "isn’t shared", nothing fetched', /isn’t shared/.test(root.textContent) && !asked.length, asked.join(' '));
+  off(); off = null;
+
+  /* ---------- the owner's share sheet ---------- */
+  const { openShareSheet, shareUrl } = await import('./js/components/share-sheet.js');
+  ok('the link is share.html?r=<slug> next to the app', shareUrl('pan-seared-chicken') === new URL('share.html?r=pan-seared-chicken', document.baseURI).href, shareUrl('pan-seared-chicken'));
+  openShareSheet('pan-seared-chicken', { title: 'Pan-Seared Chicken' });
+  await until(() => document.querySelector('.sh-sheet [data-sh="create"]'));
+  ok('no token: "Create share link" is disabled, with a pointer to Settings',
+    document.querySelector('.sh-sheet [data-sh="create"]')?.disabled && document.querySelector('.sh-sheet a[href="#/settings"]'));
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+  await until(() => !document.querySelector('.sh-sheet'), 1500);
+
+  window.fetch = realFetch;                 // fakeGitHub wraps the real fetch
+  gh = fakeGitHub();
+  const { commits } = gh;
+  const { render } = await import('./js/views/recipe.js');
+  off = await render(root, { slug: 'pan-seared-chicken' });
+  const btn = document.querySelector('#topbar-actions [data-act="share"]');
+  ok('recipe page: a Share button in the topbar, not lit while unshared', btn && !btn.classList.contains('is-on'));
+  btn.click();
+  await until(() => document.querySelector('.sh-sheet [data-sh="create"]:not([disabled])'));
+  document.querySelector('.sh-sheet [data-sh="create"]').click();
+  await until(() => document.querySelector('.sh-sheet [data-sh-url]'), 5000);
+  ok('Create share link → one library commit, then the link to copy or send',
+    commits.length === 1 && commits[0].paths.join() === 'data/library.json' && /share pan seared chicken/.test(commits[0].message)
+    && document.querySelector('.sh-sheet [data-sh-url]')?.value === shareUrl('pan-seared-chicken'), JSON.stringify(commits));
+  ok('…and the topbar Share button lights up', document.querySelector('#topbar-actions [data-act="share"]')?.classList.contains('is-on'));
+  document.querySelector('.sh-sheet [data-sh="stop"]').click();
+  await until(() => document.querySelector('.sh-sheet [data-sh="create"]'), 5000);
+  ok('Stop sharing → a second commit, and the sheet offers "Create share link" again',
+    commits.length === 2 && /stop sharing pan seared chicken/.test(commits[1].message), JSON.stringify(commits));
+  ok('…the Share button is unlit again', !document.querySelector('#topbar-actions [data-act="share"]')?.classList.contains('is-on'));
+} catch (e) {
+  ok('test page ran', false, String(e.stack || e));
+} finally {
+  off?.();
+  document.querySelectorAll('.sheet-backdrop').forEach(s => s.remove());
+  window.fetch = realFetch;
+  gh?.restore();
+  if (prefsBefore == null) localStorage.removeItem('bb.prefs'); else localStorage.setItem('bb.prefs', prefsBefore);
+  dropSnaps();
+  SLUGS.forEach(s => sessionStorage.removeItem(`bb.rx:${s}`));
+}
+
+const failed = results.filter(r => !r.ok);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+document.getElementById('topbar-actions').innerHTML = '';
+root.innerHTML =
+  `<h1>Sharing a recipe</h1><p class="t-sum ${failed.length ? 'bad' : 'good'}">${results.length - failed.length} passed · ${failed.length} failed</p>` +
+  `<table>${results.map(r => `<tr class="${r.ok ? 'pass' : 'fail'}"><td>${r.ok ? 'ok' : 'FAIL'}</td><td>${esc(r.name)}${r.detail ? `<br><small>${esc(r.detail)}</small>` : ''}</td></tr>`).join('')}</table>`;
+fetch('/__smoke/release');
+</script>
+</body>
+</html>

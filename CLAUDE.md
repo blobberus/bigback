@@ -33,11 +33,11 @@ in localStorage). Agents turn raw uploads + user feedback into polished recipes.
 - `sources/<slug>/` — archived originals after a build
 - `media/<slug>/` — recipe images; `media/<slug>/journal/` — user photos
 - `journal/<slug>.json` — user notes (step/general) + photo notes; `status: open|applied|kept`
-- `data/library.json` — user-owned: tags, rating /10, proficiency /5, playlists
+- `data/library.json` — user-owned: tags, rating /10, proficiency /5, pins, sharing (`sharedAt`), playlists
 - `data/lock.json` — user-owned site password (salted PBKDF2 hash; absent = no password). Never touch.
 
 Ownership rule: the model edits recipe content; it never changes the user's tags,
-rating, proficiency or playlists (exception: adding blank entries for new recipes), or `data/lock.json`.
+rating, proficiency, pins, sharing or playlists (exception: adding blank entries for new recipes), or `data/lock.json`.
 
 ## Conventions
 - No build step, no npm. Vanilla ES modules, hash router, mobile-first CSS.

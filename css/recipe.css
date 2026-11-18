@@ -452,3 +452,15 @@ body[data-view="cook"]:not(.ck-plain) #view { padding-top: 0; padding-bottom: 0;
 @media (min-width: 700px) {
   .ck-step { padding-top: 44px; }
 }
+
+/* ---------- sharing: the public page (share.html, js/share.js) + the owner's share sheet ---------- */
+body.is-shared { padding-bottom: calc(var(--safe-b) + 8px); --tools-b: calc(var(--safe-b) + 12px); }   /* no bottom nav */
+.rx-share-foot { margin: 32px 0 8px; text-align: center; font-size: .8rem; color: var(--muted); }
+.rx-share-btn.is-on { color: var(--accent); }
+.sh-body { display: grid; gap: 12px; }
+.sh-lead { margin: 0; }
+.sh-fine { margin: 0; font-size: .85rem; color: var(--muted); }
+.sh-url { width: 100%; }
+.sh-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.sh-actions .btn { flex: 1 1 140px; }
+.sh-stop { justify-self: start; color: var(--danger); }

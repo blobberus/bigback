@@ -10,16 +10,18 @@
  * A render that is still loading when you move on (Back, another recipe) paints nothing and binds
  * nothing: the router drops the cleanup of a render it has already left.
  * The topbar ← returns to the list or playlist the recipe was opened from (search, filters and
- * scroll intact; components/back-nav.js), else to #/.
+ * scroll intact; components/back-nav.js), else to #/. Topbar Share (accent while shared) opens the
+ * share sheet (components/share-sheet.js): a password-free, read-only link to this recipe.
  */
 import {
-  getRecipe, getLibrary, entryFor, getJournal, onChange, addNote,
-  mediaUrl, rawUrl, NotConnectedError
+  getRecipe, getLibrary, entryFor, getJournal, onChange, addNote, NotConnectedError
 } from '../store.js';
 import { setTopbar, on, toast, reportError, busy } from '../ui.js';
-import { html, fmtMinutes } from '../util.js';
+import { html } from '../util.js';
 import { editMeta, metaSummary } from '../components/meta-editor.js';
 import { icon } from '../components/recipe-icons.js';
+import { heroHtml, statsHtml, sourceHtml, photoCreditHtml } from '../components/recipe-head.js';
+import { openShareSheet } from '../components/share-sheet.js';
 import { rxState, rxPatch, setDraft, toggleId } from '../components/recipe-state.js';
 import { ingredientsHtml, bindIngredients } from '../components/recipe-ingredients.js';
 import { groupBySection, stepTextHtml, tempsHtml, timerButtonsHtml, bindTimers } from '../components/recipe-steps.js';
@@ -31,13 +33,11 @@ import {
 import { isConnected } from '../prefs.js';
 import { backTarget, goBack } from '../components/back-nav.js';
 
-const safeUrl = u => (/^https?:\/\//i.test(String(u || '')) ? u : null);
-const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
-const fileName = p => String(p).split('/').pop();
 const PAST_TITLE = 'rx-past-title';
 /** The Recipes list (#/, #/?q=…) or a playlist (#/playlist/<id>…). */
 const isList = h => /^(?:playlist\/[\w-]+)?$/.test(h.replace(/^#\/?/, '').split('?')[0]);
 let renders = 0;            // newest render of this view
+const shareLabel = entry => (entry.sharedAt ? 'Shared: link and sharing options' : 'Share recipe');
 
 const LIB = 'data/library.json';
 
@@ -64,6 +64,7 @@ export async function render(root, { slug }) {
       title: recipe.title || 'Recipe', back,
       actions: html`
         ${(recipe.steps || []).length ? html`<a class="icon-btn" href="#/r/${slug}/cook" aria-label="Cook mode" title="Cook mode">${icon('flame')}</a>` : ''}
+        <button type="button" class="icon-btn rx-share-btn${data.entry.sharedAt ? ' is-on' : ''}" data-act="share" aria-label="${shareLabel(data.entry)}" title="Share">${icon('share')}</button>
         <a class="icon-btn" href="#/edit/${slug}" aria-label="Edit recipe" title="Edit recipe">${icon('edit')}</a>`
     });
     const focus = captureFocus();
@@ -82,6 +83,8 @@ export async function render(root, { slug }) {
     if (stale() || !data?.recipe || !box) return;
     data = { ...data, entry: entryFor(lib, slug) };
     box.innerHTML = metaSummary(data.entry);
+    const sb = document.querySelector('#topbar-actions [data-act="share"]');
+    if (sb) { sb.classList.toggle('is-on', !!data.entry.sharedAt); sb.setAttribute('aria-label', shareLabel(data.entry)); }
   }
 
   function paintMissing() {
@@ -140,14 +143,14 @@ export async function render(root, { slug }) {
     const recipeNotes = notes.filter(n => !n.stepId || !stepIds.has(n.stepId));
     return html`
       <article class="rx">
-        ${hero(r)}
+        ${heroHtml(r)}
         <header class="rx-head">
           <h1 class="rx-title">${r.title}</h1>
           ${r.summary ? html`<p class="rx-summary">${r.summary}</p>` : ''}
-          ${stats(r)}
+          ${statsHtml(r)}
           ${r.yield ? html`<p class="rx-line"><span class="rx-label">Makes</span><span>${r.yield}</span></p>` : ''}
-          ${source(r)}
-          ${photoCredit(r)}
+          ${sourceHtml(r)}
+          ${photoCreditHtml(r)}
         </header>
         ${r.status === 'custom' ? html`
           <p class="rx-notice">${icon('spark')}<span>Typed by you — Claude will add a flavor profile and timers next time you say “update the site”.</span></p>` : ''}
@@ -194,47 +197,6 @@ export async function render(root, { slug }) {
     const at = r.steps.findIndex(s => s.id === rxState(slug).step);
     const label = at > 0 ? `Resume cooking · step ${at + 1}` : 'Start cook mode';
     return html`<a class="btn btn-primary btn-block rx-cook-btn" href="#/r/${slug}/cook">${icon('flame')} ${label}</a>`;
-  }
-
-  function hero(r) {
-    if (r.image) {
-      return html`<figure class="rx-hero"><img src="${mediaUrl(r.image)}" data-fallback="${rawUrl(r.image)}" alt="${r.title}" fetchpriority="high" decoding="async"></figure>`;
-    }
-    return html`<div class="rx-hero rx-hero-ph" aria-hidden="true">${icon('pan')}</div>`;
-  }
-
-  function stats(r) {
-    const t = r.time || {};
-    const total = t.total ?? (t.prep != null && t.cook != null ? t.prep + t.cook : null);
-    const items = [['Prep', t.prep], ['Cook', t.cook], ['Total', total]]
-      .filter(([, v]) => v != null && v !== '' && !isNaN(v))
-      .map(([k, v]) => [k, fmtMinutes(Number(v))]);
-    if (r.servings) items.push(['Serves', String(r.servings)]);
-    if (!items.length) return '';
-    return html`<dl class="rx-stats">${items.map(([k, v]) => html`<div><dt>${k}</dt><dd>${v}</dd></div>`)}</dl>`;
-  }
-
-  function source(r) {
-    const s = r.source || {};
-    const bits = [];
-    const url = safeUrl(s.url);
-    if (url) bits.push(html`<a href="${url}" target="_blank" rel="noopener noreferrer">${host(url)}${icon('external')}</a>`);
-    if (s.author) bits.push(html`<span>by ${s.author}</span>`);
-    (s.files || []).filter(Boolean).forEach(f =>
-      bits.push(html`<a href="${mediaUrl(f)}" target="_blank" rel="noopener">${icon('file')}${fileName(f)}</a>`));
-    if (!bits.length) return '';
-    return html`<p class="rx-line rx-source"><span class="rx-label">Source</span><span class="rx-source-bits">${bits.map((b, i) =>
-      i ? html`<span class="rx-dot" aria-hidden="true">·</span>${b}` : b)}</span></p>`;
-  }
-
-  /** Stock photos under CC BY / BY-SA must credit the photographer; a quiet line by the source
-   *  instead of a tag on the photo. CC0 / public domain need none. */
-  function photoCredit(r) {
-    const c = r.imageCredit;
-    if (!c?.author || !/^cc by/i.test(c.license || '')) return '';
-    const href = safeUrl(c.url), text = `${c.author} · ${c.license}`;
-    return html`<p class="rx-line rx-credit"><span class="rx-label">Photo</span><span class="rx-source-bits">${href
-      ? html`<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>` : html`<span>${text}</span>`}</span></p>`;
   }
 
   function youCard(entry, photos) {
@@ -423,6 +385,9 @@ export async function render(root, { slug }) {
     }),
     on(root, 'change', 'input[data-photo-input]', onPhotoPicked),
     on(document, 'click', '#topbar-back', e => goBack(e, from)),
+    on(document, 'click', '#topbar-actions [data-act="share"]', () => {
+      if (data?.recipe) openShareSheet(slug, { title: data.recipe.title }).catch(reportError);
+    }),
     onChange(ev => {
       const hit = (ev.paths || []).filter(p => mine.has(p));
       if (hit.length) (hit.every(p => p === LIB) ? paintMeta() : paint()).catch(reportError);

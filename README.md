@@ -35,6 +35,10 @@ reloads once onto the new code.
 
 Without a token the site is read-only.
 
+**Sharing one recipe:** on a recipe, tap **Share** (top right) → **Create share link**, then send
+it. The link (`share.html?r=<recipe>`) opens just that recipe, read-only, with no password: no
+notes, photos, ratings, other recipes or editing. **Stop sharing** in the same sheet turns it off.
+
 > The repo is **public**, so recipes, notes and photos are visible to anyone with the link.
 > The site password only locks the app; the files stay readable on GitHub.
 > If you want them private, make the repo private. GitHub Pages on private repos needs a

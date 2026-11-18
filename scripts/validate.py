@@ -158,6 +158,8 @@ def main():
                 err(w, "tags must be a list")
             if e.get("pinnedAt") is not None and not isinstance(e["pinnedAt"], str):
                 err(w, "pinnedAt must be an ISO timestamp or absent")
+            if e.get("sharedAt") is not None and not isinstance(e["sharedAt"], str):
+                err(w, "sharedAt must be an ISO timestamp or absent (share.html shows only shared recipes)")
         for slug in recipes:
             if slug not in (lib.get("recipes") or {}):
                 warn("data/library.json", f"no entry for '{slug}' (add a blank one)")

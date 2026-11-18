@@ -1,6 +1,9 @@
 # Architecture
 
-Static SPA (no build step) served by GitHub Pages; the git repo is the database.
+Static SPA (no build step) served by GitHub Pages; the git repo is the database. A second,
+tiny entry page, `share.html?r=<slug>` (`js/share.js`), shows one recipe read-only to anyone with
+the link: no password gate, no app navigation, nothing that writes, and only recipes whose library
+entry has `sharedAt` (set from the recipe page's Share sheet).
 
 ```
 Phone browser ──reads──▶ Pages (relative paths)        ← no token: read-only
@@ -30,7 +33,10 @@ Push to main ──▶ .github/workflows/pages.yml (validate, rebuild index, dep
 | `components/back-nav.js` | in-app ← = history.back() to the page you came from (list → recipe → cook keep search, filters, scroll) | WS2 |
 | `views/library.js` | list, search, filters, sort, playlist view | WS1 |
 | `views/playlists.js` | playlist management | WS1 |
-| `views/recipe.js` | recipe page, notes, photo journal, rating/tags | WS2 |
+| `views/recipe.js` | recipe page, notes, photo journal, rating/tags, Share button | WS2 |
+| `components/recipe-head.js` | hero photo, stats, source and photo-credit markup (recipe page + share page) | WS2 |
+| `components/share-sheet.js` | owner's Share sheet: create / copy / send / stop a read-only link (`shareUrl`, `openShareSheet`) | WS2 |
+| `share.js` | public page behind `share.html?r=<slug>`: one shared recipe, read-only (`renderShared`, `boot`) | WS2 |
 | `views/cook.js` | step-by-step cook mode | WS2 |
 | `views/add.js` | chooser, custom form, upload form, edit | WS3 |
 | `views/pending.js` | inbox item detail / delete | WS3 |

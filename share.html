@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f1e9" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1a1714" media="(prefers-color-scheme: dark)">
+  <!-- Shared links are for the people they're sent to, not for search engines. -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="A recipe shared from a Bigback recipe vault">
+  <title>Shared recipe · Bigback</title>
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/icon-180.png">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/recipe.css">
+  <link rel="stylesheet" href="css/tools.css">
+  <link rel="modulepreload" href="js/share.js">
+  <link rel="modulepreload" href="js/store.js">
+  <link rel="modulepreload" href="js/github.js">
+  <link rel="modulepreload" href="js/util.js">
+  <link rel="modulepreload" href="js/ui.js">
+  <!-- The read-only page for one shared recipe (js/share.js). Not the app: no password gate,
+       no navigation into the vault, nothing that writes. -->
+  <script type="module">import { boot } from './js/share.js'; boot();</script>
+</head>
+<body data-view="recipe" class="is-shared">
+  <a class="skip" href="#view">Skip to content</a>
+  <header class="topbar">
+    <h1 id="topbar-title">Bigback</h1>
+    <div id="topbar-actions"></div>
+  </header>
+  <main id="view" tabindex="-1"></main>
+  <!-- Timer tray (timers.js) and toasts. -->
+  <div id="tools"></div>
+  <div id="toasts" aria-live="polite"></div>
+  <noscript>This page needs JavaScript.</noscript>
+</body>
+</html>

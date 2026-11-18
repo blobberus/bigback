@@ -32,13 +32,14 @@ const DATA_TIMEOUT = 6000;
 const MEDIA_RECHECK = 24 * 3600e3;
 
 const SHELL = [
-  './', 'index.html', 'manifest.webmanifest',
+  './', 'index.html', 'share.html', 'manifest.webmanifest',
   'css/base.css', 'css/library.css', 'css/recipe.css', 'css/editor.css', 'css/tools.css',
   'js/app.js', 'js/config.js', 'js/lock.js', 'js/prefs.js', 'js/util.js', 'js/ui.js', 'js/github.js', 'js/store.js',
-  'js/timers.js', 'js/stopwatch.js', 'js/wakelock.js', 'js/units.js',
+  'js/timers.js', 'js/stopwatch.js', 'js/wakelock.js', 'js/units.js', 'js/share.js',
   'js/views/library.js', 'js/views/playlists.js', 'js/views/recipe.js', 'js/views/cook.js',
   'js/views/add.js', 'js/views/pending.js', 'js/views/settings.js', 'js/views/convert.js',
   'js/components/meta-editor.js', 'js/components/back-nav.js', 'js/components/recipe-icons.js', 'js/components/recipe-ingredients.js',
+  'js/components/recipe-head.js', 'js/components/share-sheet.js',
   'js/components/recipe-journal.js', 'js/components/recipe-mentions.js', 'js/components/recipe-state.js', 'js/components/recipe-steps.js',
   'js/components/editor-drafts.js', 'js/components/editor-form.js', 'js/components/editor-icons.js',
   'js/components/editor-ids.js', 'js/components/editor-parse.js', 'js/components/editor-upload.js',

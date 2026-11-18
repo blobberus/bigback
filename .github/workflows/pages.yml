@@ -31,7 +31,7 @@ jobs:
         # The shell is cache-first, so a code change that doesn't move VERSION would never reach
         # phones: hash everything sw.js precaches, and fail the deploy if the stamp didn't land.
         run: |
-          H=$(cat index.html manifest.webmanifest css/*.css $(find js -name '*.js' | sort) $(find assets -type f | sort) | sha256sum | cut -c1-10)
+          H=$(cat index.html share.html manifest.webmanifest css/*.css $(find js -name '*.js' | sort) $(find assets -type f | sort) | sha256sum | cut -c1-10)
           sed -i "s/^const VERSION = '[^']*';/const VERSION = '$H';/" sw.js
           grep -n "^const VERSION" sw.js
           grep -q "^const VERSION = '$H';" sw.js || { echo "::error::sw.js VERSION was not stamped"; exit 1; }

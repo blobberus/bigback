@@ -68,6 +68,8 @@ should have a timer entry (the UI also auto-detects durations in text as a fallb
       "rating": null,           // 1–10 or null (= "Unrated" filter category)
       "proficiency": null,      // 1–5 or null (= "Not set")
       "pinnedAt": "2026-11-15T10:00:00Z",   // optional: pinned to the top of the Recipes list (absent = not pinned)
+      "sharedAt": "2026-11-18T10:00:00Z",   // optional: share.html?r=<slug> shows this recipe without the password
+                                            //   (recipe page → Share; absent = not shared, the link says so)
       "addedAt": "2026-11-14T10:00:00Z"
       // older entries may still carry "cooked"/"lastCooked": unused. The cook log is the
       // days with journal photos (journal entry `cookedOn`).

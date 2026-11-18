@@ -5,7 +5,8 @@
  *   getIndex({force})            → { recipes:[summary], pending:[item] }
  *   getRecipe(slug)              → recipe | null
  *   getLibrary()                 → { recipes:{slug:entry}, playlists:[] }
- *   entryFor(lib, slug)          → entry with blank defaults (tags [], rating null, proficiency null, pinnedAt null)
+ *   entryFor(lib, slug)          → entry with blank defaults (tags [], rating null, proficiency null, pinnedAt null,
+ *                                  sharedAt null)
  *   allTags(lib)                 → sorted unique tags
  *   getJournal(slug)             → { slug, entries:[] }
  *   getPending(id)               → inbox item | null
@@ -30,6 +31,7 @@
  *   Library (optimistic + batched ~1.2s into one commit):
  *     setTags(slug, tags) setRating(slug, n|null) setProficiency(slug, n|null)
  *     setPinned(slug, bool) — pinnedAt timestamp on the entry; pinned recipes head the Recipes list
+ *     setShared(slug, bool) — sharedAt timestamp on the entry; share.html?r=<slug> shows only shared recipes
  *     createPlaylist(name)→id renamePlaylist(id,name) deletePlaylist(id)
  *     addToPlaylist(id, slug) removeFromPlaylist(id, slug)  flushLibrary()
  *   Recipes:  saveRecipe(recipe, { heroFile, isNew }) → slug      deleteRecipe(slug)
@@ -222,7 +224,7 @@ function normLib(lib) {
 export const blankEntry = () => ({ tags: [], rating: null, proficiency: null, addedAt: nowIso() });
 export function entryFor(lib, slug) {
   const e = lib?.recipes?.[slug];
-  return { ...blankEntry(), addedAt: null, pinnedAt: null, ...(e || {}), tags: [...(e?.tags || [])] };
+  return { ...blankEntry(), addedAt: null, pinnedAt: null, sharedAt: null, ...(e || {}), tags: [...(e?.tags || [])] };
 }
 export function allTags(lib) {
   const s = new Set();
@@ -331,6 +333,10 @@ export const setProficiency = (slug, n) => mutateLibrary(`proficiency ${name(slu
 export const setPinned = (slug, on) => mutateLibrary(`${on ? 'pin' : 'unpin'} ${name(slug)}`, lib => {
   const e = ensure(lib, slug);
   if (on) e.pinnedAt ||= nowIso(); else delete e.pinnedAt;
+});
+export const setShared = (slug, on) => mutateLibrary(`${on ? 'share' : 'stop sharing'} ${name(slug)}`, lib => {
+  const e = ensure(lib, slug);
+  if (on) e.sharedAt ||= nowIso(); else delete e.sharedAt;
 });
 export function createPlaylist(plName) {
   const id = 'pl-' + Math.random().toString(36).slice(2, 6);
