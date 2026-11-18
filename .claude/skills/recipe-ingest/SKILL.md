@@ -56,8 +56,9 @@ inventing a dish isn't.
   copy it (don't move) to `media/<slug>/hero.jpg` and point to that. Otherwise find an openly
   licensed photo of the dish: `python .claude/skills/recipe-ingest/commons.py search "<dish>"`,
   Read the contact sheet, pick one that looks like *this* recipe (same dish, plated, appetizing),
-  then `commons.py use <slug> "File:<title>"`. It saves the hero and sets `imageCredit`, which the
-  page shows on the photo. Nothing fitting → `image: null`, no credit. Never copy the source
+  then `commons.py use <slug> "File:<title>"`, which saves the hero. The site shows no photo
+  credits (the owner's choice), so prefer a public-domain / CC0 candidate when one fits as well.
+  Nothing fitting → `image: null`. Never copy the source
   site's or creator's photos: they're copyrighted and the repo is public.
 - **servings** number (from the source; else estimate from quantities) · **yield** free
   text or null ("one 9x13-inch pan", "24 cookies").

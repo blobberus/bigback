@@ -19,7 +19,6 @@ UTC (`2026-11-14T10:00:00Z`). Slugs are lowercase kebab-case `[a-z0-9-]+`.
     "author": null
   },
   "image": "media/<slug>/hero.jpg",   // or null
-  "imageCredit": null,          // stock photo only: { "author", "license", "url" } (CC BY/BY-SA: a "Photo" line by the source)
   "servings": 4,                // number or null; drives the scaler
   "yield": "8 thighs",          // free text or null
   "time": { "prep": 10, "cook": 25, "total": 35 },  // minutes, any may be null

@@ -70,12 +70,7 @@ export function buildRecipe(s, base, { reserved = [], removeImage = false, hasNe
     servings: number(s.servings), yield: s.yield.trim() || null, time: { prep, cook, total },
     equipment: parseLines(s.equipment), ingredients, steps
   };
-  if (base) {
-    const out = { ...base, ...content, image: removeImage && !hasNewPhoto ? null : (base.image ?? null) };
-    // A stock-photo credit belongs to that photo: your own photo (or none) drops it.
-    if ((removeImage || hasNewPhoto) && 'imageCredit' in out) out.imageCredit = null;
-    return out;
-  }
+  if (base) return { ...base, ...content, image: removeImage && !hasNewPhoto ? null : (base.image ?? null) };
   return {
     schemaVersion: 1, slug: null, title: content.title, summary: content.summary, profile: content.profile,
     status: 'custom', source: { type: 'custom', url: null, files: [], author: null }, image: null,

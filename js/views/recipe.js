@@ -20,7 +20,7 @@ import { setTopbar, on, toast, reportError, busy } from '../ui.js';
 import { html } from '../util.js';
 import { editMeta, metaSummary } from '../components/meta-editor.js';
 import { icon } from '../components/recipe-icons.js';
-import { heroHtml, statsHtml, sourceHtml, photoCreditHtml } from '../components/recipe-head.js';
+import { heroHtml, statsHtml, sourceHtml } from '../components/recipe-head.js';
 import { openShareSheet } from '../components/share-sheet.js';
 import { rxState, rxPatch, setDraft, toggleId } from '../components/recipe-state.js';
 import { ingredientsHtml, bindIngredients } from '../components/recipe-ingredients.js';
@@ -150,7 +150,6 @@ export async function render(root, { slug }) {
           ${statsHtml(r)}
           ${r.yield ? html`<p class="rx-line"><span class="rx-label">Makes</span><span>${r.yield}</span></p>` : ''}
           ${sourceHtml(r)}
-          ${photoCreditHtml(r)}
         </header>
         ${r.status === 'custom' ? html`
           <p class="rx-notice">${icon('spark')}<span>Typed by you — Claude will add a flavor profile and timers next time you say “update the site”.</span></p>` : ''}

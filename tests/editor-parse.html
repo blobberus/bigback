@@ -174,13 +174,11 @@ eq('helpers: similarity, nextIdNumber, matchItems', [
 eq('linkType', ['https://youtu.be/abc', 'www.youtube.com/watch?v=1', 'https://www.instagram.com/reel/xyz/', 'https://vm.tiktok.com/ZM/', 'https://smittenkitchen.com/x', 'not a url']
   .map(linkType), ['youtube', 'youtube', 'instagram', 'tiktok', 'web', 'web']);
 
-/* ---------- saving: the stock-photo credit follows the photo ---------- */
-const stock = { ...sample, image: 'media/x/hero.jpg', imageCredit: { author: 'A', license: 'CC BY 2.0', url: 'https://commons.wikimedia.org/wiki/File:X.jpg' } };
+/* ---------- saving ---------- */
+const stock = { ...sample, image: 'media/x/hero.jpg' };
 const form = stateFrom(stock);
-eq('stock credit kept on a text edit, dropped with a new or removed photo', [
-  buildRecipe(form, stock).imageCredit?.author, buildRecipe(form, stock, { hasNewPhoto: true }).imageCredit,
-  buildRecipe(form, stock, { removeImage: true }).imageCredit, 'imageCredit' in buildRecipe(form, sample, { hasNewPhoto: true })
-], ['A', null, null, false]);
+eq('the photo is kept on a text edit, dropped when removed', [buildRecipe(form, stock).image, buildRecipe(form, stock, { removeImage: true }).image],
+  ['media/x/hero.jpg', null]);
 eq('a title or summary pasted over several lines is saved as one line', [
   buildRecipe({ ...form, title: ' Mapo\nTofu \n' }, null).title, buildRecipe({ ...form, title: 'Mapo\r\n  Tofu' }, stock).title,
   buildRecipe({ ...form, summary: 'Numbing,\nhot.' }, stock).summary

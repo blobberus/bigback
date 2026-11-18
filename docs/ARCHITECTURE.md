@@ -34,7 +34,7 @@ Push to main ──▶ .github/workflows/pages.yml (validate, rebuild index, dep
 | `views/library.js` | list, search, filters, sort, playlist view | WS1 |
 | `views/playlists.js` | playlist management | WS1 |
 | `views/recipe.js` | recipe page, notes, photo journal, rating/tags, Share button | WS2 |
-| `components/recipe-head.js` | hero photo, stats, source and photo-credit markup (recipe page + share page) | WS2 |
+| `components/recipe-head.js` | hero photo, stats and source markup (recipe page + share page) | WS2 |
 | `components/share-sheet.js` | owner's Share sheet: create / copy / send / stop a read-only link (`shareUrl`, `openShareSheet`) | WS2 |
 | `share.js` | public page behind `share.html?r=<slug>`: one shared recipe, read-only (`renderShared`, `boot`) | WS2 |
 | `views/cook.js` | step-by-step cook mode | WS2 |

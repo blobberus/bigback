@@ -53,9 +53,6 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 .rx-source a { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; font-weight: 600; }
 .rx-source .rx-ic { width: 15px; height: 15px; }
 .rx-dot { color: var(--muted); }
-/* stock-photo credit line (photoCredit in recipe.js): quieter than the source */
-.rx-credit { font-size: .8rem; }
-.rx-credit a { font-weight: 500; color: var(--muted); text-decoration: none; overflow-wrap: anywhere; }
 
 .rx-notice {
   display: flex; gap: 10px; align-items: flex-start; margin: 16px 0 0; padding: 12px 14px;

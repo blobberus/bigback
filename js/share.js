@@ -20,7 +20,7 @@ import { getPrefs } from './prefs.js';
 import { on, setTopbar } from './ui.js';
 import { html } from './util.js';
 import { icon } from './components/recipe-icons.js';
-import { heroHtml, statsHtml, sourceHtml, photoCreditHtml } from './components/recipe-head.js';
+import { heroHtml, statsHtml, sourceHtml } from './components/recipe-head.js';
 import { rxState, rxPatch, toggleId } from './components/recipe-state.js';
 import { ingredientsHtml, bindIngredients } from './components/recipe-ingredients.js';
 import { groupBySection, stepTextHtml, tempsHtml, timerButtonsHtml, bindTimers } from './components/recipe-steps.js';
@@ -104,7 +104,6 @@ export async function renderShared(root, slug) {
           ${statsHtml(r)}
           ${r.yield ? html`<p class="rx-line"><span class="rx-label">Makes</span><span>${r.yield}</span></p>` : ''}
           ${sourceHtml(r)}
-          ${photoCreditHtml(r)}
         </header>
         ${r.profile ? html`
           <details class="rx-details" data-key="profile" ${openDetails.has('profile') ? 'open' : ''}>

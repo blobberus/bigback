@@ -5,7 +5,7 @@
         → numbered candidates (CC0 / public domain / CC BY / CC BY-SA, ≥900 px) and a contact
           sheet DIR/candidates.jpg to look at with the Read tool
     python .claude/skills/recipe-ingest/commons.py use <slug> "File:<title>.jpg"
-        → media/<slug>/hero.jpg (≤1600 px) + recipe.image and recipe.imageCredit {author, license, url}
+        → media/<slug>/hero.jpg (≤1600 px) + recipe.image (the site shows no photo credits)
 
 Needs Pillow (pip install pillow). Commons asks for a descriptive User-Agent and rate-limits
 bursts (HTTP 429): wait a minute and retry.
@@ -89,13 +89,7 @@ def use(slug, title):
     dest = ROOT / "media" / slug / "hero.jpg"
     dest.parent.mkdir(parents=True, exist_ok=True)
     img.save(dest, quality=82, optimize=True, progressive=True)
-    credit = {"author": artist, "license": lic, "url": ii["descriptionurl"]}
-    out = {}
-    for k, v in r.items():   # imageCredit sits right after image
-        if k != "imageCredit":
-            out[k] = f"media/{slug}/hero.jpg" if k == "image" else v
-        if k == "image":
-            out["imageCredit"] = credit
+    out = {k: (f"media/{slug}/hero.jpg" if k == "image" else v) for k, v in r.items() if k != "imageCredit"}
     sys.path.insert(0, str(ROOT / "scripts"))
     import build_index
     rp.write_text(build_index.dump(out), encoding="utf-8", newline="\n")
