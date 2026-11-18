@@ -1,0 +1,322 @@
+{
+  "schemaVersion": 1,
+  "slug": "mildly-spicy-vodka-rigatoni",
+  "title": "Mildly Spicy Vodka Rigatoni with Rosemary-Lemon Breadcrumbs",
+  "summary": "Carbone-style vodka rigatoni: silky, tomato-forward and gently spicy, under crisp rosemary-lemon crumbs.",
+  "profile": "Tomato-forward and bright, with savory depth from tomato paste cooked to brick red and slowly softened onion; cream and butter round off the acid, Calabrian chili adds gentle warmth that builds but never burns, and parmesan brings salt and nuttiness, with the vodka sharpening the tomato aroma without tasting boozy. The rigatoni should be tender with a slight bite in a glossy, slightly loose sauce that coats the inside and outside of the tubes (no grainy cheese, no oil slick), under golden, crunchy crumbs scented with rosemary and lemon zest that go on at the last moment. Makes 2 servings in about 40–45 minutes, almost all hands-on; written as the side for a seared steak (steak not included), and it also works as a light main. Best eaten right away: leftovers keep 3 days refrigerated, reheated in a skillet over low heat with a splash of water or cream because the sauce tightens when cold; store the crumbs separately, airtight at room temperature, and the tomato base (finished through the tomato simmer, before the cream) keeps 4 days refrigerated or 3 months frozen.",
+  "status": "built",
+  "source": {
+    "type": "pdf",
+    "url": null,
+    "files": [
+      "sources/mildly-spicy-vodka-rigatoni/Mild_Spicy_Vodka_Rigatoni.pdf"
+    ],
+    "author": null
+  },
+  "image": "media/mildly-spicy-vodka-rigatoni/hero.jpg",
+  "imageCredit": {
+    "author": "Joy",
+    "license": "CC BY 2.0",
+    "url": "https://commons.wikimedia.org/wiki/File:Penne_alla_Vodka.jpg"
+  },
+  "servings": 2,
+  "yield": "2 portions alongside steak",
+  "time": {
+    "prep": 10,
+    "cook": 35,
+    "total": 45
+  },
+  "equipment": [
+    "wide 12-inch skillet",
+    "pasta pot",
+    "small bowl",
+    "fine grater (Microplane)"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": "Crunchy topping",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "olive oil",
+      "note": null
+    },
+    {
+      "id": "i2",
+      "section": "Crunchy topping",
+      "qty": 0.33,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "panko breadcrumbs",
+      "note": null
+    },
+    {
+      "id": "i3",
+      "section": "Crunchy topping",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "fresh rosemary",
+      "note": "very finely chopped"
+    },
+    {
+      "id": "i4",
+      "section": "Crunchy topping",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "lemon zest",
+      "note": "finely grated, yellow part only"
+    },
+    {
+      "id": "i5",
+      "section": "Crunchy topping",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "pinch",
+      "item": "salt",
+      "note": "small pinch"
+    },
+    {
+      "id": "i6",
+      "section": "Pasta & sauce",
+      "qty": 10,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "fine table salt",
+      "note": "for the pasta water (about 1¾ tsp), plus to taste; or 3½ tsp Diamond Crystal / 2 tsp Morton kosher"
+    },
+    {
+      "id": "i7",
+      "section": "Pasta & sauce",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "olive oil",
+      "note": null
+    },
+    {
+      "id": "i8",
+      "section": "Pasta & sauce",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "unsalted butter",
+      "note": null
+    },
+    {
+      "id": "i9",
+      "section": "Pasta & sauce",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": null,
+      "item": "small yellow onion",
+      "note": "very finely diced (about 60 g)"
+    },
+    {
+      "id": "i10",
+      "section": "Pasta & sauce",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "clove",
+      "item": "garlic",
+      "note": "finely minced"
+    },
+    {
+      "id": "i11",
+      "section": "Pasta & sauce",
+      "qty": 0.25,
+      "qtyMax": 0.5,
+      "unit": "tsp",
+      "item": "Calabrian chili paste",
+      "note": "or ⅛ tsp red pepper flakes; start with ¼ tsp, brands vary in heat"
+    },
+    {
+      "id": "i12",
+      "section": "Pasta & sauce",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "tomato paste",
+      "note": null
+    },
+    {
+      "id": "i13",
+      "section": "Pasta & sauce",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "vodka",
+      "note": "30 ml"
+    },
+    {
+      "id": "i14",
+      "section": "Pasta & sauce",
+      "qty": 0.75,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "plain crushed tomatoes",
+      "note": "or passata; about 180 g"
+    },
+    {
+      "id": "i15",
+      "section": "Pasta & sauce",
+      "qty": 200,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "rigatoni",
+      "note": "or penne; 7 oz"
+    },
+    {
+      "id": "i16",
+      "section": "Pasta & sauce",
+      "qty": 0.33,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "heavy cream",
+      "note": "80 ml"
+    },
+    {
+      "id": "i17",
+      "section": "Pasta & sauce",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "pasta water",
+      "note": "reserved before draining; use as needed"
+    },
+    {
+      "id": "i18",
+      "section": "Pasta & sauce",
+      "qty": 20,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "parmesan",
+      "note": "finely and freshly grated (about ¼ cup), plus extra to serve"
+    },
+    {
+      "id": "i19",
+      "section": "Pasta & sauce",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "black pepper",
+      "note": "freshly ground, to taste"
+    },
+    {
+      "id": "i20",
+      "section": "Pasta & sauce",
+      "qty": 0.25,
+      "qtyMax": 1,
+      "unit": "tsp",
+      "item": "red wine vinegar",
+      "note": "only as needed, to taste"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": null,
+      "text": "Bring about 2 liters of water to a boil in the pasta pot and add 10 g of the table salt (about 1¾ tsp). Cover and keep it at a low simmer until the pasta goes in. Meanwhile chop, zest, grate and measure everything, including the chili paste on its own.",
+      "timers": [],
+      "tip": "Plain, unseasoned tomatoes keep you in control of the sweetness and salt."
+    },
+    {
+      "id": "s2",
+      "section": "Crunchy topping",
+      "text": "Heat the olive oil in the skillet over medium-low. Add the panko and stir frequently until evenly golden, 3–5 minutes, adding the rosemary for the last 30 seconds. Immediately scrape into the bowl and mix in the lemon zest and the salt; leave it uncovered. Wipe stray crumbs out of the skillet so they don't burn in the sauce.",
+      "timers": [
+        {
+          "label": "Toast crumbs",
+          "seconds": 180
+        }
+      ],
+      "tip": "Covering the warm crumbs traps steam and softens them."
+    },
+    {
+      "id": "s3",
+      "section": "Pasta & sauce",
+      "text": "Add the other 1 tbsp olive oil and the butter to the skillet over medium-low. Add the onion with a small pinch of salt and cook, stirring often, until soft and translucent without deep browning, 8–10 minutes. If it catches, add 1 tbsp water.",
+      "timers": [
+        {
+          "label": "Soften onion",
+          "seconds": 480
+        }
+      ],
+      "tip": "Very finely diced onion melts into a smooth sauce, no blender needed."
+    },
+    {
+      "id": "s4",
+      "section": "Pasta & sauce",
+      "text": "Add the garlic and the chili paste (or flakes) and stir for 30 seconds. Add the tomato paste and cook, stirring, until brick red and fragrant, 2–3 minutes; lower the heat if it darkens quickly.",
+      "timers": [
+        {
+          "label": "Cook paste",
+          "seconds": 120
+        }
+      ],
+      "tip": "Cooking the paste builds savory depth; scorching it turns it bitter."
+    },
+    {
+      "id": "s5",
+      "section": "Pasta & sauce",
+      "text": "Take the skillet off the burner and add the vodka, then return it to medium-low, scrape up the pan and simmer until mostly reduced, 1–2 minutes. Add the crushed tomatoes and simmer gently, stirring, until slightly thickened, 8–10 minutes; add a splash of water if it starts sticking. The tomato base can now wait off the heat.",
+      "timers": [
+        {
+          "label": "Reduce vodka",
+          "seconds": 60
+        },
+        {
+          "label": "Simmer",
+          "seconds": 480
+        }
+      ],
+      "tip": "Cooking a steak alongside? Pause here and time it to finish 5–10 minutes before the pasta so it rests while you toss and plate."
+    },
+    {
+      "id": "s6",
+      "section": "Pasta & sauce",
+      "text": "Return the water to a full boil, add the rigatoni and stir well, especially during the first minute. Cook to 1 minute short of the package's al dente time (often 10–12 minutes). With about 3 minutes left, gently reheat the tomato base, stir in the cream and simmer softly for 2 minutes. Reserve 1 cup of the pasta water, then drain without rinsing.",
+      "timers": [
+        {
+          "label": "Pasta",
+          "seconds": 600
+        },
+        {
+          "label": "Cream",
+          "seconds": 120
+        }
+      ],
+      "tip": "Unrinsed pasta keeps the surface starch that makes the sauce cling."
+    },
+    {
+      "id": "s7",
+      "section": "Pasta & sauce",
+      "text": "Add the rigatoni and ¼ cup of the pasta water to the sauce and toss over medium-low until the pasta is tender with a slight bite and the sauce clings, 1–2 minutes. Turn off the heat and let the bubbling stop, then stir in the parmesan and black pepper. Add more pasta water 1 tbsp at a time until glossy and slightly loose; it thickens on the plate.",
+      "timers": [
+        {
+          "label": "Toss",
+          "seconds": 60
+        }
+      ],
+      "tip": "Cheese added off the boil melts smoothly instead of clumping and turning grainy."
+    },
+    {
+      "id": "s8",
+      "section": null,
+      "text": "Taste. If it needs brightness, stir in the vinegar ¼ tsp at a time, up to 1 tsp total, and skip it if the tomatoes already taste tangy. Adjust the salt and heat. Plate beside the rested, sliced steak, scatter the breadcrumbs on top at the last moment and pass the rest at the table so every bite stays crisp.",
+      "timers": [],
+      "tip": "Flat? Try a small pinch of salt before more acid; too sharp, stir in 1 tbsp cream; too thick, a splash of warm pasta water."
+    }
+  ],
+  "createdAt": "2026-11-18T09:40:00Z",
+  "updatedAt": "2026-11-18T09:40:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-18",
+      "summary": "Built from uploaded PDF (Mild_Spicy_Vodka_Rigatoni.pdf). Clarifications: split the combined 'olive oil + butter' and 'panko + oil' lines into separate ingredients; kept the source's 10 g of plain (table) salt for the pasta water and added Diamond Crystal/Morton swaps; added a typical 10–12 minute package time for the pasta timer; moved the steak-timing advice into the tip on the tomato simmer step.",
+      "notes": []
+    }
+  ]
+}

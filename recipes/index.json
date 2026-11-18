@@ -81,6 +81,22 @@
       "openNotes": 0
     },
     {
+      "slug": "mildly-spicy-vodka-rigatoni",
+      "title": "Mildly Spicy Vodka Rigatoni with Rosemary-Lemon Breadcrumbs",
+      "summary": "Carbone-style vodka rigatoni: silky, tomato-forward and gently spicy, under crisp rosemary-lemon crumbs.",
+      "image": "media/mildly-spicy-vodka-rigatoni/hero.jpg",
+      "time": {
+        "prep": 10,
+        "cook": 35,
+        "total": 45
+      },
+      "servings": 2,
+      "status": "built",
+      "sourceType": "pdf",
+      "updatedAt": "2026-11-18T09:40:00Z",
+      "openNotes": 0
+    },
+    {
       "slug": "pan-seared-chicken",
       "title": "Pan-Seared Chicken Thighs or Breasts",
       "summary": "Paprika-spiced chicken seared 6½ minutes, then finished covered in broth: juicy thighs or thick breasts, one pan.",
@@ -175,13 +191,6 @@
       "title": "Rice cooker banana bread",
       "url": null,
       "createdAt": "2026-11-14T19:00:07Z"
-    },
-    {
-      "id": "20261118-091740-wzdv",
-      "kind": "file",
-      "title": "Mild_Spicy_Vodka_Rigatoni.pdf",
-      "url": null,
-      "createdAt": "2026-11-18T09:17:40Z"
     }
   ]
 }
