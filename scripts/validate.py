@@ -17,6 +17,7 @@ SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 ING_ID = re.compile(r"^i\d+$")
 STEP_ID = re.compile(r"^s\d+$")
 SOURCE_TYPES = {"custom", "pdf", "youtube", "instagram", "tiktok", "web", "image", "text"}
+DENSITY_PER = {"tsp", "tbsp", "cup", "ml"}   # ingredient density: grams per one of these
 NOTE_STATUS = {"open", "applied", "kept"}
 
 # Temperatures are written "250°F (120°C)": a degree sign, and the other scale in parentheses.
@@ -95,6 +96,14 @@ def check_recipe(p):
         for q in ("qty", "qtyMax"):
             if ing.get(q) is not None and not isinstance(ing[q], (int, float)):
                 err(where, f"ingredient {iid} {q} must be a number or null")
+        d = ing.get("density")
+        if d is not None and not (isinstance(d, dict) and isinstance(d.get("g"), (int, float))
+                                  and d["g"] > 0 and d.get("per") in DENSITY_PER):
+            err(where, f"ingredient {iid} density must be {{\"g\": <grams>, \"per\": \"tsp|tbsp|cup|ml\"}} or null")
+        if (status == "built" and (ing.get("unit") or "").lower() in ("g", "kg", "mg")
+                and ing.get("qty") is not None and "density" not in ing):
+            warn(where, f"ingredient {iid} is weighed: add density {{g, per}} so the site shows a spoon/cup "
+                        "measure, or density null when none makes sense (pasta, a block of tofu, a cut of meat)")
 
     seen = set()
     for i, st in enumerate(r.get("steps") or []):

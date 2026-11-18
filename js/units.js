@@ -6,6 +6,12 @@
  *       line = { text, by? }   by: 'weight' | 'volume' when it's a density estimate
  *       Equivalents only: the unit the recipe already uses is left out. Rounded to cook-friendly
  *       fractions; "≈" marks a rounding error over ~2 %.
+ *   usEquivalent({ qty, qtyMax, unit, item, density }, factor) → "1¾ tsp" | null
+ *       one cook-friendly US measure for a metric amount, shown inline as "10 g (1¾ tsp*)": ml / l by
+ *       unit, g / kg by the ingredient's density. null for US units, counts, unknown density, under ⅛ tsp.
+ *   gramsPerMl(ing) → number | null   ing.density ({ g, per }: grams per one `per` volume unit, written
+ *       by the model, e.g. { g: 6, per: 'tsp' }) wins over the built-in table by name; density: null =
+ *       no volume measure on purpose (pasta, a block of tofu). breakdown() uses it too.
  *   findAmounts(text, item) → [{ index, length, qty, qtyMax, unit }]   convertible amounts written
  *       in free text, e.g. an ingredient note: "or ½ tsp dried", "use 1¼ tsp Morton", "about 2.5 lb"
  *   findTemps(text) → [{ index, length, lo, hi, scale: 'F' | 'C', oven, delta }]   "350°F", "325–350 °F",
@@ -37,6 +43,12 @@ for (const [key, names] of Object.entries(ALIAS)) for (const n of names.split(na
 /* Grams per ml for common ingredients (King Arthur weight chart for dry goods; liquids by density). */
 const DENSITY = [
   [/\bbutter\b/, 0.96, /\b(?:peanut|almond|cashew|nut|seed|apple|cocoa|shea)\s+butter|buttermilk|butternut/],
+  // Salt by brand (g/tsp ÷ 4.93): Diamond Crystal 2.8, Morton kosher 4.8, table / fine sea salt 6.
+  // Unbranded kosher, flaky and coarse salts vary too much to guess.
+  [/\bdiamond\s+crystal\b/, 0.568],
+  [/\bmorton\b/, 0.974],
+  [/\bsalt\b/, 1.22, /\b(?:kosher|flaky|flake|maldon|coarse|rock|smoked|celery|garlic|onion|seasoned|pink|epsom|pork)\b/],
+  [/\b(?:soy\s+sauce|tamari|shoyu|fish\s+sauce)\b/, 1.2],
   [/\b(?:powdered|confectioners'?|icing)\s+sugar\b/, 0.478],
   [/\bbrown\s+sugar\b/, 0.9],
   [/\bsugar\b/, 0.845, /\bsugar\s+snap/],
@@ -54,6 +66,16 @@ function density(item) {
   const s = String(item || '').toLowerCase();
   for (const [re, d, unless] of DENSITY) if (re.test(s) && !(unless && unless.test(s))) return d;
   return null;
+}
+
+export function gramsPerMl(ing) {
+  const d = ing?.density;
+  if (d === null) return null;
+  if (d && Number(d.g) > 0) {
+    const v = unitInfo(d.per);
+    if (v?.kind === 'volume') return Number(d.g) / v.base;
+  }
+  return density(ing?.item);
 }
 
 export function unitInfo(unit, item = '') {
@@ -164,7 +186,7 @@ export function breakdown(ing, factor = 1) {
   if (!info || !(q > 0)) return null;
   const qMax = scaled(ing.qtyMax, factor);
   const lo = q * info.base, hi = qMax > q ? qMax * info.base : null;
-  const d = density(ing.item);
+  const d = gramsPerMl(ing);
   let us, met;
   if (info.kind === 'volume') {
     us = usVolume(lo, hi, info.key);
@@ -180,6 +202,42 @@ export function breakdown(ing, factor = 1) {
     }
   }
   return us.length || met.length ? { us, metric: met } : null;
+}
+
+/* ---------- inline US measure for a metric amount ---------- */
+const METRIC = new Set(['mg', 'g', 'kg', 'ml', 'cl', 'dl', 'l']);
+
+/** One measure you'd reach for: quarts, cups from ¼ cup, tablespoons (+ quarter teaspoons), teaspoons. */
+function spoons(ml) {
+  if (ml >= VOL.quart * 0.99) return `${nice(ml / VOL.quart).t} qt`;
+  if (ml >= VOL.cup / 4 * 0.99) {
+    const c = nice(ml / VOL.cup);
+    return `${c.t} ${ml > VOL.cup && c.t !== '1' ? 'cups' : 'cup'}`;
+  }
+  const tsp = ml / VOL.tsp;
+  if (tsp < 0.124) return null;                                     // under ⅛ tsp: a pinch
+  if (tsp < 2.91) return `${nice(tsp).t} tsp`;
+  const tb = Math.floor(tsp / 3 + 0.03), rem = Math.round((tsp - tb * 3) * 4) / 4;
+  return rem >= 0.25 ? `${tb} tbsp + ${fmtQty(rem)} tsp` : `${tb} tbsp`;
+}
+const tail = s => s.match(/^(\S+) (\w+?)s?$/);                      // "2 cups" → ["2", "cup"]
+
+export function usEquivalent(ing, factor = 1) {
+  const info = unitInfo(ing?.unit, ing?.item);
+  const q = scaled(ing?.qty, factor);
+  if (!info || !METRIC.has(info.key) || !(q > 0)) return null;
+  const qMax = scaled(ing.qtyMax, factor);
+  let per = 1;
+  if (info.kind === 'weight') {
+    const d = gramsPerMl(ing);
+    if (!d) return null;
+    per = 1 / d;
+  }
+  const a = spoons(q * info.base * per);
+  const b = qMax > q ? spoons(qMax * info.base * per) : null;
+  if (!a || !b || a === b) return a || b;
+  const ta = tail(a), tb = tail(b);
+  return ta && tb && ta[2] === tb[2] ? `${ta[1]}–${b}` : `${a} – ${b}`;   // "1–2 tsp", "2 tsp – 1 tbsp"
 }
 
 /* ---------- amounts in free text ---------- */

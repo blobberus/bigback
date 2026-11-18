@@ -9,6 +9,7 @@
  *       recipe-state at tap time, so one global handler (installed on first render) serves every
  *       view. Tap → bubble right above the word; tap it again, tap anywhere else, scroll it away
  *       or press Esc to close. Inside a sheet (cook mode's Ingredients) the bubble sits above it.
+ *       Metric amounts carry their US measure, as in the list: "10 g (1¾ tsp*) salt".
  *   tempButton(text, t) → html   a temperature in step text ("350°F", findTemps in units.js);
  *       the same bubble shows it in the other scale, plus oven-dial / fan / convection settings
  *       for oven temperatures
@@ -17,7 +18,7 @@
 import { html, toStr, fmtQty } from '../util.js';
 import { rxState } from './recipe-state.js';
 import { qtyText } from './recipe-ingredients.js';
-import { tempDetails } from '../units.js';
+import { tempDetails, usEquivalent } from '../units.js';
 
 /* Words that describe an ingredient but aren't what a step calls it ("cold unsalted butter" → "butter"). */
 const DESCRIPTORS = new Set(`fresh freshly large small medium big extra extra-large jumbo virgin extra-virgin boneless
@@ -144,7 +145,7 @@ const factorFor = slug => { const f = slug ? Number(rxState(slug).factor) : 1; r
 
 export function mentionButton(text, span) {
   installMentions();
-  const amt = JSON.stringify(span.ings.map(i => ({ q: i.qty, m: i.qtyMax ?? null, u: i.unit || null, i: i.item, s: i.section || null })));
+  const amt = JSON.stringify(span.ings.map(i => ({ q: i.qty, m: i.qtyMax ?? null, u: i.unit || null, i: i.item, s: i.section || null, d: i.density })));
   return html`<button type="button" class="rx-ingref" data-ingref="${span.ids.join(' ')}" data-amt="${amt}" data-slug="${span.slug || ''}" aria-expanded="false">${text}<span class="sr-only"> (amount)</span></button>`;
 }
 
@@ -159,9 +160,11 @@ function tempHtml(t) {
   return html`<span class="rx-ingtip-line"><strong>${d.main}</strong></span>${d.lines.map(l => html`<span class="rx-ingtip-sub">${l}</span>`)}`;
 }
 
+const approxText = (i, f) => { const us = usEquivalent(i, f); return us ? ` (${us}*)` : ''; };
+
 function bubbleHtml(ings, f) {
   const multi = ings.length > 1;
-  return html`${ings.map(i => html`<span class="rx-ingtip-line">${multi && i.section ? html`<span class="rx-ingtip-sec">${i.section}:</span> ` : ''}<strong>${qtyText(i, f)}</strong> ${i.item}</span>`)}${
+  return html`${ings.map(i => html`<span class="rx-ingtip-line">${multi && i.section ? html`<span class="rx-ingtip-sec">${i.section}:</span> ` : ''}<strong>${qtyText(i, f)}</strong>${approxText(i, f)} ${i.item}</span>`)}${
     Math.abs(f - 1) > 1e-9 ? html`<span class="rx-ingtip-scale">Scaled ×${fmtQty(f)}</span>` : ''}`;
 }
 
@@ -200,7 +203,7 @@ function open(el) {
   try {
     if (el.dataset.temp) body = tempHtml(JSON.parse(el.dataset.temp));
     else {
-      const ings = JSON.parse(el.dataset.amt || '[]').map(x => ({ qty: x.q, qtyMax: x.m, unit: x.u, item: x.i, section: x.s })).filter(i => qtyText(i));
+      const ings = JSON.parse(el.dataset.amt || '[]').map(x => ({ qty: x.q, qtyMax: x.m, unit: x.u, item: x.i, section: x.s, density: x.d })).filter(i => qtyText(i));
       if (ings.length) body = bubbleHtml(ings, factorFor(el.dataset.slug));
     }
   } catch { /* bad markup */ }

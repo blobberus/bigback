@@ -31,6 +31,9 @@ UTC (`2026-11-14T10:00:00Z`). Slugs are lowercase kebab-case `[a-z0-9-]+`.
       "qty": 1.5,               // number or null ("to taste")
       "qtyMax": null,           // for ranges: qty..qtyMax
       "unit": "lb",             // short unit or null for counts
+      "density": { "g": 6, "per": "tsp" },  // optional: grams per one tsp | tbsp | cup | ml, set by the
+                                //   model on g/kg ingredients → the page shows "10 g (1¾ tsp*)";
+                                //   null = no spoon/cup measure on purpose (pasta, tofu, meat)
       "item": "boneless skinless chicken thighs",
       "note": "patted very dry" // prep / optional note or null
     }

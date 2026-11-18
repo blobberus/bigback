@@ -77,7 +77,15 @@ inventing a dish isn't.
   Crystal (the Bon Appétit / Serious Eats default); plain "salt" → table salt (King
   Arthur's default). Always note the swap: Morton kosher ≈ 0.6× and table salt ≈ 0.5×
   the Diamond Crystal volume ("2 tsp" → "Diamond Crystal; use 1¼ tsp Morton or 1 tsp
-  table salt"). Metric-only sources: keep grams for baking, add US volume in the note.
+  table salt"). Metric-only sources: keep grams for baking.
+- `density` on every ingredient weighed in g/kg: grams per one tsp, tbsp, cup or ml of it as
+  measured (`{ "g": 6, "per": "tsp" }` table salt, `{ "g": 2.8, "per": "tsp" }` Diamond Crystal,
+  `{ "g": 18, "per": "tbsp" }` soy sauce, `{ "g": 80, "per": "cup" }` finely grated parmesan,
+  `{ "g": 125, "per": "cup" }` flour). The site then shows one US measure next to the weight,
+  "10 g (1¾ tsp*)", scaled with the servings (ml amounts get one automatically). Don't also
+  write that measure in the note. `"density": null` when spoons and cups make no sense: pasta,
+  a block of tofu, a cut of meat (the tap-to-convert panel still gives ounces). A source that
+  states its own conversion ("10 g, about 1¾ tsp") sets the density: 10 ÷ 1.75 = 5.7 g per tsp.
 
 **Steps** — ids `s1…sN`; each step is one coherent action group (2–4 sentences, one
 pan/stage), not one sentence per step and not a wall of text.

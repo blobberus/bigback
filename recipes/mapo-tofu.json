@@ -52,6 +52,7 @@
       "qty": 225,
       "qtyMax": null,
       "unit": "g",
+      "density": null,
       "item": "silken tofu",
       "note": "about 8 oz, half a 16-oz package"
     },
@@ -106,6 +107,10 @@
       "qty": 40,
       "qtyMax": null,
       "unit": "g",
+      "density": {
+        "g": 13.3,
+        "per": "tbsp"
+      },
       "item": "minced chicken",
       "note": "about 1½ oz; or ground pork or beef, or finely chopped mushrooms"
     },
@@ -246,11 +251,16 @@
     }
   ],
   "createdAt": "2026-11-14T19:30:00Z",
-  "updatedAt": "2026-11-15T09:52:28Z",
+  "updatedAt": "2026-11-18T09:28:08Z",
   "changelog": [
     {
       "date": "2026-11-14",
       "summary": "Built from Cooker Ru web recipe (Elle). User changes: every amount halved (serves 1; ½ tbsp → 1½ tsp, 1½ tbsp doubanjiang → 2¼ tsp); Sichuan pepper set to ½ tsp total per the user (the halved source would be ¼ tsp); sugar optional, with dark soy and starch-thickened chicken stock carrying the sauce (a few extra drops of dark soy if skipping sugar); silken tofu instead of the soft tofu the author recommends, so cubes are cut ¾-inch instead of ½-inch, the author's optional 1-minute salted blanch is written in, and the tofu is slid in and pushed rather than stirred, with the slurry moved after the tofu instead of before it. Added the author's toast-and-grind peppercorn note as a step, and listed salt and steamed rice.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-18",
+      "summary": "The minced chicken now carries an approximate US measure (≈ 3 tbsp), shown with *.",
       "notes": []
     }
   ]

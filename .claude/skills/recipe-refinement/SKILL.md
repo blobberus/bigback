@@ -92,6 +92,8 @@ References (open only the section you need):
 - **Ripple checklist** (one edit often touches several of these):
   - The ingredient `qty`/`unit` matches every mention in step text ("half the butter
     (2 tbsp)").
+  - Swapped an ingredient's `item` (table salt → Diamond Crystal)? Update its `density`
+    (grams per tsp/tbsp/cup); a new ingredient weighed in g/kg needs one too (recipe-ingest).
   - Each timer's `seconds` is the low end of the range in the text. Add or remove timers
     with durations.
   - `time.prep`/`cook`/`total`, `servings`/`yield` and `equipment` match the new method.

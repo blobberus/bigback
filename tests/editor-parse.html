@@ -135,6 +135,11 @@ const unchangedIng = mergeIngredients(parseIngredients(formatIngredients(sample.
 const unchangedSteps = mergeSteps(parseSteps(formatSteps(sample.steps)), sample.steps);
 eq('unchanged edit keeps every object verbatim (incl. curated timer labels)', [unchangedIng, unchangedSteps], [sample.ingredients, sample.steps]);
 
+const salted = [{ id: 'i1', section: null, qty: 10, qtyMax: null, unit: 'g', density: { g: 5.7, per: 'tsp' }, item: 'fine table salt', note: null }];
+const reSalt = line => mergeIngredients(parseIngredients(line), salted)[0];
+eq('a new amount keeps the density; a different item drops it', [reSalt('12 g fine table salt'), reSalt('10 g fine sea salt')].map(i => [i.id, i.qty, i.density ?? 'none']),
+  [['i1', 12, { g: 5.7, per: 'tsp' }], ['i1', 10, 'none']]);
+
 const texts = sample.steps.map(s => s.text);
 const inserted = [...texts.slice(0, 2), 'Meanwhile, warm the plates in a low oven.', ...texts.slice(2)];
 eq('inserted step gets the next unused id', mergeSteps(parseSteps(inserted.join('\n\n')), sample.steps).map(s => s.id),

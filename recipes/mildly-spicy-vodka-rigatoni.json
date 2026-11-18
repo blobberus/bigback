@@ -84,8 +84,12 @@
       "qty": 10,
       "qtyMax": null,
       "unit": "g",
+      "density": {
+        "g": 5.7,
+        "per": "tsp"
+      },
       "item": "fine table salt",
-      "note": "for the pasta water (about 1¾ tsp), plus to taste; or 3½ tsp Diamond Crystal / 2 tsp Morton kosher"
+      "note": "for the pasta water, plus to taste; or 3½ tsp Diamond Crystal / 2 tsp Morton kosher"
     },
     {
       "id": "i7",
@@ -165,6 +169,7 @@
       "qty": 200,
       "qtyMax": null,
       "unit": "g",
+      "density": null,
       "item": "rigatoni",
       "note": "or penne; 7 oz"
     },
@@ -192,8 +197,12 @@
       "qty": 20,
       "qtyMax": null,
       "unit": "g",
+      "density": {
+        "g": 80,
+        "per": "cup"
+      },
       "item": "parmesan",
-      "note": "finely and freshly grated (about ¼ cup), plus extra to serve"
+      "note": "finely and freshly grated, plus extra to serve"
     },
     {
       "id": "i19",
@@ -311,11 +320,16 @@
     }
   ],
   "createdAt": "2026-11-18T09:40:00Z",
-  "updatedAt": "2026-11-18T09:40:00Z",
+  "updatedAt": "2026-11-18T09:28:08Z",
   "changelog": [
     {
       "date": "2026-11-18",
       "summary": "Built from uploaded PDF (Mild_Spicy_Vodka_Rigatoni.pdf). Clarifications: split the combined 'olive oil + butter' and 'panko + oil' lines into separate ingredients; kept the source's 10 g of plain (table) salt for the pasta water and added Diamond Crystal/Morton swaps; added a typical 10–12 minute package time for the pasta timer; moved the steak-timing advice into the tip on the tomato simmer step.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-18",
+      "summary": "Weighed ingredients now carry an approximate US measure (salt ≈ 1¾ tsp, parmesan ≈ ¼ cup), shown with *; moved those amounts out of the notes.",
       "notes": []
     }
   ]

@@ -13,12 +13,14 @@
  * 65°F") opens the conversion bubble (recipe-mentions.js). Note amounts are shown as written,
  * not scaled. Open panels are remembered per recipe for this page load, so they survive
  * re-renders when scaling.
+ * Metric amounts also show one US measure inline, "10 g (1¾ tsp*) salt" (units.js usEquivalent:
+ * scaled, by the ingredient's density for weights); a key under the list explains the "*".
  */
 import { html, fmtQty, scaleQty, clamp } from '../util.js';
 import { on } from '../ui.js';
 import { icon } from './recipe-icons.js';
 import { rxState, rxPatch, toggleId } from './recipe-state.js';
-import { breakdown, findAmounts, findTemps } from '../units.js';
+import { breakdown, findAmounts, findTemps, usEquivalent } from '../units.js';
 import { tempButton } from './recipe-mentions.js';
 
 const convOpen = new Map();      // slug → Set(panel keys open: "i3" main amount, "i3-n0" first note amount)
@@ -131,6 +133,8 @@ function rowHtml(ing, f, checked, open) {
   const cls = `rx-qty${scaled ? ' is-scaled' : ''}`;
   const amount = !qty ? '' : conv ? html`${convBtn(ing.id, qty, isOpen, ` rx-qty${scaled ? ' is-scaled' : ''}`)} ` : html`<span class="${cls}">${qty}</span> `;
   const note = ing.note ? noteParts(ing, open, Math.abs(f - 1) > 1e-9) : null;
+  const us = qty ? usEquivalent(ing, f) : null;
+  const approx = us ? html`<span class="rx-approx">(${us}<span aria-hidden="true">*</span><span class="sr-only">, approximately</span>)</span> ` : '';
   return html`
     <li class="rx-ing${checked ? ' is-checked' : ''}">
       <label class="rx-check-hit">
@@ -138,7 +142,7 @@ function rowHtml(ing, f, checked, open) {
         <span class="rx-check" aria-hidden="true">${icon('check')}</span>
       </label>
       <div class="rx-ing-text">
-        <span class="rx-ing-line">${amount}<span class="rx-ing-item">${ing.item}</span></span>
+        <span class="rx-ing-line">${amount}${approx}<span class="rx-ing-item">${ing.item}</span></span>
         ${note ? html`<span class="rx-ing-note">${note.html}</span>` : ''}
         ${conv ? convPanel(ing.id, conv, isOpen) : ''}
         ${note ? note.panels : ''}
@@ -169,11 +173,13 @@ export function ingredientsHtml(recipe, slug) {
   }
   const done = items.filter(i => checked.has(i.id)).length;
   const open = openSet(slug);
+  const starred = items.some(i => qtyText(i, f) && usEquivalent(i, f));
   return html`
     ${scalerHtml(recipe, f)}
     ${[...bySec].map(([section, list]) => html`
       ${section ? html`<h3 class="rx-subhead">${section}</h3>` : ''}
       <ul class="rx-ings">${list.map(i => rowHtml(i, f, checked.has(i.id), open))}</ul>`)}
+    ${starred ? html`<p class="rx-approx-key"><span aria-hidden="true">*</span> Approximate US measure, converted from the metric amount.</p>` : ''}
     ${footerHtml(items.length, done)}`;
 }
 

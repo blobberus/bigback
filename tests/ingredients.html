@@ -25,8 +25,9 @@
 import { mentionMatcher, bindMentions } from '../js/components/recipe-mentions.js';
 import { ingredientsHtml, bindIngredients } from '../js/components/recipe-ingredients.js';
 import { stepTextHtml } from '../js/components/recipe-steps.js';
-import { breakdown, unitInfo, findAmounts, findTemps, tempDetails } from '../js/units.js';
+import { breakdown, unitInfo, findAmounts, findTemps, tempDetails, usEquivalent, gramsPerMl } from '../js/units.js';
 import { toStr } from '../js/util.js';
+import { rxPatch } from '../js/components/recipe-state.js';
 import { sheet } from '../js/ui.js';
 
 const results = [];
@@ -114,7 +115,29 @@ eq('amounts in notes', ['or ½ tsp dried', 'Diamond Crystal; use 1¼ tsp Morton'
    [['14-oz', 14, null, 'oz']], [['1 1/2 cups', 1.5, null, 'cups'], ['2–3 Tbsp.', 2, 3, 'Tbsp']]]);
 eq('not amounts: sizes, times, temperatures, counts, cinnamon sticks', ['cut into 1-inch pieces', 'rest 10 minutes', 'at 350°F', '2 cloves', 'v2.5 lb', '1 cinnamon stick'].map(amts),
   [[], [], [], [], [], []]);
-eq('1¼ tsp: no fuzzy "≈ ⅜ tbsp"', B(1.25, 'tsp', 'salt'), ['6.2 ml']);
+eq('1¼ tsp: no fuzzy "≈ ⅜ tbsp"; plain salt weighs 6 g/tsp', B(1.25, 'tsp', 'salt'), ['6.2 ml', '≈ 7.5 g (weight)']);
+/* ---------- inline US measure for metric amounts ("10 g (1¾ tsp*)") ---------- */
+const U = (qty, unit, item, extra = {}, f = 1) => usEquivalent({ qty, unit, item, ...extra }, f);
+eq('grams by the ingredient’s own density', [U(10, 'g', 'fine table salt', { density: { g: 5.7, per: 'tsp' } }),
+  U(20, 'g', 'parmesan', { density: { g: 80, per: 'cup' } }), U(40, 'g', 'minced chicken', { density: { g: 13.3, per: 'tbsp' } })],
+  ['1¾ tsp', '¼ cup', '3 tbsp']);
+eq('grams by the table: salt by brand, soy sauce, flour; unbranded kosher salt unknown',
+  [U(10, 'g', 'salt'), U(6, 'g', 'kosher salt (Diamond Crystal)'), U(36, 'g', 'soy sauce'), U(125, 'g', 'all-purpose flour'), U(10, 'g', 'kosher salt')],
+  ['1⅔ tsp', '2⅛ tsp', '2 tbsp', '1 cup', null]);
+eq('millilitres need no density; big amounts in cups and quarts', [U(30, 'ml', 'soy sauce'), U(15, 'ml', 'water'), U(500, 'ml', 'chicken stock'), U(1, 'l', 'water')],
+  ['2 tbsp', '1 tbsp', '2⅛ cups', '1 qt']);
+eq('tablespoons + quarter teaspoons, scaled, ranges', [U(40, 'ml', 'water'), U(10, 'g', 'salt', { density: { g: 5.7, per: 'tsp' } }, 2),
+  U(5, 'ml', 'fish sauce', { qtyMax: 10 }), U(10, 'ml', 'water', { qtyMax: 20 })],
+  ['2 tbsp + 2 tsp', '1 tbsp + ½ tsp', '1–2 tsp', '2 tsp – 1 tbsp + 1 tsp']);
+eq('none for: density null, unknown items, US units, counts, under ⅛ tsp', [U(200, 'g', 'all-purpose flour', { density: null }), U(200, 'g', 'rigatoni'),
+  U(2, 'tbsp', 'soy sauce'), U(1, 'lb', 'butter'), U(2, null, 'eggs'), U(0.5, 'g', 'salt')],
+  [null, null, null, null, null, null]);
+eq('density: own value wins over the table; null turns the table off; bad values fall back',
+  [gramsPerMl({ item: 'salt', density: { g: 2.8, per: 'tsp' } }).toFixed(3), gramsPerMl({ item: 'salt', density: null }),
+   gramsPerMl({ item: 'salt', density: { g: 0, per: 'tsp' } }), gramsPerMl({ item: 'salt', density: { g: 5, per: 'clove' } })],
+  ['0.568', null, 1.22, 1.22]);
+eq('the tap breakdown uses the ingredient’s density too', flat(breakdown({ qty: 20, unit: 'g', item: 'parmesan', density: { g: 80, per: 'cup' } })),
+  ['≈ ⅔ oz', '≈ ¼ cup (volume)']);
 eq('T is a tablespoon, t a teaspoon; spelled-out units', ['T', 't', 'Tablespoons', 'fl. oz', 'Grams', 'pinch'].map(u => unitInfo(u)?.key ?? null),
   ['tbsp', 'tsp', 'tbsp', 'floz', 'g', null]);
 
@@ -228,6 +251,29 @@ noteBox.innerHTML = toStr(ingredientsHtml({ ingredients: [{ id: 'i1', qty: 2, un
   { id: 'i2', qty: 1, unit: 'cup', item: 'water', note: 'warmed to 40C; or 2 tbsp milk' }] }, 'zz-temp'));
 truthy('note temperatures link; "40C" is not 40 cups', noteBox.querySelectorAll('[data-temp]').length === 2 && noteBox.querySelectorAll('.rx-note-amt').length === 1
   && noteBox.querySelector('.rx-note-amt').textContent === '2 tbsp');
+const metricBox = document.createElement('div');
+const METRIC_RX = { ingredients: [{ id: 'i1', qty: 10, unit: 'g', density: { g: 5.7, per: 'tsp' }, item: 'fine table salt', note: null },
+  { id: 'i2', qty: 200, unit: 'g', density: null, item: 'rigatoni', note: null }, { id: 'i3', qty: 2, unit: 'tbsp', item: 'olive oil', note: null }] };
+metricBox.innerHTML = `<div data-ingredients>${toStr(ingredientsHtml(METRIC_RX, 'zz-metric'))}</div>`;
+const approxOf = () => [...metricBox.querySelectorAll('.rx-ing')].map(r => r.querySelector('.rx-approx')?.textContent.replace('approximately', '~') ?? null);
+eq('metric amount → US measure with * inline; none for density null or US units', approxOf(), ['(1¾ tsp*, ~)', null, null]);
+truthy('a key under the list explains the *', /\* Approximate US measure/.test(metricBox.querySelector('.rx-approx-key')?.textContent || ''));
+rxPatch('zz-metric', { factor: 2 });
+metricBox.innerHTML = `<div data-ingredients>${toStr(ingredientsHtml(METRIC_RX, 'zz-metric'))}</div>`;
+eq('the US measure scales with the servings', approxOf()[0], '(1 tbsp + ½ tsp*, ~)');
+sessionStorage.removeItem('bb.rx:zz-metric');
+const usOnly = document.createElement('div');
+usOnly.innerHTML = toStr(ingredientsHtml({ ingredients: [METRIC_RX.ingredients[2]] }, 'zz-us'));
+truthy('no metric amounts → no key', !usOnly.querySelector('.rx-approx-key'));
+const saltStep = document.createElement('p');
+saltStep.innerHTML = toStr(stepTextHtml({ id: 's1', text: 'Season the water with the salt.', timers: [] }, 1, { match: mentionMatcher(METRIC_RX.ingredients) }));
+document.body.append(saltStep);
+saltStep.scrollIntoView({ block: 'center' });
+saltStep.querySelector('[data-ingref]')?.click();
+truthy('a step mention’s bubble carries the US measure too', /10 g \(1¾ tsp\*\) fine table salt/.test(document.querySelector('.rx-ingtip')?.textContent || ''),
+  document.querySelector('.rx-ingtip')?.textContent);
+window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+saltStep.remove();
 // Cook mode's Ingredients sheet: the same list inside a sheet (z 60) — the bubble must show above it.
 const done = sheet({ title: 'Ingredients', body: noteBox });
 const wrap = document.querySelector('.sheet-backdrop:last-of-type');

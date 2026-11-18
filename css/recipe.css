@@ -166,6 +166,8 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 .rx-qty { font-weight: 700; }
 .rx-qty.is-scaled { color: var(--accent); }
 .rx-ing-note { font-size: .88rem; color: var(--muted); line-height: 1.35; }
+.rx-approx { font-size: .9rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rx-approx-key { margin: 8px 0 0; font-size: .8rem; color: var(--muted); }
 .rx-ing.is-checked .rx-ing-text { color: var(--muted); }
 .rx-ing.is-checked .rx-qty { color: inherit; }
 

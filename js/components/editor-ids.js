@@ -9,7 +9,8 @@
  *       reserved: extra ids that must never be handed out again (e.g. journal stepIds)
  *     Unchanged lines keep the saved object verbatim (curated timer labels, odd units…);
  *     edited lines keep their id and take the new fields; steps keep old timer labels
- *     for timers whose duration didn't change.
+ *     for timers whose duration didn't change. An ingredient whose item changed drops its
+ *     `density` (grams per spoon/cup of the old item).
  *   matchItems(newKeys, oldKeys) → map: new index → old index | -1
  *       1) exact key (any position — moving a line keeps its id)
  *       2) between exact anchors: word similarity; for steps (slot: true) a 1-for-1
@@ -99,7 +100,8 @@ export function mergeIngredients(parsed, prev = [], reserved = []) {
       const fields = Object.fromEntries(ING_FIELDS.map(k => [k, p[k] ?? null]));
       if (!old) return { id, section: p.section ?? null, ...fields };
       if (exact) return { ...old, section: p.section ?? null };
-      return { ...old, section: p.section ?? null, ...fields };
+      const { density, ...rest } = old;
+      return { ...(normKey(p.item) === normKey(old.item) ? old : rest), section: p.section ?? null, ...fields };
     }, { slot: false });   // a different ingredient in the same spot is a new ingredient
 }
 
