@@ -114,6 +114,11 @@ body[data-view="cook"] .bottomnav { display: none; }
 /* Keyboard up (html.kb-open, ui.js): the nav would sit behind it and slide around as the page
    scrolls, so it steps aside until the keyboard closes. */
 html.kb-open .bottomnav { visibility: hidden; }
+/* html.vv-drift / --vv-dy (ui.js pinToScreenBottom): when iOS leaves the layout viewport out of
+   step with the screen, bars pinned to the bottom ride along with the page; this puts them back on
+   the screen's bottom edge. The probe is how ui.js measures the drift. */
+html.vv-drift :is(.bottomnav, #tools, #toasts, .ck-nav) { translate: 0 var(--vv-dy, 0px); }
+.vv-probe { position: fixed; left: 0; bottom: 0; width: 0; height: 0; visibility: hidden; pointer-events: none; }
 body[data-view="cook"] { padding-bottom: var(--safe-b); }
 
 .offline-banner { display: none; text-align: center; font-size: .8rem; padding: 4px; background: var(--warn); color: var(--on-fill); }

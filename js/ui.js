@@ -79,25 +79,58 @@ function syncScrollLock() {
      rejoins the page flow (base / tools / editor.css), sheets drop their home-bar padding.
    - While a sheet is open its backdrop is fitted to the visual viewport (--vv-top / --vv-h on
      <html>), which lifts the sheet to just above the keyboard, and the focused field is
-     scrolled into view inside the sheet. */
+     scrolled into view inside the sheet.
+   - Bars pinned to the bottom (nav, timer button, cook mode's Back/Next, toasts) are placed by the
+     page's layout viewport. iOS sometimes leaves that out of step with the screen after the
+     keyboard closes or the app comes back from the background: the nav then rides along with
+     the page and parks near the top. A zero-size probe pinned to the layout viewport's bottom
+     shows the drift; html.vv-drift + --vv-dy (CSS `translate`) put the bars back on the screen's
+     bottom edge until iOS catches up, and a no-op scrollTo nudges it to resync once the keyboard
+     has gone. */
 const vv = window.visualViewport;
 const TYPING = 'textarea, select, [contenteditable=""], [contenteditable="true"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([type="color"])';
-let vvFrame = 0;
+let vvFrame = 0, kbWas = false, probe = null;
 function fitViewport() {
   vvFrame = 0;
   const de = document.documentElement, st = de.style;
   const zoomed = !vv || Math.abs(vv.scale - 1) > 0.01;                // pinch-zoomed: leave it be
-  de.classList.toggle('kb-open', !zoomed && de.clientHeight - vv.height > 120 && !!document.activeElement?.matches?.(TYPING));
+  const kbUp = !zoomed && de.clientHeight - vv.height > 120;          // something (the keyboard) covers the bottom
+  de.classList.toggle('kb-open', kbUp && !!document.activeElement?.matches?.(TYPING));
+  if (kbWas && !kbUp) window.scrollTo(window.scrollX, window.scrollY); // keyboard gone: nudge iOS to resync
+  kbWas = kbUp;
+  pinToScreenBottom(zoomed || kbUp);
   if (zoomed || !openSheets.length) { st.removeProperty('--vv-top'); st.removeProperty('--vv-h'); return; }
   st.setProperty('--vv-top', `${Math.round(vv.offsetTop)}px`);
   st.setProperty('--vv-h', `${Math.round(vv.height)}px`);
   revealFocus();
+}
+/** html.vv-drift + --vv-dy: how far the screen's bottom edge is from the layout viewport's, when
+ *  iOS let them drift apart. Off while zoomed or the keyboard is up: the bars stay put then. */
+function pinToScreenBottom(off) {
+  const de = document.documentElement;
+  let dy = 0;
+  if (!off) {
+    if (!probe) {                    // on <html>, not <body>: the lock screen hides body's children
+      probe = document.createElement('div');
+      probe.className = 'vv-probe';
+      probe.setAttribute('aria-hidden', 'true');
+      document.documentElement.append(probe);
+    }
+    if (probe.getClientRects().length) dy = Math.round(vv.offsetTop + vv.height - probe.getBoundingClientRect().bottom);
+  }
+  const drift = Math.abs(dy) > 6;    // ignore rounding and toolbar animations
+  de.classList.toggle('vv-drift', drift);
+  if (drift) de.style.setProperty('--vv-dy', `${dy}px`); else de.style.removeProperty('--vv-dy');
 }
 const queueFit = () => { if (!vvFrame) vvFrame = requestAnimationFrame(fitViewport); };
 vv?.addEventListener('resize', queueFit);
 vv?.addEventListener('scroll', queueFit);
 document.addEventListener('focusin', queueFit);
 document.addEventListener('focusout', queueFit);
+// Drift shows up while scrolling, on return from the background and after a rotation.
+window.addEventListener('scroll', queueFit, { passive: true });
+window.addEventListener('pageshow', queueFit);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) queueFit(); });
 
 /** Scroll the top sheet so its focused text field sits above any sticky footer (Done / Apply). */
 function revealFocus() {

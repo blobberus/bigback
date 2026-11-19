@@ -136,6 +136,23 @@ try {
   delete vvp.height;
   field.focus({ preventScroll: true }); await frame(); await frame();
   ok('a focused field without a keyboard (desktop) changes nothing', !de.classList.contains('kb-open'));
+  field.blur(); await frame(); await frame();
+
+  // iOS drift: the screen (visual viewport) and the layout viewport the nav is pinned to fall out of step
+  const navBottom = () => nav.getBoundingClientRect().bottom;
+  const atRest = navBottom();
+  ok('no drift → nothing moves', !de.classList.contains('vv-drift') && Math.abs(atRest - vvp.height) < 2, `${atRest} vs ${vvp.height}`);
+  Object.defineProperty(vvp, 'offsetTop', { configurable: true, get: () => 240 });
+  window.dispatchEvent(new Event('scroll')); await frame(); await frame();
+  ok('drifted → the nav goes back to the screen’s bottom edge', de.classList.contains('vv-drift')
+    && Math.abs(navBottom() - (240 + vvp.height)) < 2, `${navBottom()} vs ${240 + vvp.height}`);
+  Object.defineProperty(vvp, 'height', { configurable: true, get: () => de.clientHeight - 300 });
+  vvp.dispatchEvent?.(new Event('resize')); window.dispatchEvent(new Event('scroll')); await frame(); await frame();
+  ok('…but not while the keyboard is up (the nav stays put, out of its way)', !de.classList.contains('vv-drift'));
+  delete vvp.height; delete vvp.offsetTop;
+  window.dispatchEvent(new Event('scroll')); await frame(); await frame();
+  ok('back in step → the correction is gone', !de.classList.contains('vv-drift') && !de.style.getPropertyValue('--vv-dy')
+    && Math.abs(navBottom() - atRest) < 1, `${navBottom()} vs ${atRest}`);
   field.remove(); nav.remove();
 } catch (e) {
   ok('suite threw', false, String(e?.stack || e));
