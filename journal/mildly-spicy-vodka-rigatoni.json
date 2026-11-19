@@ -13,6 +13,19 @@
       "resolution": null,
       "resolvedAt": null,
       "photo": null
+    },
+    {
+      "id": "n-20261119-el3j",
+      "kind": "note",
+      "scope": "recipe",
+      "stepId": null,
+      "stepText": null,
+      "text": "I want to add Italian pork sausages to this recipe.",
+      "createdAt": "2026-11-19T01:38:57Z",
+      "status": "open",
+      "resolution": null,
+      "resolvedAt": null,
+      "photo": null
     }
   ]
 }
