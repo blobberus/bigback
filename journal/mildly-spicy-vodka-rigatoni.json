@@ -9,9 +9,9 @@
       "stepText": "Add the other 1 tbsp olive oil and the butter to the skillet over medium-low. Add the onion with a small pinch of salt and cook, stirring often, until soft and translucent without deep browning, 8–10 minutes. If it catches, add 1 tbsp water.",
       "text": "Olive oil amount does not link to the amount listed in the ingredients list",
       "createdAt": "2026-11-18T23:49:07Z",
-      "status": "open",
-      "resolution": null,
-      "resolvedAt": null,
+      "status": "applied",
+      "resolution": "s3 spelled out \"1 tbsp\", so the oil wasn't a link; it now goes in the new sausage step, where tapping it shows the sauce oil's amount (scaled).",
+      "resolvedAt": "2026-11-19T05:14:48Z",
       "photo": null
     },
     {
@@ -22,9 +22,9 @@
       "stepText": null,
       "text": "I want to add Italian pork sausages to this recipe.",
       "createdAt": "2026-11-19T01:38:57Z",
-      "status": "open",
-      "resolution": null,
-      "resolvedAt": null,
+      "status": "applied",
+      "resolution": "Added 225 g mild Italian sausage (i21): browned in the oil (new s9), onion softens in its fat (s3), back in with the cream (s6). Total time 45 → 55 min.",
+      "resolvedAt": "2026-11-19T05:14:48Z",
       "photo": null
     }
   ]

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "slug": "mildly-spicy-vodka-rigatoni",
-  "title": "Mildly Spicy Vodka Rigatoni with Rosemary-Lemon Breadcrumbs",
-  "summary": "Carbone-style vodka rigatoni: silky, tomato-forward and gently spicy, under crisp rosemary-lemon crumbs.",
-  "profile": "Tomato-forward and bright, with savory depth from tomato paste cooked to brick red and slowly softened onion; cream and butter round off the acid, Calabrian chili adds gentle warmth that builds but never burns, and parmesan brings salt and nuttiness, with the vodka sharpening the tomato aroma without tasting boozy. The rigatoni should be tender with a slight bite in a glossy, slightly loose sauce that coats the inside and outside of the tubes (no grainy cheese, no oil slick), under golden, crunchy crumbs scented with rosemary and lemon zest that go on at the last moment. Makes 2 servings in about 40–45 minutes, almost all hands-on; written as the side for a seared steak (steak not included), and it also works as a light main. Best eaten right away: leftovers keep 3 days refrigerated, reheated in a skillet over low heat with a splash of water or cream because the sauce tightens when cold; store the crumbs separately, airtight at room temperature, and the tomato base (finished through the tomato simmer, before the cream) keeps 4 days refrigerated or 3 months frozen.",
+  "title": "Mildly Spicy Sausage Vodka Rigatoni with Rosemary-Lemon Breadcrumbs",
+  "summary": "Carbone-style vodka rigatoni with browned Italian sausage: silky, tomato-forward and gently spicy, under crisp rosemary-lemon crumbs.",
+  "profile": "Tomato-forward and bright, with savory depth from browned Italian sausage, tomato paste cooked to brick red and onion softened slowly in the sausage fat; cream and butter round off the acid, Calabrian chili adds gentle warmth that builds but never burns, and parmesan brings salt and nuttiness, with the vodka sharpening the tomato aroma without tasting boozy. The rigatoni should be tender with a slight bite, with small, well-browned sausage crumbles caught in the tubes and a glossy, slightly loose sauce that coats the inside and outside (no grainy cheese, no oil slick), under golden, crunchy crumbs scented with rosemary and lemon zest that go on at the last moment. Makes 2 main-course servings in about 55 minutes, almost all hands-on; without the sausage it's the light side for a seared steak the original was written as. Best eaten right away: leftovers keep 3 days refrigerated, reheated in a skillet over low heat with a splash of water or cream because the sauce tightens when cold; store the crumbs separately, airtight at room temperature, and the tomato base (finished through the tomato simmer, before the cream) keeps 4 days refrigerated or 3 months frozen.",
   "status": "built",
   "source": {
     "type": "pdf",
@@ -15,16 +15,17 @@
   },
   "image": "media/mildly-spicy-vodka-rigatoni/hero.jpg",
   "servings": 2,
-  "yield": "2 portions alongside steak",
+  "yield": "2 main-course portions",
   "time": {
     "prep": 10,
-    "cook": 35,
-    "total": 45
+    "cook": 45,
+    "total": 55
   },
   "equipment": [
     "wide 12-inch skillet",
     "pasta pot",
     "small bowl",
+    "slotted spoon",
     "fine grater (Microplane)"
   ],
   "ingredients": [
@@ -94,6 +95,16 @@
       "unit": "tbsp",
       "item": "olive oil",
       "note": null
+    },
+    {
+      "id": "i21",
+      "section": "Pasta & sauce",
+      "qty": 225,
+      "qtyMax": null,
+      "unit": "g",
+      "density": null,
+      "item": "Italian pork sausage",
+      "note": "mild; about 2 links (8 oz), casings removed; hot Italian for more heat"
     },
     {
       "id": "i8",
@@ -239,9 +250,25 @@
       "tip": "Covering the warm crumbs traps steam and softens them."
     },
     {
+      "id": "s9",
+      "section": "Pasta & sauce",
+      "text": "Heat the olive oil in the skillet over medium-high. Add the sausage, press it into an even layer and leave it until well browned underneath, 3–4 minutes, then break it into small crumbles and cook, stirring now and then, until no pink remains, 3–4 minutes more. Scoop it onto a plate with the slotted spoon, leaving the fat behind; if more than about 1 tbsp remains, pour off the excess.",
+      "timers": [
+        {
+          "label": "Brown sausage",
+          "seconds": 180
+        },
+        {
+          "label": "Cook through",
+          "seconds": 180
+        }
+      ],
+      "tip": "Leaving it untouched at first gives it a deep crust; the rendered fat then seasons the onion and the sauce."
+    },
+    {
       "id": "s3",
       "section": "Pasta & sauce",
-      "text": "Add the other 1 tbsp olive oil and the butter to the skillet over medium-low. Add the onion with a small pinch of salt and cook, stirring often, until soft and translucent without deep browning, 8–10 minutes. If it catches, add 1 tbsp water.",
+      "text": "Lower the heat to medium-low and add the butter to the fat in the skillet. Add the onion with a small pinch of salt and cook, stirring often and scraping up the browned sausage bits, until soft and translucent without deep browning, 8–10 minutes. If it catches, add 1 tbsp water.",
       "timers": [
         {
           "label": "Soften onion",
@@ -276,12 +303,12 @@
           "seconds": 480
         }
       ],
-      "tip": "Cooking a steak alongside? Pause here and time it to finish 5–10 minutes before the pasta so it rests while you toss and plate."
+      "tip": "Serving it with steak? Pause here and time the steak to finish 5–10 minutes before the pasta so it rests while you toss and plate."
     },
     {
       "id": "s6",
       "section": "Pasta & sauce",
-      "text": "Return the water to a full boil, add the rigatoni and stir well, especially during the first minute. Cook to 1 minute short of the package's al dente time (often 10–12 minutes). With about 3 minutes left, gently reheat the tomato base, stir in the cream and simmer softly for 2 minutes. Reserve 1 cup of the pasta water, then drain without rinsing.",
+      "text": "Return the water to a full boil, add the rigatoni and stir well, especially during the first minute. Cook to 1 minute short of the package's al dente time (often 10–12 minutes). With about 3 minutes left, gently reheat the tomato base, stir in the cream and the sausage with any juices from the plate, and simmer softly for 2 minutes. Reserve 1 cup of the pasta water, then drain without rinsing.",
       "timers": [
         {
           "label": "Pasta",
@@ -309,13 +336,13 @@
     {
       "id": "s8",
       "section": null,
-      "text": "Taste. If it needs brightness, stir in the vinegar ¼ tsp at a time, up to 1 tsp total, and skip it if the tomatoes already taste tangy. Adjust the salt and heat. Plate beside the rested, sliced steak, scatter the breadcrumbs on top at the last moment and pass the rest at the table so every bite stays crisp.",
+      "text": "Taste. If it needs brightness, stir in the vinegar ¼ tsp at a time, up to 1 tsp total, and skip it if the tomatoes already taste tangy. Adjust the salt and heat, remembering the sausage is already salty. Plate, scatter the breadcrumbs on top at the last moment and pass the rest at the table so every bite stays crisp.",
       "timers": [],
       "tip": "Flat? Try a small pinch of salt before more acid; too sharp, stir in 1 tbsp cream; too thick, a splash of warm pasta water."
     }
   ],
   "createdAt": "2026-11-18T09:40:00Z",
-  "updatedAt": "2026-11-18T09:28:08Z",
+  "updatedAt": "2026-11-19T05:13:09Z",
   "changelog": [
     {
       "date": "2026-11-18",
@@ -326,6 +353,14 @@
       "date": "2026-11-18",
       "summary": "Weighed ingredients now carry an approximate US measure (salt ≈ 1¾ tsp, parmesan ≈ ¼ cup), shown with *; moved those amounts out of the notes.",
       "notes": []
+    },
+    {
+      "date": "2026-11-19",
+      "summary": "Added browned Italian sausage (i21, new s9); onion softens in its fat (s3), sausage goes back in with the cream (s6); olive oil now links to its amount.",
+      "notes": [
+        "n-20261118-7h9o",
+        "n-20261119-el3j"
+      ]
     }
   ]
 }

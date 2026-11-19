@@ -82,19 +82,19 @@
     },
     {
       "slug": "mildly-spicy-vodka-rigatoni",
-      "title": "Mildly Spicy Vodka Rigatoni with Rosemary-Lemon Breadcrumbs",
-      "summary": "Carbone-style vodka rigatoni: silky, tomato-forward and gently spicy, under crisp rosemary-lemon crumbs.",
+      "title": "Mildly Spicy Sausage Vodka Rigatoni with Rosemary-Lemon Breadcrumbs",
+      "summary": "Carbone-style vodka rigatoni with browned Italian sausage: silky, tomato-forward and gently spicy, under crisp rosemary-lemon crumbs.",
       "image": "media/mildly-spicy-vodka-rigatoni/hero.jpg",
       "time": {
         "prep": 10,
-        "cook": 35,
-        "total": 45
+        "cook": 45,
+        "total": 55
       },
       "servings": 2,
       "status": "built",
       "sourceType": "pdf",
-      "updatedAt": "2026-11-18T09:28:08Z",
-      "openNotes": 2
+      "updatedAt": "2026-11-19T05:13:09Z",
+      "openNotes": 0
     },
     {
       "slug": "pan-seared-chicken",
