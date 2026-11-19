@@ -89,6 +89,9 @@ eq('"garlic cloves" is called garlic; participles and -lly nouns', [linked('Smas
   [[['garlic', 'j']], [['mozzarella', 'k']], [['belly', 'l']]]);
 const twice = mentionMatcher([{ id: 'x1', qty: 1, unit: 'cup', item: 'butter', section: 'Cake' }, { id: 'x2', qty: 4, unit: 'tbsp', item: 'unsalted butter', section: 'Frosting' }]);
 eq('same ingredient in two sections → both amounts', twice('Cream the butter.').map(x => x.ids), [['x1', 'x2']]);
+eq('…but a step in one of those sections means its own', [twice('Cream the butter.', { section: 'Frosting' }), twice('Cream the butter.', { section: 'Glaze' })].map(r => r.map(x => x.ids)), [[['x2']], [['x1', 'x2']]]);
+const ownHtml = toStr(stepTextHtml({ id: 's2', section: 'Cake', text: 'Melt the butter.', timers: [] }, 2, { match: twice }));
+truthy('stepTextHtml passes the step’s section on', /"q":1,[^\]]*"s":"Cake"/.test(ownHtml.replace(/&quot;/g, '"')) && !/Frosting/.test(ownHtml.replace(/&quot;/g, '"')), ownHtml);
 
 const stepHtml = toStr(stepTextHtml({ id: 's9', text: 'Add the garlic and cook 1 minute.', timers: [] }, 9, { match: m }));
 truthy('step text renders both an ingredient link and a timer link', /data-ingref="i5"[^>]*>garlic/.test(stepHtml) && /class="rx-dur"/.test(stepHtml), stepHtml);

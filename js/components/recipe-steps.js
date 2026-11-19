@@ -59,7 +59,7 @@ export function stepTextHtml(step, n, { match } = {}) {
   const text = step.text || '';
   const out = [];
   let pos = 0;
-  const spans = [...inlineDurations(step), ...(match ? match(text).map(m => ({ ...m, ing: true })) : []),
+  const spans = [...inlineDurations(step), ...(match ? match(text, { section: step.section }).map(m => ({ ...m, ing: true })) : []),
     ...findTemps(text).map(t => ({ ...t, temp: true }))]
     .sort((a, b) => a.index - b.index);
   for (const d of spans) {

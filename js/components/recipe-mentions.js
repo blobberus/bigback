@@ -1,9 +1,10 @@
 /**
  * components/recipe-mentions.js — ingredient names inside step text become tappable; a tap shows
  * a small bubble above the word with the (scaled) amount. Recipe page + cook mode.
- *   mentionMatcher(ingredients, { slug }) → match(text) → [{ index, length, ids, ings, slug }]
+ *   mentionMatcher(ingredients, { slug }) → match(text, { section }) → [{ index, length, ids, ings, slug }]
  *       first mention per ingredient per step; skipped when the step already gives an amount
- *       ("Add 2 tbsp butter") and for ingredients without a quantity ("salt, to taste").
+ *       ("Add 2 tbsp butter") and for ingredients without a quantity ("salt, to taste"). A name two
+ *       sections share (olive oil for the topping and for the sauce) means the step's own section's.
  *   mentionButton(text, span) → html   <button class="rx-ingref" data-ingref data-amt data-slug>
  *       Self-contained: the amounts ride along in data-amt and the scale factor is read from
  *       recipe-state at tap time, so one global handler (installed on first render) serves every
@@ -78,11 +79,13 @@ function phrasesFor(item) {
 export function mentionMatcher(ingredients = [], { slug = '' } = {}) {
   const byKey = new Map();          // stemmed phrase → Set(ids)
   const coreOf = new Map();         // id → stemmed core name
+  const secOf = new Map();          // id → ingredient section
   let maxLen = 1;
   for (const ing of ingredients) {
     if (!ing?.id) continue;
     const { phrases, core } = phrasesFor(ing.item);
     coreOf.set(ing.id, core);
+    secOf.set(ing.id, ing.section || null);
     for (const p of phrases) {
       const key = p.map(stem).join(' ');
       if (!byKey.has(key)) byKey.set(key, new Set());
@@ -102,18 +105,19 @@ export function mentionMatcher(ingredients = [], { slug = '' } = {}) {
   }
   const byId = new Map(ingredients.filter(i => i?.id && qtyText(i)).map(i => [i.id, i]));
 
-  return function match(text) {
+  return function match(text, { section = null } = {}) {
     text = String(text || '');
     const toks = [...text.matchAll(WORD)].map(m => ({ w: m[0], s: m.index, e: m.index + m[0].length, k: stem(m[0]) }));
     const found = [], seen = new Set();
     for (let p = 0; p < toks.length; p++) {
       for (let len = Math.min(maxLen, toks.length - p); len >= 1; len--) {
         const key = toks.slice(p, p + len).map(t => t.k).join(' ');
-        const ids = resolve.get(key);
+        let ids = resolve.get(key);
         if (!ids) continue;
         const last = toks[p + len - 1];
         // Words must be adjacent (only spaces between), not split by punctuation.
         if (len > 1 && toks.slice(p, p + len - 1).some((t, j) => /\S/.test(text.slice(t.e, toks[p + j + 1].s)))) continue;
+        if (section && ids.length > 1) { const own = ids.filter(id => secOf.get(id) === section); if (own.length) ids = own; }
         const keep = ids.filter(id => byId.has(id) && !seen.has(id));
         const span = { index: toks[p].s, length: last.e - toks[p].s, ids: keep, ings: keep.map(id => byId.get(id)), slug };
         ids.forEach(id => seen.add(id));
