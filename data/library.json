@@ -92,7 +92,9 @@
     {
       "id": "pl-ij7u",
       "name": "Easy to scale",
-      "recipes": [],
+      "recipes": [
+        "tteokguk"
+      ],
       "createdAt": "2026-11-20T23:46:26Z"
     }
   ]
