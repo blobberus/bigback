@@ -191,15 +191,23 @@
       "sourceType": "web",
       "updatedAt": "2026-11-15T09:53:10Z",
       "openNotes": 0
+    },
+    {
+      "slug": "garlic-butter-pasta",
+      "title": "Vegan Garlic Butter Pasta",
+      "summary": "Spaghetti in a glossy sauce of slow-cooked garlic mashed into vegan butter, with tomato paste, basil and vegan Parmesan.",
+      "image": "media/garlic-butter-pasta/hero.jpg",
+      "time": {
+        "prep": 10,
+        "cook": 35,
+        "total": 45
+      },
+      "servings": 4,
+      "status": "built",
+      "sourceType": "instagram",
+      "updatedAt": "2026-11-23T05:02:00Z",
+      "openNotes": 0
     }
   ],
-  "pending": [
-    {
-      "id": "20261122-083424-ao16",
-      "kind": "link",
-      "title": "Garlic Butter Pasta",
-      "url": "https://www.instagram.com/reel/DgBEu5aPf88/?bqrl=MW9hYnp0bWRzM3VicA==",
-      "createdAt": "2026-11-22T08:34:24Z"
-    }
-  ]
+  "pending": []
 }

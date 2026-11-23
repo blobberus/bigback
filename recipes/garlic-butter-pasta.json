@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "slug": "garlic-butter-pasta",
+  "title": "Vegan Garlic Butter Pasta",
+  "summary": "Spaghetti in a glossy sauce of slow-cooked garlic mashed into vegan butter, with tomato paste, basil and vegan Parmesan.",
+  "profile": "Rich and mellow rather than sharp: two whole heads of garlic cooked slowly in oil go sweet and nutty, and they're beaten into vegan butter with tomato paste for savory depth and a faint tang, vegan Parmesan for salt and umami, and fresh basil for lift. Pepper is the only heat and there's no added acid, so it relies on proper salt in the pasta water and in the butter. The spaghetti should be just al dente in a smooth, glossy sauce made from the butter and starchy pasta water that clings to every strand, with no oil pooling in the bowl and no gritty garlic. Serves 4 in about 45 minutes (20 of them hands-off while the garlic cooks). The garlic butter makes about ¾ cup and a full batch of pasta uses about a third of it, so there's extra. Refrigerate leftovers promptly: pasta keeps 3 days (reheat in a skillet over low heat with a splash of water), and the garlic butter and strained garlic oil keep 4 days from when the garlic was cooked, or freeze them for longer.",
+  "status": "built",
+  "source": {
+    "type": "instagram",
+    "url": "https://www.instagram.com/reel/DgBEu5aPf88/",
+    "files": [],
+    "author": "Dr. Vegan (Ahmad, drveganblog.com)"
+  },
+  "image": "media/garlic-butter-pasta/hero.jpg",
+  "servings": 4,
+  "yield": "4 servings, plus about ½ cup extra garlic butter",
+  "time": {
+    "prep": 10,
+    "cook": 35,
+    "total": 45
+  },
+  "equipment": [
+    "small saucepan",
+    "slotted spoon",
+    "small food processor or blender (or a fork)",
+    "large pot",
+    "colander"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": "Garlic butter",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "head",
+      "item": "garlic",
+      "note": "cloves separated and peeled"
+    },
+    {
+      "id": "i2",
+      "section": "Garlic butter",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "olive oil",
+      "note": "just enough to cover the cloves"
+    },
+    {
+      "id": "i3",
+      "section": "Garlic butter",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "vegan butter",
+      "note": "softened"
+    },
+    {
+      "id": "i4",
+      "section": "Garlic butter",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "tomato paste",
+      "note": null
+    },
+    {
+      "id": "i5",
+      "section": "Garlic butter",
+      "qty": 3,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "vegan Parmesan",
+      "note": "grated"
+    },
+    {
+      "id": "i6",
+      "section": "Garlic butter",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "fresh basil",
+      "note": "a small handful, finely chopped"
+    },
+    {
+      "id": "i7",
+      "section": "Garlic butter",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "salt",
+      "note": "table salt; to taste, plus 1 tbsp for the pasta water (2 tbsp Diamond Crystal or 1¼ tbsp Morton kosher)"
+    },
+    {
+      "id": "i8",
+      "section": "Garlic butter",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "black pepper",
+      "note": "freshly ground, to taste"
+    },
+    {
+      "id": "i9",
+      "section": "Pasta",
+      "qty": 400,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "spaghetti",
+      "note": "or any pasta you like",
+      "density": null
+    },
+    {
+      "id": "i10",
+      "section": "Pasta",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "pasta water",
+      "note": "reserved from cooking the pasta"
+    },
+    {
+      "id": "i11",
+      "section": "To serve",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "extra vegan Parmesan and basil",
+      "note": "optional"
+    },
+    {
+      "id": "i12",
+      "section": "To serve",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "toasted breadcrumbs or chili oil",
+      "note": "optional"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": "Garlic butter",
+      "text": "Put the garlic in the saucepan and pour in just enough of the olive oil to cover it, about ½ cup. Cook over low heat, swirling now and then, until the cloves are pale golden and soft enough to mash, about 20 minutes (longer for big cloves). Keep the oil at a gentle bubble, not a fry. Lift the garlic out with a slotted spoon and let it cool until just warm.",
+      "timers": [
+        {
+          "label": "Cook garlic",
+          "seconds": 1200
+        }
+      ],
+      "tip": "Garlic that browns before it softens turns bitter, so slide the pan half off the burner if the oil gets lively."
+    },
+    {
+      "id": "s2",
+      "section": "Garlic butter",
+      "text": "Blend the garlic with the butter until smooth, or mash the garlic thoroughly and beat it into the butter. Stir in the tomato paste, vegan Parmesan and basil, and season with salt and pepper. This makes about ¾ cup (12 tablespoons). Use it right away, or chill it about 30 minutes if you want it firmer.",
+      "timers": [
+        {
+          "label": "Optional chill",
+          "seconds": 1800
+        }
+      ],
+      "tip": "Save the strained garlic oil for cooking, but refrigerate it and use it within 4 days (or freeze it), because garlic in oil left at room temperature is a botulism risk."
+    },
+    {
+      "id": "s3",
+      "section": "Pasta",
+      "text": "While the garlic cooks, bring 4 quarts of water to a boil and add 1 tablespoon of the salt. Cook the spaghetti until about 1 minute short of al dente, usually 8–10 minutes (check the package). Scoop out 1 cup of the pasta water just before draining, and don't rinse the pasta.",
+      "timers": [
+        {
+          "label": "Pasta",
+          "seconds": 480
+        }
+      ],
+      "tip": "The starch on unrinsed pasta and in its water is what turns the butter into a glossy, clinging sauce."
+    },
+    {
+      "id": "s4",
+      "section": "Pasta",
+      "text": "Return the hot spaghetti to the pot over low heat. Add 4 tablespoons of the garlic butter and a generous splash of the pasta water, and toss constantly until glossy and coating, 1–2 minutes. Loosen with more water a little at a time, and add more garlic butter if the noodles look undercoated (up to the whole batch for a richer sauce). If the sauce separates, take the pot off the heat and toss with a small splash of water.",
+      "timers": [
+        {
+          "label": "Toss",
+          "seconds": 60
+        }
+      ],
+      "tip": "Keep the heat low: the butter should melt into the starchy water rather than fry, or the sauce turns oily."
+    },
+    {
+      "id": "s5",
+      "section": "To serve",
+      "text": "Taste and adjust the salt and pepper, then serve right away in warm bowls. Top with extra vegan Parmesan and basil, and breadcrumbs or chili oil if you like. Refrigerate leftover garlic butter promptly.",
+      "timers": [],
+      "tip": "Extra garlic butter is good on toast, roasted vegetables or a baked potato."
+    }
+  ],
+  "createdAt": "2026-11-23T05:02:00Z",
+  "updatedAt": "2026-11-23T05:02:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-23",
+      "summary": "Built from the creator's written recipe at drveganblog.com/garlic-butter-pasta (the link-in-bio pasted with the reel); the reel itself was unreachable without a login. Added the implied basics: 4 quarts of water salted for the pasta, a typical spaghetti time, and a food-safety note for the garlic oil (refrigerate, 4 days, from the recipe's notes).",
+      "notes": []
+    }
+  ]
+}
