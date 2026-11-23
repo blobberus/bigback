@@ -64,7 +64,7 @@
     "mildly-spicy-vodka-rigatoni": {
       "tags": [],
       "rating": 7,
-      "proficiency": null,
+      "proficiency": 2,
       "addedAt": "2026-11-18T09:20:39Z",
       "sharedAt": "2026-11-18T22:07:57Z"
     },
