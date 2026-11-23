@@ -48,7 +48,9 @@
     },
     "steak-and-scallop-linguine": {
       "tags": [
-        "pasta"
+        "pasta",
+        "steak",
+        "seafood"
       ],
       "rating": 7,
       "proficiency": 3,
