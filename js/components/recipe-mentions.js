@@ -10,6 +10,8 @@
  *       recipe-state at tap time, so one global handler (installed on first render) serves every
  *       view. Tap → bubble right above the word; tap it again, tap anywhere else, scroll it away
  *       or press Esc to close. Inside a sheet (cook mode's Ingredients) the bubble sits above it.
+ *       It's placed within what's on screen (the visual viewport) and above every bar, so it shows
+ *       under cook mode's sticky header and when iOS has shifted the screen off the layout viewport.
  *       Metric amounts carry their US measure, as in the list: "10 g (1¾ tsp*) salt".
  *   tempButton(text, t) → html   a temperature in step text ("350°F", findTemps in units.js);
  *       the same bubble shows it in the other scale, plus oven-dial / fan / convection settings
@@ -182,19 +184,33 @@ function close() {
   btn = null;
 }
 
+/** The part of the page on screen, in getBoundingClientRect's coordinates: the visual viewport, not
+ *  the layout viewport (iOS can leave the two apart after the keyboard or an app switch, and a pinch-zoom
+ *  shrinks it). `head`: where the sticky bars stuck to its top end (the top bar; cook mode's step header,
+ *  which hides the top bar). In a sheet those bars are under the backdrop and don't count. */
+function onScreen(inSheet) {
+  const de = document.documentElement, v = window.visualViewport;
+  const a = v ? { top: v.offsetTop, left: v.offsetLeft, right: v.offsetLeft + v.width, bottom: v.offsetTop + v.height }
+    : { top: 0, left: 0, right: de.clientWidth, bottom: de.clientHeight };
+  a.head = a.top;
+  if (!inSheet) for (const bar of document.querySelectorAll('.topbar, .ck-top')) {
+    const r = bar.getBoundingClientRect();
+    if (r.height && r.top <= a.top + 1) a.head = Math.max(a.head, r.bottom);
+  }
+  return a;
+}
+
 /** Bubble's bottom edge sits 8px above the word (the arrow fills the gap); below it if there's no room. */
 function place() {
   if (!tip) return;
   if (!btn?.isConnected) return close();
   const r = btn.getClientRects()[0] || btn.getBoundingClientRect();
-  const vh = document.documentElement.clientHeight;
-  if (r.bottom < 0 || r.top > vh) return close();               // scrolled out of view
-  const vw = document.documentElement.clientWidth;
+  const a = onScreen(tip.classList.contains('rx-ingtip-sheet'));
+  if (r.bottom <= a.head || r.top >= a.bottom) return close();  // scrolled off screen or under the top bar
   const tw = tip.offsetWidth, th = tip.offsetHeight;
   const mid = r.left + r.width / 2;
-  const left = Math.max(8, Math.min(mid - tw / 2, vw - tw - 8));
-  const bar = document.querySelector('.topbar')?.getBoundingClientRect().bottom || 0;
-  const below = r.top - th - 8 < Math.max(0, bar) + 4;
+  const left = Math.max(a.left + 8, Math.min(mid - tw / 2, a.right - tw - 8));
+  const below = r.top - th - 8 < a.head + 4;
   tip.classList.toggle('is-below', below);
   tip.style.left = `${Math.round(left)}px`;
   tip.style.top = `${Math.round(below ? r.bottom + 8 : r.top - th - 8)}px`;
@@ -252,6 +268,8 @@ export function installMentions() {
   const onMove = () => { if (tip && !raf) raf = requestAnimationFrame(() => { raf = 0; place(); }); };
   window.addEventListener('scroll', onMove, { capture: true, passive: true });
   window.addEventListener('resize', onMove);
+  window.visualViewport?.addEventListener('resize', onMove);    // keyboard, zoom, iOS drift
+  window.visualViewport?.addEventListener('scroll', onMove);
   window.addEventListener('hashchange', close);
 }
 

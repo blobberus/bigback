@@ -1,6 +1,7 @@
 /* base.css — tokens, reset, layout shell, shared components.
    Feature CSS lives in library.css / recipe.css / editor.css / tools.css and must only
-   use these tokens. Z-scale: topbar 20 · nav 30 · tools 40 · sheet 60 · toast 70.
+   use these tokens. Z-scale: topbar 20 · nav 30 · tools 40 · amount bubble 45 · sheet 60 · toast 70.
+   Every form field is ≥ 16px: iOS zooms the page when a smaller one gets focus.
 
    Contrast (WCAG 2.1, both themes): --ink / --ink-2 / --muted / --accent / --danger / --warn / --ok
    are ≥ 4.5:1 as text on --bg, --surface and --surface-2 (keep --surface-3 for fills, not text).
@@ -49,7 +50,9 @@
 
 /* ---------- reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+/* touch-action: manipulation turns off double-tap zoom (quick taps on steps, timers and Next would
+   zoom iOS pages, and a zoomed page carries the fixed bars off the screen's edge); pinch-zoom stays. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; }
 body {
   margin: 0; min-height: 100dvh; background: var(--bg); color: var(--ink);
   font: 16px/1.5 var(--font-body); -webkit-font-smoothing: antialiased;

@@ -175,7 +175,7 @@
 .sort-label { font-size: .875rem; color: var(--muted); }
 .sort-select {
   -webkit-appearance: none; appearance: none; min-height: var(--tap); padding: 0 28px 0 6px; border: 0; border-radius: var(--r-sm);
-  background: transparent; color: var(--ink); font-size: .9rem; font-weight: 700; cursor: pointer;
+  background: transparent; color: var(--ink); font-size: 16px; font-weight: 700; cursor: pointer;   /* < 16px: iOS zooms the page on tap */
   field-sizing: content; text-align: right;
 }
 .sort svg { position: absolute; right: 6px; width: 16px; height: 16px; color: var(--muted); pointer-events: none; }

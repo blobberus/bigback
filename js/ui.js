@@ -85,11 +85,13 @@ function syncScrollLock() {
      keyboard closes or the app comes back from the background: the nav then rides along with
      the page and parks near the top. A zero-size probe pinned to the layout viewport's bottom
      shows the drift; html.vv-drift + --vv-dy (CSS `translate`) put the bars back on the screen's
-     bottom edge until iOS catches up, and a no-op scrollTo nudges it to resync once the keyboard
-     has gone. */
+     bottom edge until iOS catches up (re-checked on every tap and every 0.5 s while it's on), and a
+     no-op scrollTo nudges it to resync once the keyboard has gone.
+   - The other way bars come off the edge is a zoomed page: iOS zooms in when a field under 16px gets
+     focus and on a double tap. Fields are ≥ 16px and html has touch-action: manipulation (base.css). */
 const vv = window.visualViewport;
 const TYPING = 'textarea, select, [contenteditable=""], [contenteditable="true"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([type="color"])';
-let vvFrame = 0, kbWas = false, probe = null;
+let vvFrame = 0, kbWas = false, probe = null, driftCheck = 0;
 function fitViewport() {
   vvFrame = 0;
   const de = document.documentElement, st = de.style;
@@ -121,15 +123,23 @@ function pinToScreenBottom(off) {
   const drift = Math.abs(dy) > 6;    // ignore rounding and toolbar animations
   de.classList.toggle('vv-drift', drift);
   if (drift) de.style.setProperty('--vv-dy', `${dy}px`); else de.style.removeProperty('--vv-dy');
+  // iOS can catch up without firing an event; a correction left on then would itself lift the bars
+  // off the edge. So while it's on, look again every half second until it can come off.
+  clearTimeout(driftCheck);
+  driftCheck = drift ? setTimeout(queueFit, 500) : 0;
 }
 const queueFit = () => { if (!vvFrame) vvFrame = requestAnimationFrame(fitViewport); };
 vv?.addEventListener('resize', queueFit);
 vv?.addEventListener('scroll', queueFit);
 document.addEventListener('focusin', queueFit);
 document.addEventListener('focusout', queueFit);
-// Drift shows up while scrolling, on return from the background and after a rotation.
+// Drift shows up while scrolling, on return from the background (or the photo picker) and after a
+// rotation; any tap re-checks too, so a drift no event announced is fixed by the next touch.
 window.addEventListener('scroll', queueFit, { passive: true });
 window.addEventListener('pageshow', queueFit);
+window.addEventListener('focus', queueFit);
+window.addEventListener('hashchange', queueFit);
+document.addEventListener('pointerup', queueFit, { capture: true, passive: true });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) queueFit(); });
 
 /** Scroll the top sheet so its focused text field sits above any sticky footer (Done / Apply). */
