@@ -186,6 +186,8 @@ body[data-view="recipe"]:not(.rx-past-title) #topbar-title { opacity: 0; }
 .rx-conv { cursor: auto; }
 .rx-conv-cap { grid-column: 1 / -1; margin: 0 0 2px; font-size: .8rem; font-weight: 700; color: var(--ink-2); }
 .rx-note-amt { font-weight: 650; color: var(--ink-2); }
+.rx-note-count.is-scaled { font-weight: 650; color: var(--accent); }   /* "1 can" → "2 cans" */
+.rx-ing.is-checked .rx-note-count { color: inherit; }
 .rx-conv-h { margin: 0 0 4px; font-size: .72rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .rx-conv ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; }
 .rx-conv li { font-variant-numeric: tabular-nums; }

@@ -74,6 +74,13 @@ inventing a dish isn't.
   can, sprig, slice, stick, bunch, inch; null for counts ("2" + "large eggs").
 - `item` = the ingredient, specific (unsalted butter, low-sodium chicken stock, whole-milk
   ricotta); `note` = prep or caveat ("finely chopped", "divided", "room temperature").
+- Amounts in a note scale with the servings on the site ("1 stick, melted" → "2 sticks", "1 can"
+  → "2 cans", "about 2 links (8 oz)", "from a large egg" → "two large eggs"), so write them as
+  totals for the whole recipe. What stays put: a size with a hyphen or after "a/one" ("a 16-oz
+  package", "one 14-oz can"), a rate with "per" ("1 tbsp per pound"), a per-piece weight with
+  "each" on a counted ingredient ("4–5 oz each"), cuts ("into 8 pieces"), times, temperatures,
+  "¼-inch". Avoid "half a 16-oz package" style wording that only reads right at ×1 — "about 8 oz
+  (16-oz packages are common)" scales cleanly.
 - Salt: use the source's brand if given. Unbranded "kosher salt" → assume Diamond
   Crystal (the Bon Appétit / Serious Eats default); plain "salt" → table salt (King
   Arthur's default). Always note the swap: Morton kosher ≈ 0.6× and table salt ≈ 0.5×

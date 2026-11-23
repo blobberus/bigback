@@ -25,7 +25,7 @@
  *       convertUnit(kind, value, from, to), parseAmount("1 1/2") → 1.5, fmtAmount(236.588) → "236.6",
  *       kitchenHint('volume', 0.4227, 'cup') → "≈ ⅜ cup"
  */
-import { fmtQty } from './util.js';
+import { fmtQty, scaleQty } from './util.js';
 
 const VOL = { tsp: 4.92892, tbsp: 14.7868, floz: 29.5735, cup: 236.588, pint: 473.176, quart: 946.353, gallon: 3785.41, stick: 118.294, ml: 1, cl: 10, dl: 100, l: 1000 };
 const WT = { oz: 28.3495, lb: 453.592, mg: 0.001, g: 1, kg: 1000 };
@@ -243,8 +243,8 @@ export function usEquivalent(ing, factor = 1) {
 /* ---------- amounts in free text ---------- */
 const VULG = { '½': 1 / 2, '¼': 1 / 4, '¾': 3 / 4, '⅓': 1 / 3, '⅔': 2 / 3, '⅛': 1 / 8, '⅜': 3 / 8, '⅝': 5 / 8, '⅞': 7 / 8 };
 const NUM = '(?:\\d+\\s+\\d+/\\d+|\\d+/\\d+|\\d+(?:[.,]\\d+)?(?:\\s?[½¼¾⅓⅔⅛⅜⅝⅞])?|[½¼¾⅓⅔⅛⅜⅝⅞])';
-// (prefix)(number)(– number)? unit — the prefix stands in for a lookbehind, which older Safari lacks.
-const AMT = new RegExp(`(^|[^\\w.,/])(${NUM})(?:\\s*(?:-|–|to)\\s*(${NUM}))?[\\s-]*(fl\\.?\\s?oz|[A-Za-z]+)\\.?(?![A-Za-z])`, 'g');
+// (prefix)(number)((sep)(number))?(gap)(unit)(.) — the prefix stands in for a lookbehind, which older Safari lacks.
+const AMT = new RegExp(`(^|[^\\w.,/])(${NUM})(?:(\\s*(?:-|–|to)\\s*)(${NUM}))?([\\s-]*)(fl\\.?\\s?oz|[A-Za-z]+)(\\.?)(?![A-Za-z])`, 'g');
 
 function num(s) {
   s = s.trim().replace(',', '.');
@@ -259,7 +259,7 @@ export function findAmounts(text, item = '') {
   const out = [];
   text = String(text || '');
   for (const m of text.matchAll(AMT)) {
-    const [, pre, a, b, unit] = m;
+    const [, pre, a, , b, , unit] = m;
     const qty = num(a), qtyMax = b != null ? num(b) : null;
     if (!(qty > 0) || !unitInfo(unit, item)) continue;
     const index = m.index + pre.length;
@@ -267,6 +267,112 @@ export function findAmounts(text, item = '') {
     if (breakdown(ing)) out.push({ index, length: m[0].length - pre.length, ...ing });
   }
   return out;
+}
+
+/* ---------- scaling the amounts written in an ingredient note ---------- */
+// Things a note counts: "1 can", "about 2 links", "or 3 green onions", "from a large egg", "half a 16-oz package".
+const COUNTABLE = ('can jar package packet pack bag box bottle carton container tub block envelope bunch head bulb clove ' +
+  'link stalk rib sprig slice piece strip sheet leaf fillet filet breast thigh drumstick wing tail egg yolk lemon lime ' +
+  'orange onion scallion shallot tomato potato chile chili scallop steak handful ear cube knob').split(' ');
+const IRREG_PL = { leaf: 'leaves', tomato: 'tomatoes', potato: 'potatoes', chili: 'chilies' };
+const pluralOf = w => IRREG_PL[w] || (/(?:ch|sh|x|z|s)$/.test(w) ? `${w}es` : `${w}s`);
+const NOUN = new Map();                                            // any form → singular
+for (const w of COUNTABLE) NOUN.set(w, w).set(pluralOf(w), w);
+const NOUNS = [...NOUN.keys()].sort((a, b) => b.length - a.length).join('|');
+const ADJ = '(?:small|medium|large|big|extra[- ]large|jumbo|whole|fresh|ripe|green|spring|red|yellow|white|sweet|thick|thin)';
+const SIZE = `(?:\\(?${NUM}(?:\\s*(?:-|–|to)\\s*${NUM})?[\\s-]?(?:oz|ounces?|lbs?|pounds?|g|grams?|ml|inch|inches|in|cm)\\.?\\)?)`;
+const WORD_N = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const COUNT = new RegExp(`(^|[^\\w.,/-])(?:(${NUM})(?:(\\s*(?:-|–|to)\\s*)(${NUM}))?|(half an?|an?|${WORD_N.slice(1).join('|')}))` +
+  `(\\s+(?:(?:${ADJ}|${SIZE})[\\s-]+)*)(${NOUNS})(?![A-Za-z])`, 'gi');
+// A weight or volume right before a container is the size of one: "one 14 oz can", "2 (15-oz) cans".
+const CONTAINER = /^\)?[\s-]*(?:cans?|jars?|packages?|packets?|packs?|bags?|box(?:es)?|bottles?|cartons?|containers?|tubs?|blocks?|envelopes?|bars?)(?![A-Za-z])/i;
+// "a"/"an" counts only where it plainly means one: "a small handful" opening the note, "from a large egg".
+// Not "(a bar melts into pools…)", which is any bar.
+const ARTICLE_OK = /(?:^\s*|\b(?:from|of|about|or|plus|use|roughly|around|and)\s+)$/i;
+
+/** Why an amount stays as written when the recipe is scaled, or null when it scales. */
+function fixedWhy(text, index, end, counted) {
+  const before = text.slice(Math.max(0, index - 40), index), after = text.slice(end);
+  const clause = after.split(/[,;:()]/)[0];
+  // "1 tbsp per pound", "1½ tsp per lb", "2 tsp/lb": a rate, true at any batch size.
+  if (/\bper\s+$/i.test(before) || /\bper\b|\bfor every\b/i.test(clause) ||
+      /^\s*\/\s*(?:lb|pound|kg|kilo|serving|person|portion|quart|qt|liter|litre|l)\b/i.test(after)) return 'rate';
+  // "cut into 8 pieces"; "4–5 oz each" on a counted ingredient (on a measured one, "1 tsp each for…" divides it up and scales).
+  if (/\binto\s+(?:about\s+)?$/i.test(before) ||
+      (counted && (/^\s*(?:each|apiece)\b/i.test(after) || /\beach\s+(?:about\s+)?$/i.test(before)))) return 'each';
+  return null;
+}
+
+const plainWord = (w, like) => (/^[A-Z]/.test(like) ? w[0].toUpperCase() + w.slice(1) : w);
+// Spelled-out unit words follow the amount: "1 stick" → "2 sticks", "2 cups" → "1 cup"; abbreviations stay.
+const UNIT_WORDS = new Set('cup stick pint quart gallon ounce pound teaspoon tablespoon gram gramme kilo kilogram milligram liter litre milliliter millilitre centiliter centilitre deciliter decilitre'.split(' '));
+function unitWord(u, n) {
+  const many = n > 1 + 1e-9, low = u.toLowerCase(), last = low.split(/\s+/).pop();
+  if (low === 'lbs' && !many) return u.slice(0, -1);
+  if (many && UNIT_WORDS.has(last)) return `${u}s`;
+  if (!many && /s$/.test(last) && UNIT_WORDS.has(last.slice(0, -1))) return u.slice(0, -1);
+  return u;
+}
+const rangeText = (q, sep, qMax) => `${fmtQty(q)}${qMax != null ? `${sep}${fmtQty(qMax)}` : ''}`;
+
+/**
+ * scaleNote(text, ing, factor) → spans of the note that change with the batch size, in text order:
+ *   { kind: 'amt', index, length, label, qty, qtyMax, unit, item, scaled, why, conv }   a measure ("1 stick",
+ *       "12 oz / 350 g"); qty / qtyMax / label at the scaled amount, ready for breakdown(span). conv: false
+ *       = too small to convert ("1.5 g"), listed only when it scales.
+ *   { kind: 'count', index, length, label, scaled: true }   the number or the noun of a counted thing
+ *       ("1 can" → "2" + "cans", "from a large egg" → "two" + "eggs"); only present when it changed.
+ * why (amounts that stay as written): 'size' — the size of one thing ("a 16-oz package", "one 14-oz
+ * can"); 'rate' — "1 tbsp per pound"; 'each' — per piece of a counted ingredient ("4–5 oz each"), or
+ * how it's cut ("into 8 pieces"). Times, temperatures and "¼-inch" are never amounts. At factor 1
+ * every label is the text as written.
+ */
+export function scaleNote(text, ing = {}, factor = 1) {
+  text = String(text || '');
+  const item = ing.item || '', counted = !unitInfo(ing.unit, item);
+  const on = Number(factor) > 0 && Math.abs(factor - 1) > 1e-9;
+  const amts = [], counts = [];
+  for (const m of text.matchAll(AMT)) {
+    const [whole, pre, a, sep, b, gap, unit, dot] = m;
+    const qty = num(a), max = b != null ? num(b) : null;
+    if (!(qty > 0) || !unitInfo(unit, item)) continue;
+    const qtyMax = max > qty ? max : null;
+    const conv = !!breakdown({ qty, qtyMax, unit, item });           // "1.5 g" scales but has nothing to convert to
+    const index = m.index + pre.length, end = m.index + whole.length;
+    const before = text.slice(Math.max(0, index - 12), index);
+    const why = /-/.test(gap) || /\b(?:a|an|one)\s+$/i.test(before) || CONTAINER.test(text.slice(end)) ? 'size'
+      : fixedWhy(text, index, end, counted);
+    const go = on && !why && (b == null || qtyMax != null);
+    const q = go ? scaleQty(qty, factor) : qty, qMax = go && qtyMax != null ? scaleQty(qtyMax, factor) : qtyMax;
+    const label = go ? `${rangeText(q, sep, qMax)}${gap}${unitWord(unit, qMax ?? q)}${dot}` : text.slice(index, end);
+    if (conv || go) amts.push({ kind: 'amt', index, length: end - index, label, qty: q, qtyMax: qMax, unit, item, scaled: go, why, conv });
+  }
+  const overlaps = s => amts.some(a => s.index < a.index + a.length && a.index < s.index + s.length);
+  if (on) for (const m of text.matchAll(COUNT)) {
+    const [whole, pre, a, sep, b, word, , noun] = m;
+    const index = m.index + pre.length, end = m.index + whole.length;
+    if (word && /^an?$/i.test(word) && !ARTICLE_OK.test(text.slice(0, index))) continue;
+    if (fixedWhy(text, index, end, counted)) continue;
+    const qty = a ? num(a) : /^half/i.test(word) ? 0.5 : word.length <= 2 ? 1 : WORD_N.indexOf(word.toLowerCase());
+    const max = b != null ? num(b) : null;
+    if (!(qty > 0) || (b != null && !(max > qty))) continue;
+    const q = scaleQty(qty, factor), qMax = max != null ? scaleQty(max, factor) : null, n = qMax ?? q;
+    const numLen = a ? (a + (sep || '') + (b || '')).length : word.length;
+    let numText = rangeText(q, sep, qMax);
+    if (word) {
+      const whole1 = Math.abs(q - Math.round(q)) < 1e-9 && q >= 1 && q <= 12;
+      const next = (whole.slice(pre.length + word.length).trim() || noun).toLowerCase();
+      numText = q === 1 && /^an?$/i.test(word) ? word
+        : whole1 ? plainWord(WORD_N[Math.round(q)], word)
+        : Math.abs(q - 0.5) < 1e-9 ? plainWord(`half ${/^[aeiou]/.test(next) ? 'an' : 'a'}`, word) : numText;
+    }
+    const sg = NOUN.get(noun.toLowerCase());
+    const nounText = plainWord(n > 1 + 1e-9 ? pluralOf(sg) : sg, noun);
+    const pair = [{ kind: 'count', index, length: numLen, label: numText, scaled: true },
+      { kind: 'count', index: end - noun.length, length: noun.length, label: nounText, scaled: true }];
+    if (!pair.some(overlaps)) counts.push(...pair);
+  }
+  return [...amts, ...counts].sort((x, y) => x.index - y.index);
 }
 
 /* ---------- temperatures ---------- */

@@ -25,7 +25,7 @@
 import { mentionMatcher, bindMentions } from '../js/components/recipe-mentions.js';
 import { ingredientsHtml, bindIngredients } from '../js/components/recipe-ingredients.js';
 import { stepTextHtml } from '../js/components/recipe-steps.js';
-import { breakdown, unitInfo, findAmounts, findTemps, tempDetails, usEquivalent, gramsPerMl } from '../js/units.js';
+import { breakdown, unitInfo, findAmounts, findTemps, tempDetails, usEquivalent, gramsPerMl, scaleNote } from '../js/units.js';
 import { toStr } from '../js/util.js';
 import { rxPatch } from '../js/components/recipe-state.js';
 import { sheet } from '../js/ui.js';
@@ -118,6 +118,53 @@ eq('amounts in notes', ['or ½ tsp dried', 'Diamond Crystal; use 1¼ tsp Morton'
    [['14-oz', 14, null, 'oz']], [['1 1/2 cups', 1.5, null, 'cups'], ['2–3 Tbsp.', 2, 3, 'Tbsp']]]);
 eq('not amounts: sizes, times, temperatures, counts, cinnamon sticks', ['cut into 1-inch pieces', 'rest 10 minutes', 'at 350°F', '2 cloves', 'v2.5 lb', '1 cinnamon stick'].map(amts),
   [[], [], [], [], [], []]);
+/* ---------- note amounts scale with the recipe (scaleNote) ---------- */
+const SN = (note, ing, f) => {
+  let out = '', pos = 0;
+  for (const sp of scaleNote(note, ing, f)) { out += note.slice(pos, sp.index) + sp.label; pos = sp.index + sp.length; }
+  return out + note.slice(pos);
+};
+const BUTTER = { qty: 113, unit: 'g', item: 'salted butter' }, TAILS = { qty: 2, unit: null, item: 'raw lobster tails' };
+eq('measures in a note scale, unit words follow the amount', [
+  SN('1 stick, melted; with unsalted, add 1.5 g more salt', BUTTER, 2),
+  SN('melted and cooled until warm (1 stick + 3 tbsp)', { qty: 11, unit: 'tbsp', item: 'unsalted butter' }, 1.5),
+  SN('with its juices (about 1 cup packed / 340 g)', { qty: 0.75, unit: 'lb', item: 'kimchi' }, 2),
+  SN('divided: 2 tbsp for the Spam, 1 tbsp for the eggs', { qty: 3, unit: 'tbsp', item: 'canola oil' }, 0.5),
+  SN('loosely packed (about 20–25 g)', { qty: 0.33, unit: 'cup', item: 'Parmesan' }, 2),
+  SN('or 2 cups milk', { qty: 1, unit: 'cup', item: 'cream' }, 0.5),
+  SN('½ tbsp each for the steak and scallops', { qty: 1, unit: 'tbsp', item: 'unsalted butter' }, 2)
+], ['2 sticks, melted; with unsalted, add 3 g more salt', 'melted and cooled until warm (1½ sticks + 4½ tbsp)',
+  'with its juices (about 2 cups packed / 680 g)', 'divided: 1 tbsp for the Spam, ½ tbsp for the eggs', 'loosely packed (about 40–50 g)',
+  'or 1 cup milk', '1 tbsp each for the steak and scallops']);
+eq('counted things in a note scale and pluralize', [
+  SN('1 can, cut into ¼- to ½-inch dice', { qty: 12, unit: 'oz', item: 'Spam' }, 2),
+  SN('mild; about 2 links (8 oz), casings removed', { qty: 225, unit: 'g', item: 'Italian pork sausage' }, 1.5),
+  SN('or 3 green onions; washed and sliced', { qty: 1, unit: null, item: 'large green onion (dae-pa)' }, 2),
+  SN('from a large egg', { qty: 1, unit: null, item: 'egg yolk' }, 2),
+  SN('from a large egg', { qty: 1, unit: null, item: 'egg yolk' }, 0.5),
+  SN('a small handful, finely chopped', { qty: null, unit: null, item: 'fresh basil' }, 2),
+  SN('one 14-oz can', { qty: 1.75, unit: 'cup', item: 'crushed tomatoes' }, 2),
+  SN('about 8 oz, half a 16-oz package', { qty: 225, unit: 'g', item: 'silken tofu' }, 2),
+  SN('2 cans, drained', { qty: 3, unit: 'cup', item: 'chickpeas' }, 0.5)
+], ['2 cans, cut into ¼- to ½-inch dice', 'mild; about 3 links (12 oz), casings removed', 'or 6 green onions; washed and sliced',
+  'from two large eggs', 'from half a large egg', 'two small handfuls, finely chopped', 'two 14-oz cans', 'about 16 oz, one 16-oz package',
+  '1 can, drained']);
+const KEEP = [
+  ['4–5 oz each (shell-on weight)', TAILS], ['your blend, 1 tbsp per pound of steak', { qty: 1, unit: 'tbsp', item: 'steak seasoning' }],
+  ['if salt-free, add 1½ tsp Diamond Crystal per lb', { qty: 1, unit: 'tbsp', item: 'steak seasoning' }], ['cut into 8 pieces', { qty: 1, unit: null, item: 'chicken' }],
+  ['roughly chopped (a bar melts into pools; chips work)', { qty: 140, unit: 'g', item: 'bittersweet chocolate' }],
+  ['one per plate', { qty: 3, unit: null, item: 'large eggs' }], ['if frozen, soak in cold water 30 minutes', { qty: 1, unit: 'lb', item: 'tteok' }],
+  ['Diamond Crystal (Morton ≈ 0.6×, table salt ≈ 0.5× the volume)', { qty: null, unit: null, item: 'kosher salt' }],
+  ['¼-inch coins', { qty: 4, unit: 'slice', item: 'ginger' }], ['10–12 oz and 1–1¼ inches thick, at 350°F', { qty: 1, unit: null, item: 'strip steak' }]
+];
+eq('sizes, rates, per-piece weights, cuts, times, ratios stay as written', KEEP.map(([n, i]) => SN(n, i, 2)),
+  KEEP.map(([n]) => n.replace('10–12 oz', '20–24 oz')));
+eq('why each one stays', ['4–5 oz each', 'one 14-oz can', '1 tbsp per pound'].map((n, j) => scaleNote(n, [TAILS, { unit: 'cup', item: 'tomatoes' }, { unit: 'tbsp', item: 'rub' }][j], 2)
+  .filter(sp => sp.kind === 'amt').map(sp => sp.why)), [['each'], ['size'], ['rate']]);
+eq('×1: every note reads exactly as written', [...KEEP.map(([n, i]) => [n, i]), ['1 stick + 3 tbsp, a small handful, 2 cans', BUTTER]].map(([n, i]) => SN(n, i, 1) === n),
+  Array(KEEP.length + 1).fill(true));
+eq('scaled spans carry the scaled amount for the breakdown', scaleNote('1 stick, melted', BUTTER, 2).map(sp => [sp.qty, sp.unit, sp.scaled, flat(breakdown(sp))[0]]),
+  [[2, 'stick', true, '1 cup']]);
 eq('1¼ tsp: no fuzzy "≈ ⅜ tbsp"; plain salt weighs 6 g/tsp', B(1.25, 'tsp', 'salt'), ['6.2 ml', '≈ 7.5 g (weight)']);
 /* ---------- inline US measure for metric amounts ("10 g (1¾ tsp*)") ---------- */
 const U = (qty, unit, item, extra = {}, f = 1) => usEquivalent({ qty, unit, item, ...extra }, f);
@@ -254,6 +301,19 @@ noteBox.innerHTML = toStr(ingredientsHtml({ ingredients: [{ id: 'i1', qty: 2, un
   { id: 'i2', qty: 1, unit: 'cup', item: 'water', note: 'warmed to 40C; or 2 tbsp milk' }] }, 'zz-temp'));
 truthy('note temperatures link; "40C" is not 40 cups', noteBox.querySelectorAll('[data-temp]').length === 2 && noteBox.querySelectorAll('.rx-note-amt').length === 1
   && noteBox.querySelector('.rx-note-amt').textContent === '2 tbsp');
+rxPatch('zz-scale', { factor: 2 });
+const scaleBox = document.createElement('div');
+scaleBox.innerHTML = toStr(ingredientsHtml({ ingredients: [{ id: 'i1', ...BUTTER, note: '1 stick, melted; 1 can of anything' },
+  { id: 'i2', ...TAILS, note: '4–5 oz each' }] }, 'zz-scale'));
+const sAmt = scaleBox.querySelector('[data-conv="i1-n0"]'), sCap = scaleBox.querySelector('#rx-conv-i1-n0 .rx-conv-cap');
+truthy('×2 on the page: "1 stick" → "2 sticks", accent, its breakdown for 2 sticks', sAmt?.textContent === '2 sticks' && sAmt.classList.contains('is-scaled')
+  && sCap?.textContent === '2 sticks' && /1 cup/.test(scaleBox.querySelector('#rx-conv-i1-n0').textContent), sAmt?.textContent);
+truthy('×2 on the page: "1 can" → "2 cans" in accent spans', [...scaleBox.querySelectorAll('.rx-note-count.is-scaled')].map(e => e.textContent).join(' ') === '2 cans'
+  && /2 cans of anything/.test(scaleBox.querySelector('.rx-ing-note').textContent));
+const kept = scaleBox.querySelector('[data-conv="i2-n0"]');
+truthy('a per-piece weight stays, not accented, and its breakdown says why', kept?.textContent === '4–5 oz' && !kept.classList.contains('is-scaled')
+  && scaleBox.querySelector('#rx-conv-i2-n0 .rx-conv-cap')?.textContent === '4–5 oz — per piece, not scaled');
+sessionStorage.removeItem('bb.rx:zz-scale');
 const metricBox = document.createElement('div');
 const METRIC_RX = { ingredients: [{ id: 'i1', qty: 10, unit: 'g', density: { g: 5.7, per: 'tsp' }, item: 'fine table salt', note: null },
   { id: 'i2', qty: 200, unit: 'g', density: null, item: 'rigatoni', note: null }, { id: 'i3', qty: 2, unit: 'tbsp', item: 'olive oil', note: null }] };

@@ -10,9 +10,11 @@
  * Tapping the circle or the text checks an ingredient off. Convertible amounts are buttons that
  * open a breakdown under the row instead (other US measures + metric, units.js): the main amount
  * ("3 tbsp") and any written in the note ("or ½ tsp dried"); a temperature in the note ("about
- * 65°F") opens the conversion bubble (recipe-mentions.js). Note amounts are shown as written,
- * not scaled. Open panels are remembered per recipe for this page load, so they survive
- * re-renders when scaling.
+ * 65°F") opens the conversion bubble (recipe-mentions.js). Note amounts scale with the recipe
+ * ("1 stick, melted" → "2 sticks", "1 can" → "2 cans", units.js scaleNote) and turn accent like
+ * the main amount; sizes ("a 16-oz package"), rates ("per pound") and per-piece weights ("4 oz
+ * each") stay as written and say so in their breakdown. Open panels are remembered per recipe for
+ * this page load, so they survive re-renders when scaling.
  * Metric amounts also show one US measure inline, "10 g (1¾ tsp*) salt" (units.js usEquivalent:
  * scaled, by the ingredient's density for weights); a key under the list explains the "*".
  */
@@ -20,7 +22,7 @@ import { html, fmtQty, scaleQty, clamp } from '../util.js';
 import { on } from '../ui.js';
 import { icon } from './recipe-icons.js';
 import { rxState, rxPatch, toggleId } from './recipe-state.js';
-import { breakdown, findAmounts, findTemps, usEquivalent } from '../units.js';
+import { breakdown, findTemps, scaleNote, usEquivalent } from '../units.js';
 import { tempButton } from './recipe-mentions.js';
 
 const convOpen = new Map();      // slug → Set(panel keys open: "i3" main amount, "i3-n0" first note amount)
@@ -103,21 +105,25 @@ const convBtn = (key, label, open, cls = '') =>
 const convPanel = (key, conv, open, caption = '') =>
   html`<div class="rx-conv" id="rx-conv-${key}"${open ? '' : ' hidden'}>${caption ? html`<p class="rx-conv-cap">${caption}</p>` : ''}${convHtml(conv)}</div>`;
 
-/** Note text with its convertible amounts and temperatures as buttons → { html, panels }. */
-function noteParts(ing, open, scaled) {
+/** Note text with its amounts (scaled with the recipe) and temperatures as buttons → { html, panels }. */
+const KEPT = { size: 'a size, not scaled', rate: 'a rate, not scaled', each: 'per piece, not scaled' };
+function noteParts(ing, open, f) {
   const note = String(ing.note || ''), parts = [], panels = [];
   const temps = findTemps(note);
   const inTemp = a => temps.some(t => a.index < t.index + t.length && t.index < a.index + a.length);   // "180C" isn't 180 cups
-  const spans = [...findAmounts(note, ing.item).filter(a => !inTemp(a)).map((a, k) => ({ ...a, k })), ...temps.map(t => ({ ...t, temp: true }))]
-    .sort((a, b) => a.index - b.index);
+  let k = 0;
+  const spans = [...scaleNote(note, ing, f).filter(a => !inTemp(a)).map(a => (a.conv ? { ...a, k: k++ } : a)),
+    ...temps.map(t => ({ ...t, temp: true }))].sort((a, b) => a.index - b.index);
+  const scaled = Math.abs(f - 1) > 1e-9;
   let pos = 0;
   spans.forEach(a => {
-    const label = note.slice(a.index, a.index + a.length);
-    if (a.temp) parts.push(note.slice(pos, a.index), tempButton(label, a));
+    parts.push(note.slice(pos, a.index));
+    if (a.temp) parts.push(tempButton(note.slice(a.index, a.index + a.length), a));
+    else if (!a.conv) parts.push(html`<span class="rx-note-count is-scaled">${a.label}</span>`);   // a count, or '1.5 g'
     else {
       const key = `${ing.id}-n${a.k}`;
-      parts.push(note.slice(pos, a.index), convBtn(key, label, open.has(key), ' rx-note-amt'));
-      panels.push(convPanel(key, breakdown(a), open.has(key), scaled ? `${label} — as written, not scaled` : label));
+      parts.push(convBtn(key, a.label, open.has(key), ` rx-note-amt${a.scaled ? ' is-scaled' : ''}`));
+      panels.push(convPanel(key, breakdown(a), open.has(key), scaled && a.why ? `${a.label} — ${KEPT[a.why]}` : a.label));
     }
     pos = a.index + a.length;
   });
@@ -132,7 +138,7 @@ function rowHtml(ing, f, checked, open) {
   const isOpen = !!conv && open.has(ing.id);
   const cls = `rx-qty${scaled ? ' is-scaled' : ''}`;
   const amount = !qty ? '' : conv ? html`${convBtn(ing.id, qty, isOpen, ` rx-qty${scaled ? ' is-scaled' : ''}`)} ` : html`<span class="${cls}">${qty}</span> `;
-  const note = ing.note ? noteParts(ing, open, Math.abs(f - 1) > 1e-9) : null;
+  const note = ing.note ? noteParts(ing, open, f) : null;
   const us = qty ? usEquivalent(ing, f) : null;
   const approx = us ? html`<span class="rx-approx">(${us}<span aria-hidden="true">*</span><span class="sr-only">, approximately</span>)</span> ` : '';
   return html`
