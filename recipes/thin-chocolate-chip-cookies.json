@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "slug": "thin-chocolate-chip-cookies",
   "title": "Thin Chocolate Chip Cookies",
-  "summary": "Wide, thin chocolate chip cookies with crisp caramelized edges and a bendy center. Eggless, one bowl.",
-  "profile": "Sweet and buttery with a toffee note from the brown sugar and a strong vanilla backbone; the half teaspoon of salt sits underneath and keeps the sugar from tasting flat, and the chocolate chips are the only bitterness. There's no egg, and the milk plus melted butter make a loose dough that spreads into thin, wide cookies: lacy, deep golden, crisp at the rim, with a chewy, bendy center that sets as they cool. They shouldn't stay thick or doughy, and they shouldn't bake brittle all the way through. Makes about 18 large cookies in roughly 55 minutes, about 15 of it hands-on. Keep airtight at room temperature for up to 4 days, or freeze scooped dough balls or baked cookies for up to 3 months; re-crisp baked cookies at 300°F (150°C) for 3–4 minutes, and bake frozen dough straight from the freezer for 1–2 minutes longer.",
+  "summary": "Wide, thin chocolate chip cookies with crisp caramelized edges and a bendy, chewy center. One bowl.",
+  "profile": "Sweet and buttery with a toffee note from the brown sugar and a strong vanilla backbone; the half teaspoon of salt sits underneath and keeps the sugar from tasting flat, and the chocolate chips are the only bitterness. One egg, a splash of milk and the melted butter make a soft, loose dough that spreads into thin, wide cookies, the egg adding chew and holding them together: lacy, deep golden, crisp at the rim, with a chewy, bendy center that sets as they cool. They shouldn't stay thick or doughy, and they shouldn't bake brittle all the way through. Makes about 18 large cookies in roughly 55 minutes, about 15 of it hands-on. Keep airtight at room temperature for up to 4 days, or freeze scooped dough balls or baked cookies for up to 3 months; re-crisp baked cookies at 300°F (150°C) for 3–4 minutes, and bake frozen dough straight from the freezer for 1–2 minutes longer.",
   "status": "built",
   "source": {
     "type": "image",
@@ -76,11 +76,20 @@
       "note": "or 1 tsp Diamond Crystal or a heaping ½ tsp Morton kosher"
     },
     {
+      "id": "i10",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "large egg",
+      "note": "room temperature"
+    },
+    {
       "id": "i6",
       "section": null,
-      "qty": 0.33,
+      "qty": 2,
       "qtyMax": null,
-      "unit": "cup",
+      "unit": "tbsp",
       "item": "milk",
       "note": "room temperature"
     },
@@ -123,12 +132,12 @@
           "seconds": 300
         }
       ],
-      "tip": "Hot butter melts the chips into streaks and starts dissolving the sugar too early, so the cookies go greasy instead of crisp."
+      "tip": "Hot butter can start cooking the egg and melts the chips into streaks, so the cookies go greasy instead of crisp."
     },
     {
       "id": "s2",
       "section": null,
-      "text": "In one bowl, whisk the butter, brown sugar, granulated sugar, vanilla and salt until smooth and glossy, about 1 minute, then whisk in the milk. Sprinkle the baking soda evenly over the flour, add it to the bowl and stir with a spatula just until no dry streaks remain, then fold in the chocolate chips. The dough will be soft and loose.",
+      "text": "In one bowl, whisk the butter, brown sugar, granulated sugar, vanilla and salt until smooth and glossy, about 1 minute, then whisk in the egg and the milk until smooth. Sprinkle the baking soda evenly over the flour, add it to the bowl and stir with a spatula just until no dry streaks remain, then fold in the chocolate chips. The dough will be soft and loose.",
       "timers": [],
       "tip": "Spoon and level the flour (or weigh 150 g), because packed flour makes these spread less and bake up thick, and stop mixing as soon as the flour disappears so they stay tender."
     },
@@ -158,12 +167,19 @@
     }
   ],
   "createdAt": "2026-11-23T04:56:06Z",
-  "updatedAt": "2026-11-23T04:56:06Z",
+  "updatedAt": "2026-11-23T05:56:43Z",
   "changelog": [
     {
       "date": "2026-11-23",
       "summary": "Built from a screenshot of @alleycatnibbles' comment giving @brownbutterrolls' recipe (ingredient list + 'Bake at 350°F for 14–18 min' only). Per the hint, all mixing happens in one step, with cookie tips added. Assumptions: the butter is unsalted, 'salt' is table salt, and the milk is room temperature; the source gives no amount for the chocolate chips (about 1 cup suggested). Added a preheat, parchment, scoop size and spacing, doneness cues and cooling.",
       "notes": []
+    },
+    {
+      "date": "2026-11-23",
+      "summary": "Added 1 large egg (i10) and cut the milk ⅓ cup → 2 tbsp (i6) so the dough spreads as thin; the egg adds chew and structure. s1/s2 updated.",
+      "notes": [
+        "n-20261123-6vk6"
+      ]
     }
   ]
 }

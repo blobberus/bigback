@@ -163,7 +163,7 @@
     {
       "slug": "thin-chocolate-chip-cookies",
       "title": "Thin Chocolate Chip Cookies",
-      "summary": "Wide, thin chocolate chip cookies with crisp caramelized edges and a bendy center. Eggless, one bowl.",
+      "summary": "Wide, thin chocolate chip cookies with crisp caramelized edges and a bendy, chewy center. One bowl.",
       "image": "media/thin-chocolate-chip-cookies/hero.jpg",
       "time": {
         "prep": 15,
@@ -173,8 +173,8 @@
       "servings": 18,
       "status": "built",
       "sourceType": "image",
-      "updatedAt": "2026-11-23T04:56:06Z",
-      "openNotes": 1
+      "updatedAt": "2026-11-23T05:56:43Z",
+      "openNotes": 0
     },
     {
       "slug": "tteokguk",
