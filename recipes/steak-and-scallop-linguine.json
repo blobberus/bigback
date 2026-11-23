@@ -38,7 +38,7 @@
       "qtyMax": null,
       "unit": null,
       "item": "New York strip steak or filet mignon",
-      "note": "10–12 oz and 1–1¼ inches thick"
+      "note": "a 10–12-oz steak, 1–1¼ inches thick"
     },
     {
       "id": "i2",
@@ -289,7 +289,7 @@
     }
   ],
   "createdAt": "2026-11-14T19:30:00Z",
-  "updatedAt": "2026-11-15T12:00:00Z",
+  "updatedAt": "2026-11-23T21:30:00Z",
   "changelog": [
     {
       "date": "2026-11-14",
@@ -299,6 +299,11 @@
     {
       "date": "2026-11-15",
       "summary": "Wrote every temperature as °F (°C): added the Celsius conversions.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-23",
+      "summary": "Steak note reads \"a 10–12-oz steak\" (i1) so doubling gives two steaks of that size, not one of 20–24 oz.",
       "notes": []
     }
   ]

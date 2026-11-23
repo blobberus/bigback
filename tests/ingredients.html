@@ -145,10 +145,12 @@ eq('counted things in a note scale and pluralize', [
   SN('a small handful, finely chopped', { qty: null, unit: null, item: 'fresh basil' }, 2),
   SN('one 14-oz can', { qty: 1.75, unit: 'cup', item: 'crushed tomatoes' }, 2),
   SN('about 8 oz, half a 16-oz package', { qty: 225, unit: 'g', item: 'silken tofu' }, 2),
-  SN('2 cans, drained', { qty: 3, unit: 'cup', item: 'chickpeas' }, 0.5)
+  SN('2 cans, drained', { qty: 3, unit: 'cup', item: 'chickpeas' }, 0.5),
+  SN('a 10–12-oz steak, 1–1¼ inches thick', { qty: 1, unit: null, item: 'New York strip steak or filet' }, 2),
+  SN('optional; up to 2 tsp, to taste', { qty: null, unit: null, item: 'red pepper flakes' }, 0.5)
 ], ['2 cans, cut into ¼- to ½-inch dice', 'mild; about 3 links (12 oz), casings removed', 'or 6 green onions; washed and sliced',
   'from two large eggs', 'from half a large egg', 'two small handfuls, finely chopped', 'two 14-oz cans', 'about 16 oz, one 16-oz package',
-  '1 can, drained']);
+  '1 can, drained', 'two 10–12-oz steaks, 1–1¼ inches thick', 'optional; up to 1 tsp, to taste']);
 const MT = (q, qMax, unit) => { const m = measureText(q, qMax, unit); return `${m.num} ${m.unit}`; };
 eq('scaled amounts round to measures you can take', [MT(0.19, null, 'tsp'), MT(0.06, null, 'tsp'), MT(0.5, null, 'tbsp'), MT(0.25, null, 'tbsp'),
   MT(0.4375, null, 'cup'), MT(0.125, null, 'cup'), MT(0.375, null, 'cup'), MT(1.875, null, 'tbsp'), MT(0.25, 0.5, 'tbsp'), MT(0.5, 1, 'tbsp'),

@@ -36,7 +36,7 @@
       "qtyMax": null,
       "unit": null,
       "item": "raw shell-on lobster tails",
-      "note": "4–5 oz each (shell-on weight); frozen is fine, thawed in the fridge. Buy them with shells even if your shrimp are peeled: these two shells make the stock"
+      "note": "4–5 oz each (shell-on weight); frozen is fine, thawed in the fridge. Buy them with shells even if your shrimp are peeled: their shells make the stock"
     },
     {
       "id": "i2",
@@ -257,11 +257,16 @@
     }
   ],
   "createdAt": "2026-11-14T19:30:00Z",
-  "updatedAt": "2026-11-15T01:25:07Z",
+  "updatedAt": "2026-11-23T21:30:00Z",
   "changelog": [
     {
       "date": "2026-11-14",
       "summary": "Built from PDF (Mott 32-inspired home recipe; credits TVB / Chef Lee Man Sing's lobster clay-pot rice and Mott 32's Hong Kong and Las Vegas menus). Each step names its share of the divided oil (1 tsp stock, 2 tsp seafood, then 1 tsp each for eggs, mushrooms, rice and scallions = 2 tbsp + 1 tsp) and white pepper (¼ tsp sauce, ⅛ tsp finish); edamame cooking moved into prep; added an estimated 3–5 minute time for the stock reduction; shopping tip folded into the lobster and shrimp notes.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-23",
+      "summary": "Lobster note says \"their shells\" instead of \"these two shells\" (i1), which read wrong when scaled.",
       "notes": []
     }
   ]

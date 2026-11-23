@@ -62,7 +62,7 @@
       "qtyMax": null,
       "unit": null,
       "item": "red pepper flakes",
-      "note": "optional; 0–2 tsp to taste"
+      "note": "optional; up to 2 tsp, to taste"
     },
     {
       "id": "i5",
@@ -197,7 +197,7 @@
     }
   ],
   "createdAt": "2026-11-14T19:30:00Z",
-  "updatedAt": "2026-11-15T12:00:00Z",
+  "updatedAt": "2026-11-23T21:30:00Z",
   "changelog": [
     {
       "date": "2026-11-14",
@@ -207,6 +207,11 @@
     {
       "date": "2026-11-15",
       "summary": "Wrote every temperature as °F (°C): added the Celsius conversions.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-23",
+      "summary": "Red pepper flakes note reads \"up to 2 tsp\" (i4) so it scales with the servings.",
       "notes": []
     }
   ]
