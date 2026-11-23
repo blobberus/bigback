@@ -17,9 +17,9 @@
   "servings": 12,
   "yield": "12 cookies",
   "time": {
-    "prep": 25,
-    "cook": 20,
-    "total": 45
+    "prep": 45,
+    "cook": 10,
+    "total": 55
   },
   "equipment": [
     "kitchen scale",
@@ -227,7 +227,7 @@
     }
   ],
   "createdAt": "2026-11-23T06:05:19Z",
-  "updatedAt": "2026-11-23T07:42:58Z",
+  "updatedAt": "2026-11-23T09:47:18Z",
   "changelog": [
     {
       "date": "2026-11-23",
