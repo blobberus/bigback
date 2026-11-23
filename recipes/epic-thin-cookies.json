@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "slug": "epic-thin-cookies",
+  "title": "Epic Thin Cookies",
+  "summary": "Thin, rippled chocolate cookies with deep brown-sugar flavor, crisp edges and a fudgy middle. 30-minute chill.",
+  "profile": "Deep caramel and molasses from twice as much dark brown sugar as white, rich from salted butter, an egg yolk and a spoon of cream, with vanilla paste in the background; the salt is light because the butter brings most of it, and a full 140 g of bittersweet chocolate keeps the sugar in check. There's no egg white, so they bake chewy and fudgy rather than cakey: wide and thin, with crisp, rippled, golden edges from the pan slam, a soft center that looks barely set when it comes out, and pools of melted chocolate. They shouldn't stay domed or turn crunchy all the way through. Makes 12 cookies in about 75 minutes, 30 of it chilling and about 20 hands-on. Keep airtight at room temperature for up to 4 days, or freeze the scooped dough balls for up to 3 months and bake from frozen 1–2 minutes longer; re-crisp baked cookies at 300°F (150°C) for 3–4 minutes.",
+  "status": "built",
+  "source": {
+    "type": "image",
+    "url": null,
+    "files": [
+      "sources/epic-thin-cookies/IMG_0381.jpg"
+    ],
+    "author": "Instagram video caption (creator not shown)"
+  },
+  "image": "media/epic-thin-cookies/hero.jpg",
+  "servings": 12,
+  "yield": "12 cookies",
+  "time": {
+    "prep": 25,
+    "cook": 20,
+    "total": 75
+  },
+  "equipment": [
+    "kitchen scale",
+    "large mixing bowl",
+    "whisk",
+    "silicone spatula",
+    "2 rimmed baking sheets",
+    "parchment paper",
+    "3-tablespoon cookie scoop",
+    "wire rack",
+    "instant-read thermometer (optional, for the butter)"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": null,
+      "qty": 113,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "salted butter",
+      "note": "1 stick, melted; with unsalted, add 1.5 g more salt",
+      "density": {
+        "g": 14.2,
+        "per": "tbsp"
+      }
+    },
+    {
+      "id": "i2",
+      "section": null,
+      "qty": 140,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "dark brown sugar",
+      "note": "packed",
+      "density": {
+        "g": 213,
+        "per": "cup"
+      }
+    },
+    {
+      "id": "i3",
+      "section": null,
+      "qty": 70,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "white sugar",
+      "note": null,
+      "density": {
+        "g": 198,
+        "per": "cup"
+      }
+    },
+    {
+      "id": "i4",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "egg yolk",
+      "note": "from a large egg"
+    },
+    {
+      "id": "i5",
+      "section": null,
+      "qty": 15,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "heavy cream",
+      "note": null,
+      "density": {
+        "g": 15,
+        "per": "tbsp"
+      }
+    },
+    {
+      "id": "i6",
+      "section": null,
+      "qty": 5,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "vanilla paste",
+      "note": "or vanilla extract",
+      "density": {
+        "g": 5,
+        "per": "tsp"
+      }
+    },
+    {
+      "id": "i7",
+      "section": null,
+      "qty": 140,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "all-purpose flour",
+      "note": null,
+      "density": {
+        "g": 125,
+        "per": "cup"
+      }
+    },
+    {
+      "id": "i8",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "salt",
+      "note": "the weight counts: ¼ tsp Morton kosher, ⅓ tsp Diamond Crystal or a scant ¼ tsp table salt",
+      "density": {
+        "g": 4,
+        "per": "tsp"
+      }
+    },
+    {
+      "id": "i9",
+      "section": null,
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "baking soda",
+      "note": null,
+      "density": {
+        "g": 4,
+        "per": "tsp"
+      }
+    },
+    {
+      "id": "i10",
+      "section": null,
+      "qty": 140,
+      "qtyMax": null,
+      "unit": "g",
+      "item": "bittersweet chocolate",
+      "note": "roughly chopped (a bar melts into pools; chips work)",
+      "density": {
+        "g": 170,
+        "per": "cup"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": null,
+      "text": "Melt the butter, then let it cool to 85–95°F (29–35°C), when it feels barely warm on a fingertip, about 10 minutes.",
+      "timers": [
+        {
+          "label": "Cool butter",
+          "seconds": 600
+        }
+      ],
+      "tip": "Hotter butter can cook the yolk and makes a greasy dough; at this temperature it's still liquid but firms up quickly in the fridge."
+    },
+    {
+      "id": "s2",
+      "section": null,
+      "text": "In a large bowl, whisk the butter, brown sugar and white sugar until smooth, glossy and thick like caramel, with no butter pooling at the edges, about 1 minute. Add the yolk, cream and vanilla paste and whisk until fully blended and glossy, about 30 seconds more.",
+      "timers": [
+        {
+          "label": "Whisk sugars",
+          "seconds": 60
+        }
+      ],
+      "tip": "A full minute dissolves some of the sugar into the butter, which gives the shiny, crackly tops and chewy middles."
+    },
+    {
+      "id": "s3",
+      "section": null,
+      "text": "Sprinkle the salt and baking soda evenly over the flour, add it to the bowl and stir with a spatula just until no dry flour remains, then fold in the chocolate. Cover and refrigerate for 30 minutes. Meanwhile, heat the oven to 350°F (180°C) on the convection setting (no convection: 375°F / 190°C) and line both baking sheets with parchment.",
+      "timers": [
+        {
+          "label": "Chill",
+          "seconds": 1800
+        }
+      ],
+      "tip": "Chilling firms the butter so the cookies spread evenly instead of running, and gives the flour time to hydrate for a deeper caramel flavor."
+    },
+    {
+      "id": "s4",
+      "section": null,
+      "text": "Scoop 12 balls of about 3 tablespoons (54 g) each and set 6 on each sheet, 3 inches apart. Bake one sheet for 4 minutes, then lift it a few inches and drop it flat on the stovetop. Bake until the edges are golden and set and the centers look puffy and just barely wet, 4–6 minutes more. Bake the second sheet the same way, keeping its dough in the fridge until it goes in.",
+      "timers": [
+        {
+          "label": "First bake",
+          "seconds": 240
+        },
+        {
+          "label": "After slam",
+          "seconds": 240
+        }
+      ],
+      "tip": "The drop collapses the puffed centers so they spread into thin, rippled rings; drop it flat so they stay round."
+    },
+    {
+      "id": "s5",
+      "section": null,
+      "text": "Cool the cookies on the sheet until firm enough to lift, about 5 minutes, then move them to the rack.",
+      "timers": [
+        {
+          "label": "Cool",
+          "seconds": 300
+        }
+      ],
+      "tip": "The centers look underdone when they come out and finish setting on the hot sheet."
+    }
+  ],
+  "createdAt": "2026-11-23T06:05:19Z",
+  "updatedAt": "2026-11-23T06:05:19Z",
+  "changelog": [
+    {
+      "date": "2026-11-23",
+      "summary": "Built from a screenshot of the video's caption (ingredients for 12 cookies only). Method from the hint: 350°F (180°C) convection, 30-minute chill after mixing, pan slam halfway through 8–10 minutes. Added the whisking stages and their cues, scoop size and spacing, a no-convection setting, and cooling. Read '85–95 degrees' for the butter as °F; used the caption's own gram-to-spoon conversions for the salt and baking soda.",
+      "notes": []
+    }
+  ]
+}
