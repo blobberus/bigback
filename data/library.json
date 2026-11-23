@@ -58,7 +58,9 @@
       "addedAt": "2026-11-15T01:18:01Z"
     },
     "double-reverse-sear-steak": {
-      "tags": [],
+      "tags": [
+        "steak"
+      ],
       "rating": 8,
       "proficiency": 2,
       "addedAt": "2026-11-15T09:37:11Z"
