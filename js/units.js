@@ -269,6 +269,53 @@ export function findAmounts(text, item = '') {
   return out;
 }
 
+/* ---------- a scaled amount, in measures you can actually take ---------- */
+const rangeText = (q, sep, qMax) => `${fmtQty(q)}${qMax != null ? `${sep}${fmtQty(qMax)}` : ''}`;
+const nearest = (v, opts) => opts.reduce((a, b) => (Math.abs(v - b) < Math.abs(v - a) ? b : a));
+const TBSP_FR = [0, 1 / 4, 1 / 3, 1 / 2, 2 / 3, 3 / 4, 1];
+function snapUs(key, v) {
+  if (key === 'tsp') return v < 1 ? Math.round(v * 8) / 8 : v < 4 ? Math.round(v * 4) / 4 : Math.round(v * 2) / 2;
+  if (key === 'tbsp') return v < 4 ? Math.floor(v) + nearest(v - Math.floor(v), TBSP_FR) : Math.round(v * 2) / 2;
+  return Math.floor(v) + nearest(v - Math.floor(v), FRACS);                     // cups: eighths and thirds
+}
+const SPELLED = { tsp: 'teaspoon', tbsp: 'tablespoon' };
+const decimal = (v, key) => String(['g', 'ml', 'mg'].includes(key) ? (v < 10 ? Math.round(v * 10) / 10 : Math.round(v)) : Math.round(v * 100) / 100);
+
+/**
+ * measureText(q, qMax, unit, sep = '–') → { num, unit } for an amount that has been scaled: spoons
+ * snap to what a measuring set holds (⅛ tsp steps under 1 tsp, then ¼; tablespoons in ¼ ⅓ ½ ⅔ ¾),
+ * under 1 tbsp becomes teaspoons, under ¼ cup — or a cup amount that isn't near a cup fraction,
+ * like 0.44 cup — becomes tablespoons, under ⅛ tsp is a pinch; metric stays decimal (0.8 g, 33 ml,
+ * 1.25 kg); ounces and pounds in eighths and thirds; counts and sticks as fmtQty has them. A new unit
+ * comes back in the same style as the old one (tbsp or tablespoon), not pluralized; n = the larger
+ * number as shown, for pluralizing.
+ */
+export function measureText(q, qMax, unit, sep = '–') {
+  const key = unitInfo(unit, 'butter')?.key;                         // 'butter': a stick is a stick here
+  const hi = qMax != null && qMax > q ? qMax : null, top = hi ?? q;
+  if (key === 'tsp' || key === 'tbsp' || key === 'cup') {
+    let k = key, per = 1;
+    if (k === 'cup' && (top < 0.25 - 1e-9 || (top < 1 && Math.abs(snapUs('cup', top) - top) > top * 0.03))) { k = 'tbsp'; per = 16; }
+    if (k === 'tbsp' && top * per < 1 - 1e-9) { k = 'tsp'; per *= 3; }
+    let a = snapUs(k, q * per), b = hi != null ? snapUs(k, hi * per) : null;
+    if (k === 'tsp' && b == null && a < 1 / 8) return { num: '1', unit: 'pinch', n: 1 };
+    if (k === 'tsp') a = Math.max(a, 1 / 8);
+    if (b != null && !(b > a)) b = null;
+    const style = k === key ? unit : /^(?:tea|table)spoons?$/i.test(String(unit)) ? SPELLED[k] : k;
+    return { num: rangeText(a, sep, b), unit: style, n: b ?? a };
+  }
+  if (METRIC.has(key)) {
+    const a = decimal(q, key), b = hi != null ? decimal(hi, key) : null;
+    return { num: b != null && b !== a ? `${a}${sep}${b}` : a, unit, n: Number(b ?? a) };
+  }
+  if (key === 'oz' || key === 'lb') {
+    const r = v => (key === 'oz' && v >= 4 ? Math.round(v * 2) / 2 : snapUs('cup', v));
+    const a = r(q), b = hi != null && r(hi) > a ? r(hi) : null;
+    return { num: rangeText(a, sep, b), unit, n: b ?? a };
+  }
+  return { num: rangeText(q, sep, hi), unit, n: hi ?? q };
+}
+
 /* ---------- scaling the amounts written in an ingredient note ---------- */
 // Things a note counts: "1 can", "about 2 links", "or 3 green onions", "from a large egg", "half a 16-oz package".
 const COUNTABLE = ('can jar package packet pack bag box bottle carton container tub block envelope bunch head bulb clove ' +
@@ -313,7 +360,6 @@ function unitWord(u, n) {
   if (!many && /s$/.test(last) && UNIT_WORDS.has(last.slice(0, -1))) return u.slice(0, -1);
   return u;
 }
-const rangeText = (q, sep, qMax) => `${fmtQty(q)}${qMax != null ? `${sep}${fmtQty(qMax)}` : ''}`;
 
 /**
  * scaleNote(text, ing, factor) → spans of the note that change with the batch size, in text order:
@@ -344,7 +390,8 @@ export function scaleNote(text, ing = {}, factor = 1) {
       : fixedWhy(text, index, end, counted);
     const go = on && !why && (b == null || qtyMax != null);
     const q = go ? scaleQty(qty, factor) : qty, qMax = go && qtyMax != null ? scaleQty(qtyMax, factor) : qtyMax;
-    const label = go ? `${rangeText(q, sep, qMax)}${gap}${unitWord(unit, qMax ?? q)}${dot}` : text.slice(index, end);
+    const shown = go && measureText(q, qMax, unit, sep);
+    const label = go ? `${shown.num}${gap}${unitWord(shown.unit, shown.n)}${shown.unit === unit ? dot : ''}` : text.slice(index, end);
     if (conv || go) amts.push({ kind: 'amt', index, length: end - index, label, qty: q, qtyMax: qMax, unit, item, scaled: go, why, conv });
   }
   const overlaps = s => amts.some(a => s.index < a.index + a.length && a.index < s.index + s.length);

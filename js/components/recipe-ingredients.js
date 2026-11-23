@@ -6,7 +6,8 @@
  *   bindIngredients(host, recipe | () => recipe, slug, { onScale }) → off
  *       handles checkbox changes, −/+ / ×½ ×1 ×2, and Reset inside `host`;
  *       re-renders the closest [data-ingredients] in place on scale/reset.
- *   qtyText(ing, factor) → "1½–2 cups" ('' when qty is null)
+ *   qtyText(ing, factor) → "1½–2 cups" ('' when qty is null); scaled amounts are rounded to measures
+ *       you can take (units.js measureText: "½ tbsp" → "1½ tsp", "0.19 tsp" → "⅛ tsp", "1½ g" → "1.5 g")
  * Tapping the circle or the text checks an ingredient off. Convertible amounts are buttons that
  * open a breakdown under the row instead (other US measures + metric, units.js): the main amount
  * ("3 tbsp") and any written in the note ("or ½ tsp dried"); a temperature in the note ("about
@@ -22,7 +23,7 @@ import { html, fmtQty, scaleQty, clamp } from '../util.js';
 import { on } from '../ui.js';
 import { icon } from './recipe-icons.js';
 import { rxState, rxPatch, toggleId } from './recipe-state.js';
-import { breakdown, findTemps, scaleNote, usEquivalent } from '../units.js';
+import { breakdown, findTemps, measureText, scaleNote, usEquivalent } from '../units.js';
 import { tempButton } from './recipe-mentions.js';
 
 const convOpen = new Map();      // slug → Set(panel keys open: "i3" main amount, "i3-n0" first note amount)
@@ -45,6 +46,11 @@ export function qtyText(ing, factor = 1) {
   if (ing.qty == null || ing.qty === '' || isNaN(ing.qty)) return '';
   const lo = scaleQty(ing.qty, factor);
   const hi = ing.qtyMax != null && !isNaN(ing.qtyMax) ? scaleQty(ing.qtyMax, factor) : null;
+  if (Math.abs(factor - 1) > 1e-9) {                     // scaled: measures you can take ("¾ tsp", not "¼ tbsp")
+    const m = measureText(lo, hi, ing.unit || '');
+    const unit = unitFor(m.unit, m.n);
+    return unit ? `${m.num} ${unit}` : m.num;
+  }
   const num = hi != null && hi !== lo ? `${fmtQty(lo)}–${fmtQty(hi)}` : fmtQty(lo);
   const unit = unitFor(ing.unit, hi ?? lo);
   return unit ? `${num} ${unit}` : num;

@@ -23,9 +23,9 @@
 <div id="sandbox"></div>
 <script type="module">
 import { mentionMatcher, bindMentions } from '../js/components/recipe-mentions.js';
-import { ingredientsHtml, bindIngredients } from '../js/components/recipe-ingredients.js';
+import { ingredientsHtml, bindIngredients, qtyText } from '../js/components/recipe-ingredients.js';
 import { stepTextHtml } from '../js/components/recipe-steps.js';
-import { breakdown, unitInfo, findAmounts, findTemps, tempDetails, usEquivalent, gramsPerMl, scaleNote } from '../js/units.js';
+import { breakdown, unitInfo, findAmounts, findTemps, tempDetails, usEquivalent, gramsPerMl, scaleNote, measureText } from '../js/units.js';
 import { toStr } from '../js/util.js';
 import { rxPatch } from '../js/components/recipe-state.js';
 import { sheet } from '../js/ui.js';
@@ -134,7 +134,7 @@ eq('measures in a note scale, unit words follow the amount', [
   SN('or 2 cups milk', { qty: 1, unit: 'cup', item: 'cream' }, 0.5),
   SN('½ tbsp each for the steak and scallops', { qty: 1, unit: 'tbsp', item: 'unsalted butter' }, 2)
 ], ['2 sticks, melted; with unsalted, add 3 g more salt', 'melted and cooled until warm (1½ sticks + 4½ tbsp)',
-  'with its juices (about 2 cups packed / 680 g)', 'divided: 1 tbsp for the Spam, ½ tbsp for the eggs', 'loosely packed (about 40–50 g)',
+  'with its juices (about 2 cups packed / 680 g)', 'divided: 1 tbsp for the Spam, 1½ tsp for the eggs', 'loosely packed (about 40–50 g)',
   'or 1 cup milk', '1 tbsp each for the steak and scallops']);
 eq('counted things in a note scale and pluralize', [
   SN('1 can, cut into ¼- to ½-inch dice', { qty: 12, unit: 'oz', item: 'Spam' }, 2),
@@ -149,6 +149,20 @@ eq('counted things in a note scale and pluralize', [
 ], ['2 cans, cut into ¼- to ½-inch dice', 'mild; about 3 links (12 oz), casings removed', 'or 6 green onions; washed and sliced',
   'from two large eggs', 'from half a large egg', 'two small handfuls, finely chopped', 'two 14-oz cans', 'about 16 oz, one 16-oz package',
   '1 can, drained']);
+const MT = (q, qMax, unit) => { const m = measureText(q, qMax, unit); return `${m.num} ${m.unit}`; };
+eq('scaled amounts round to measures you can take', [MT(0.19, null, 'tsp'), MT(0.06, null, 'tsp'), MT(0.5, null, 'tbsp'), MT(0.25, null, 'tbsp'),
+  MT(0.4375, null, 'cup'), MT(0.125, null, 'cup'), MT(0.375, null, 'cup'), MT(1.875, null, 'tbsp'), MT(0.25, 0.5, 'tbsp'), MT(0.5, 1, 'tbsp'),
+  MT(0.5, null, 'tablespoon'), MT(5.25, null, 'oz'), MT(0.44, null, 'lb'), MT(1.33, null, 'clove')],
+  ['¼ tsp', '1 pinch', '1½ tsp', '¾ tsp', '7 tbsp', '2 tbsp', '⅜ cup', '1¾ tbsp', '¾–1½ tsp', '½–1 tbsp', '1½ teaspoon', '5½ oz', '½ lb', '1⅓ clove']);
+eq('metric stays decimal', [MT(0.75, null, 'g'), MT(2.25, null, 'g'), MT(32.5, null, 'ml'), MT(12.5, 15, 'g'), MT(0.55, null, 'kg'), MT(1.5, null, 'l')],
+  ['0.8 g', '2.3 g', '33 ml', '13–15 g', '0.55 kg', '1.5 l']);
+eq('qtyText: scaled amounts take the same rounding, ×1 reads as written', [qtyText({ qty: 0.375, unit: 'tsp' }, 0.5), qtyText({ qty: 1, unit: 'tbsp' }, 0.5),
+  qtyText({ qty: 1.5, unit: 'g' }, 1.5), qtyText({ qty: 2, unit: 'clove' }, 1.5), qtyText({ qty: 0.5, qtyMax: 1, unit: 'tbsp' }, 0.5), qtyText({ qty: 0.33, unit: 'cup' }),
+  qtyText({ qty: 2.33, unit: 'tbsp' }), qtyText({ qty: 1, unit: 'pinch' }, 0.5)],
+  ['¼ tsp', '1½ tsp', '2.3 g', '3 cloves', '¾–1½ tsp', '⅓ cup', '2⅓ tbsp', '½ pinch']);
+eq('note amounts round the same way', [SN('divided: ¼ tsp for the sauce, ⅛ tsp to finish', { qty: 0.375, unit: 'tsp', item: 'white pepper' }, 0.5),
+  SN('granulated; ⅞ cup matches the original ratio', { qty: 0.75, unit: 'cup', item: 'sugar' }, 0.5), SN('use 2 Tbsp. more', { qty: 1, unit: 'cup', item: 'water' }, 0.25)],
+  ['divided: ⅛ tsp for the sauce, 1 pinch to finish', 'granulated; 7 tbsp matches the original ratio', 'use 1½ tsp more']);
 const KEEP = [
   ['4–5 oz each (shell-on weight)', TAILS], ['your blend, 1 tbsp per pound of steak', { qty: 1, unit: 'tbsp', item: 'steak seasoning' }],
   ['if salt-free, add 1½ tsp Diamond Crystal per lb', { qty: 1, unit: 'tbsp', item: 'steak seasoning' }], ['cut into 8 pieces', { qty: 1, unit: null, item: 'chicken' }],
