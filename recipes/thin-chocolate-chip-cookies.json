@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "slug": "thin-chocolate-chip-cookies",
+  "title": "Thin Chocolate Chip Cookies",
+  "summary": "Wide, thin chocolate chip cookies with crisp caramelized edges and a bendy center. Eggless, one bowl.",
+  "profile": "Sweet and buttery with a toffee note from the brown sugar and a strong vanilla backbone; the half teaspoon of salt sits underneath and keeps the sugar from tasting flat, and the chocolate chips are the only bitterness. There's no egg, and the milk plus melted butter make a loose dough that spreads into thin, wide cookies: lacy, deep golden, crisp at the rim, with a chewy, bendy center that sets as they cool. They shouldn't stay thick or doughy, and they shouldn't bake brittle all the way through. Makes about 18 large cookies in roughly 55 minutes, about 15 of it hands-on. Keep airtight at room temperature for up to 4 days, or freeze scooped dough balls or baked cookies for up to 3 months; re-crisp baked cookies at 300°F (150°C) for 3–4 minutes, and bake frozen dough straight from the freezer for 1–2 minutes longer.",
+  "status": "built",
+  "source": {
+    "type": "image",
+    "url": null,
+    "files": [
+      "sources/thin-chocolate-chip-cookies/IMG_0379.jpg"
+    ],
+    "author": "@brownbutterrolls (shared by @alleycatnibbles)"
+  },
+  "image": "media/thin-chocolate-chip-cookies/hero.jpg",
+  "servings": 18,
+  "yield": "about 18 large thin cookies",
+  "time": {
+    "prep": 15,
+    "cook": 40,
+    "total": 55
+  },
+  "equipment": [
+    "2 rimmed baking sheets",
+    "parchment paper",
+    "large mixing bowl",
+    "whisk",
+    "3-tablespoon cookie scoop",
+    "wire rack"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": null,
+      "qty": 11,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "unsalted butter",
+      "note": "melted and cooled until warm (1 stick + 3 tbsp)"
+    },
+    {
+      "id": "i2",
+      "section": null,
+      "qty": 0.75,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "light brown sugar",
+      "note": "packed"
+    },
+    {
+      "id": "i3",
+      "section": null,
+      "qty": 0.33,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "granulated sugar",
+      "note": null
+    },
+    {
+      "id": "i4",
+      "section": null,
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "vanilla extract",
+      "note": null
+    },
+    {
+      "id": "i5",
+      "section": null,
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "table salt",
+      "note": "or 1 tsp Diamond Crystal or a heaping ½ tsp Morton kosher"
+    },
+    {
+      "id": "i6",
+      "section": null,
+      "qty": 0.33,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "milk",
+      "note": "room temperature"
+    },
+    {
+      "id": "i7",
+      "section": null,
+      "qty": 1.25,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "all-purpose flour",
+      "note": "spooned and leveled (150 g)"
+    },
+    {
+      "id": "i8",
+      "section": null,
+      "qty": 0.75,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "baking soda",
+      "note": null
+    },
+    {
+      "id": "i9",
+      "section": null,
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "chocolate chips",
+      "note": "amount not given; about 1 cup (6 oz) is typical"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": null,
+      "text": "Heat the oven to 350°F (180°C) with racks in the upper and lower thirds, and line both baking sheets with parchment. Melt the butter and let it cool until just warm, about 5 minutes.",
+      "timers": [
+        {
+          "label": "Cool butter",
+          "seconds": 300
+        }
+      ],
+      "tip": "Hot butter melts the chips into streaks and starts dissolving the sugar too early, so the cookies go greasy instead of crisp."
+    },
+    {
+      "id": "s2",
+      "section": null,
+      "text": "In one bowl, whisk the butter, brown sugar, granulated sugar, vanilla and salt until smooth and glossy, about 1 minute, then whisk in the milk. Sprinkle the baking soda evenly over the flour, add it to the bowl and stir with a spatula just until no dry streaks remain, then fold in the chocolate chips. The dough will be soft and loose.",
+      "timers": [],
+      "tip": "Spoon and level the flour (or weigh 150 g), because packed flour makes these spread less and bake up thick, and stop mixing as soon as the flour disappears so they stay tender."
+    },
+    {
+      "id": "s3",
+      "section": null,
+      "text": "Scoop 3-tablespoon mounds about 3 inches apart, 6 per sheet, since they spread a lot. Bake until the edges are deep golden and the centers look set and no longer shiny, 14–18 minutes, swapping and rotating the sheets halfway. Bake any leftover dough on a cooled sheet.",
+      "timers": [
+        {
+          "label": "Bake",
+          "seconds": 840
+        }
+      ],
+      "tip": "For extra-thin cookies with rippled edges, lift each sheet an inch and drop it on the rack every 2 minutes from the 10-minute mark."
+    },
+    {
+      "id": "s4",
+      "section": null,
+      "text": "Cool the cookies on the sheet until firm enough to lift, about 5 minutes, then move them to the rack. They crisp as they cool.",
+      "timers": [
+        {
+          "label": "Cool",
+          "seconds": 300
+        }
+      ],
+      "tip": "Moved too soon, the soft centers tear. Left on the hot sheet too long, they keep baking and turn brittle."
+    }
+  ],
+  "createdAt": "2026-11-23T04:56:06Z",
+  "updatedAt": "2026-11-23T04:56:06Z",
+  "changelog": [
+    {
+      "date": "2026-11-23",
+      "summary": "Built from a screenshot of @alleycatnibbles' comment giving @brownbutterrolls' recipe (ingredient list + 'Bake at 350°F for 14–18 min' only). Per the hint, all mixing happens in one step, with cookie tips added. Assumptions: the butter is unsalted, 'salt' is table salt, and the milk is room temperature; the source gives no amount for the chocolate chips (about 1 cup suggested). Added a preheat, parchment, scoop size and spacing, doneness cues and cooling.",
+      "notes": []
+    }
+  ]
+}

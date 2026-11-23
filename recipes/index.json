@@ -161,6 +161,22 @@
       "openNotes": 0
     },
     {
+      "slug": "thin-chocolate-chip-cookies",
+      "title": "Thin Chocolate Chip Cookies",
+      "summary": "Wide, thin chocolate chip cookies with crisp caramelized edges and a bendy center. Eggless, one bowl.",
+      "image": "media/thin-chocolate-chip-cookies/hero.jpg",
+      "time": {
+        "prep": 15,
+        "cook": 40,
+        "total": 55
+      },
+      "servings": 18,
+      "status": "built",
+      "sourceType": "image",
+      "updatedAt": "2026-11-23T04:56:06Z",
+      "openNotes": 0
+    },
+    {
       "slug": "tteokguk",
       "title": "Tteokguk 떡국 (Korean Rice Cake Soup)",
       "summary": "Korea's New Year soup: chewy rice cakes in a garlicky beef broth with egg ribbons, yellow egg strips and toasted gim.",
@@ -184,13 +200,6 @@
       "title": "Garlic Butter Pasta",
       "url": "https://www.instagram.com/reel/DgBEu5aPf88/?bqrl=MW9hYnp0bWRzM3VicA==",
       "createdAt": "2026-11-22T08:34:24Z"
-    },
-    {
-      "id": "20261123-044605-zket",
-      "kind": "file",
-      "title": "Thin Chocolate Chip Cookies",
-      "url": null,
-      "createdAt": "2026-11-23T04:46:05Z"
     }
   ]
 }
