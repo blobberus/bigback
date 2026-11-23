@@ -64,7 +64,10 @@
       "addedAt": "2026-11-15T01:18:00Z"
     },
     "tteokguk": {
-      "tags": [],
+      "tags": [
+        "korean",
+        "soup"
+      ],
       "rating": 7,
       "proficiency": null,
       "addedAt": "2026-11-15T01:18:01Z"
