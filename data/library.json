@@ -75,7 +75,9 @@
       "addedAt": "2026-11-23T04:58:15Z"
     },
     "epic-thin-cookies": {
-      "tags": [],
+      "tags": [
+        "dessert"
+      ],
       "rating": 7,
       "proficiency": 4,
       "addedAt": "2026-11-23T06:05:54Z",
