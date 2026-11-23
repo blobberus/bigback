@@ -209,5 +209,13 @@
       "openNotes": 0
     }
   ],
-  "pending": []
+  "pending": [
+    {
+      "id": "20261123-060326-cg1i",
+      "kind": "file",
+      "title": "Epic Thin Cookies",
+      "url": null,
+      "createdAt": "2026-11-23T06:03:26Z"
+    }
+  ]
 }
