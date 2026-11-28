@@ -17,7 +17,7 @@
   "time": {
     "prep": 10,
     "cook": 2,
-    "total": 17
+    "total": 12
   },
   "equipment": [
     "large microwave-safe mug (at least 12 oz)",
@@ -173,7 +173,7 @@
     }
   ],
   "createdAt": "2026-11-28T09:14:00Z",
-  "updatedAt": "2026-11-28T09:14:00Z",
+  "updatedAt": "2026-11-28T09:16:41Z",
   "changelog": [
     {
       "date": "2026-11-28",
