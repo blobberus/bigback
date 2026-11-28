@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "slug": "chocolate-lava-mug-cake",
+  "title": "Chocolate Lava Mug Cake",
+  "summary": "A fudgy single-serve chocolate cake made in a mug in the microwave, with a pool of molten chocolate in the middle.",
+  "profile": "Deeply chocolatey and sweet, with bitterness from the cocoa and a little salt to balance the sugar; butter makes it rich and the vanilla rounds it out. The cake should rise to the rim with set, springy edges and a moist, fudgy crumb that turns into a glossy, molten chocolate-chip center. It shouldn't be rubbery (overcooked) or raw batter (undercooked); the very middle looks slightly wet and shiny and sticks a little to a fingertip. Makes one mug (1 serving) in about 17 minutes, only 2 of them in the microwave and 5 of cooling; eat it straight from the mug, plain or with vanilla ice cream or whipped cream. Best eaten right away; it firms and dries as it sits and doesn't keep or reheat well (if you have to, 10–15 seconds in the microwave softens it).",
+  "status": "built",
+  "source": {
+    "type": "web",
+    "url": "https://agrandelife.net/chocolate-lava-mug-cake/",
+    "files": [],
+    "author": "Stephanie (A Grande Life)"
+  },
+  "image": "media/chocolate-lava-mug-cake/hero.jpg",
+  "servings": 1,
+  "yield": "1 mug cake",
+  "time": {
+    "prep": 10,
+    "cook": 2,
+    "total": 17
+  },
+  "equipment": [
+    "large microwave-safe mug (at least 12 oz)",
+    "fork",
+    "microwave"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": null,
+      "qty": 0.25,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "all-purpose flour",
+      "note": null
+    },
+    {
+      "id": "i2",
+      "section": null,
+      "qty": 0.25,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "granulated sugar",
+      "note": null
+    },
+    {
+      "id": "i3",
+      "section": null,
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "cocoa powder",
+      "note": null
+    },
+    {
+      "id": "i4",
+      "section": null,
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "baking powder",
+      "note": null
+    },
+    {
+      "id": "i5",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "pinch",
+      "item": "salt",
+      "note": "table salt; a slightly bigger pinch if using Diamond Crystal kosher"
+    },
+    {
+      "id": "i6",
+      "section": null,
+      "qty": 3,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "unsalted butter",
+      "note": "melted"
+    },
+    {
+      "id": "i7",
+      "section": null,
+      "qty": 3,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "milk",
+      "note": null
+    },
+    {
+      "id": "i8",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": null,
+      "item": "large egg",
+      "note": null
+    },
+    {
+      "id": "i9",
+      "section": null,
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "vanilla extract",
+      "note": null
+    },
+    {
+      "id": "i10",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "oz",
+      "item": "semi-sweet chocolate chips",
+      "note": "about 3 tbsp"
+    },
+    {
+      "id": "i11",
+      "section": null,
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "water",
+      "note": null
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": null,
+      "text": "In the mug, whisk the flour, sugar, cocoa powder, baking powder and salt with a fork until evenly combined, with no streaks of cocoa.",
+      "timers": [],
+      "tip": "No melted butter ready? Melt it in the mug first (30–40 seconds), pour it into a cup, and use the buttered mug for the cake."
+    },
+    {
+      "id": "s2",
+      "section": null,
+      "text": "Add the butter, milk, egg and vanilla extract. Whisk until smooth, scraping the bottom and corners of the mug so no dry flour is left hiding there.",
+      "timers": [],
+      "tip": "Dry pockets at the bottom bake into floury lumps, and that's the most common mug-cake failure."
+    },
+    {
+      "id": "s3",
+      "section": null,
+      "text": "Push the chocolate chips into the center of the batter, then drizzle the water right over the top.",
+      "timers": [],
+      "tip": "The water steams the top and keeps the chips melting into a molten pool rather than setting as chips."
+    },
+    {
+      "id": "s4",
+      "section": null,
+      "text": "Microwave on high for 1–2 minutes, until the cake rises to the top of the mug and the edges look set. The center should still look slightly wet and shiny but not raw, and stick slightly to a fingertip when touched.",
+      "timers": [
+        {
+          "label": "Microwave",
+          "seconds": 60
+        }
+      ],
+      "tip": "Microwaves vary a lot: check at 1 minute and add 15-second bursts, because overcooking makes it rubbery fast."
+    },
+    {
+      "id": "s5",
+      "section": null,
+      "text": "Let it cool for about 5 minutes before eating; the center stays molten while the cake around it firms slightly.",
+      "timers": [
+        {
+          "label": "Cool",
+          "seconds": 300
+        }
+      ],
+      "tip": "The chocolate center and the mug are scalding straight out of the microwave."
+    }
+  ],
+  "createdAt": "2026-11-28T09:14:00Z",
+  "updatedAt": "2026-11-28T09:14:00Z",
+  "changelog": [
+    {
+      "date": "2026-11-28",
+      "summary": "Built from agrandelife.net (schema.org recipe). Clarifications: flour taken as all-purpose; 'pinch salt' read as table salt; microwave power assumed high and mug size (at least 12 oz) assumed, since the source gives neither.",
+      "notes": []
+    }
+  ]
+}

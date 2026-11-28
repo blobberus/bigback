@@ -17,6 +17,22 @@
       "openNotes": 0
     },
     {
+      "slug": "chocolate-lava-mug-cake",
+      "title": "Chocolate Lava Mug Cake",
+      "summary": "A fudgy single-serve chocolate cake made in a mug in the microwave, with a pool of molten chocolate in the middle.",
+      "image": "media/chocolate-lava-mug-cake/hero.jpg",
+      "time": {
+        "prep": 10,
+        "cook": 2,
+        "total": 17
+      },
+      "servings": 1,
+      "status": "built",
+      "sourceType": "web",
+      "updatedAt": "2026-11-28T09:14:00Z",
+      "openNotes": 0
+    },
+    {
       "slug": "double-reverse-sear-steak",
       "title": "Double Reverse Sear Steak",
       "summary": "Nearly no gray steak sear. Requires skillet, oven, and high smoke point oil.",
@@ -223,13 +239,6 @@
       "title": "Peppercorn Pasta And Steak",
       "url": "https://foodierandy.com/2026/11/17/steak-and-peppercorn-sauce-pasta/?fbclid=PAVERFWAV0OBtleHRuA2FlbQIxMABwZG9mAmZkaWQWUS4AOa843onyTW43_9OmIYWuQicgIXNydGMGYXBwX2lkDzEyNDAyNDU3NDI4NzQxNAABpwuRh_vSmS-I_DEEUDkl1S8Mwl-_jfu_YHexv6pLdKrFPtwxyUD9KkowBzhF_aem_EA7a1N6-eK_OCbv3tGuDFQ",
       "createdAt": "2026-11-25T21:53:44Z"
-    },
-    {
-      "id": "20261128-090746-59zg",
-      "kind": "link",
-      "title": "https://agrandelife.net/chocolate-lava-mug-cake/",
-      "url": "https://agrandelife.net/chocolate-lava-mug-cake/",
-      "createdAt": "2026-11-28T09:07:46Z"
     }
   ]
 }
