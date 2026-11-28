@@ -1,0 +1,228 @@
+{
+  "schemaVersion": 1,
+  "slug": "experimental-ma-po-tofu",
+  "title": "Experimental Ma Po Tofu",
+  "summary": "Silken tofu and crispy ground pork in a spicy doubanjiang sauce over rice. Two bowls in 30 minutes.",
+  "profile": "Savory, salty and deeply umami from fried doubanjiang (fermented broad-bean chili paste), browned pork and chicken bouillon, with garlic and ginger up front and a moderate, rounded chili heat; there is no Sichuan peppercorn, sugar or vinegar, so it reads warm and meaty rather than numbing or tangy. The tofu should be soft, wobbly bite-sized pieces that still hold their shape, the pork should keep a few crisp browned edges, and the sauce should be glossy and just thick enough to cling to the tofu while a little runs into the rice. Delivers 2 servings in about 30 minutes, mostly hands-on, spooned over hot steamed rice and finished with green onion greens. Keeps 2–3 days refrigerated (silken tofu turns spongy if frozen); reheat gently in a covered pan over low heat or in the microwave at half power with a splash of water, stirring as little as possible.",
+  "status": "built",
+  "source": {
+    "type": "web",
+    "url": "https://foodierandy.com/2026/11/17/mapo-tofu-and-rice/",
+    "files": [],
+    "author": "Miranda Li (foodierandy.com)"
+  },
+  "image": "media/experimental-ma-po-tofu/hero.jpg",
+  "servings": 2,
+  "yield": "2 rice bowls",
+  "time": {
+    "prep": 15,
+    "cook": 15,
+    "total": 30
+  },
+  "equipment": [
+    "12-inch skillet or wok",
+    "flat spatula",
+    "small bowl"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": "Mapo tofu",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "neutral oil",
+      "note": null
+    },
+    {
+      "id": "i2",
+      "section": "Mapo tofu",
+      "qty": 162,
+      "qtyMax": null,
+      "unit": "g",
+      "density": null,
+      "item": "ground pork",
+      "note": "about 6 oz"
+    },
+    {
+      "id": "i3",
+      "section": "Mapo tofu",
+      "qty": 300,
+      "qtyMax": null,
+      "unit": "g",
+      "density": null,
+      "item": "silken or soft tofu",
+      "note": "1 package, drained"
+    },
+    {
+      "id": "i4",
+      "section": "Mapo tofu",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": null,
+      "item": "green onions",
+      "note": "chopped, whites and greens kept separate"
+    },
+    {
+      "id": "i5",
+      "section": "Mapo tofu",
+      "qty": 4,
+      "qtyMax": null,
+      "unit": "clove",
+      "item": "garlic",
+      "note": "minced (about 10 g)"
+    },
+    {
+      "id": "i6",
+      "section": "Mapo tofu",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "fresh ginger",
+      "note": "grated"
+    },
+    {
+      "id": "i7",
+      "section": "Mapo tofu",
+      "qty": 1.5,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "doubanjiang",
+      "note": "Sichuan chili bean paste"
+    },
+    {
+      "id": "i8",
+      "section": "Mapo tofu",
+      "qty": 0.75,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "water",
+      "note": null
+    },
+    {
+      "id": "i9",
+      "section": "Mapo tofu",
+      "qty": 0.25,
+      "qtyMax": 0.5,
+      "unit": "tsp",
+      "item": "chicken bouillon powder",
+      "note": null
+    },
+    {
+      "id": "i10",
+      "section": "Mapo tofu",
+      "qty": 1,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "soy sauce",
+      "note": "optional"
+    },
+    {
+      "id": "i11",
+      "section": "Slurry",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "cornstarch",
+      "note": null
+    },
+    {
+      "id": "i12",
+      "section": "Slurry",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "cold water",
+      "note": null
+    },
+    {
+      "id": "i13",
+      "section": "To serve",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "steamed rice",
+      "note": "hot, for serving"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": null,
+      "text": "Have the rice cooked and hot before you start; the tofu goes from pan to bowl. Chop the green onions, keeping the whites and greens in separate piles, mince the garlic, grate the ginger and drain the tofu, leaving it whole.",
+      "timers": [],
+      "tip": "Everything after the pork moves fast, so have it all measured at the stove."
+    },
+    {
+      "id": "s2",
+      "section": "Mapo tofu",
+      "text": "Heat the oil in the skillet or wok over medium-high heat until it shimmers. Add the pork and cook, breaking it into small bits, until no pink remains and it is browned and slightly crispy at the edges, 5–7 minutes.",
+      "timers": [
+        {
+          "label": "Brown pork",
+          "seconds": 300
+        }
+      ],
+      "tip": "Let it sit between stirs so it browns instead of steaming; crispy at the edges means it's well past the 160°F (71°C) safe point for ground pork."
+    },
+    {
+      "id": "s3",
+      "section": "Mapo tofu",
+      "text": "Add the green onion whites, garlic, ginger and doubanjiang. Cook, stirring often, until fragrant and the oil turns red, about 1 minute.",
+      "timers": [
+        {
+          "label": "Fry paste",
+          "seconds": 60
+        }
+      ],
+      "tip": "Frying doubanjiang in the fat is what draws out its color and depth; drop the heat to medium if the garlic starts to scorch."
+    },
+    {
+      "id": "s4",
+      "section": "Mapo tofu",
+      "text": "Pour in the ¾ cup water and stir in the bouillon (start with ¼ teaspoon) and the soy sauce, if using, scraping up anything stuck to the pan. Bring to a gentle simmer and taste; add more bouillon only if it needs it.",
+      "timers": [],
+      "tip": "Doubanjiang is already very salty, which is why the bouillon is a range and the soy sauce optional."
+    },
+    {
+      "id": "s5",
+      "section": "Mapo tofu",
+      "text": "Slide in the tofu and gently break it into bite-sized pieces with the spatula. Simmer for 2–3 minutes so it heats through and takes on the sauce.",
+      "timers": [
+        {
+          "label": "Simmer tofu",
+          "seconds": 120
+        }
+      ],
+      "tip": "Push and fold from the edges of the pan instead of stirring; silken tofu shatters into mush if stirred hard."
+    },
+    {
+      "id": "s6",
+      "section": "Slurry",
+      "text": "Stir the cornstarch into the cold water, then pour it into the pan while gently folding the tofu. Simmer about 1 minute more, until the sauce turns glossy and lightly thickened.",
+      "timers": [
+        {
+          "label": "Thicken",
+          "seconds": 60
+        }
+      ],
+      "tip": "Re-stir the slurry right before pouring; cornstarch settles to the bottom within seconds."
+    },
+    {
+      "id": "s7",
+      "section": "To serve",
+      "text": "Scatter the green onion greens over the top and serve right away over the steamed rice.",
+      "timers": [],
+      "tip": null
+    }
+  ],
+  "createdAt": "2026-11-28T09:14:02Z",
+  "updatedAt": "2026-11-28T09:14:02Z",
+  "changelog": [
+    {
+      "date": "2026-11-28",
+      "summary": "Built from foodierandy.com (Miranda Li, recipe JSON-LD); stripped the fbclid tracking from the link. Amounts and method unchanged. Added a prep step (rice ready, mise en place), a 5–7 minute browning time with a no-pink cue, the red-oil cue for the paste, and the glossy-sauce cue for the slurry.",
+      "notes": []
+    }
+  ]
+}

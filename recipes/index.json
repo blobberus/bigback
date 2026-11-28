@@ -65,6 +65,22 @@
       "openNotes": 0
     },
     {
+      "slug": "experimental-ma-po-tofu",
+      "title": "Experimental Ma Po Tofu",
+      "summary": "Silken tofu and crispy ground pork in a spicy doubanjiang sauce over rice. Two bowls in 30 minutes.",
+      "image": "media/experimental-ma-po-tofu/hero.jpg",
+      "time": {
+        "prep": 15,
+        "cook": 15,
+        "total": 30
+      },
+      "servings": 2,
+      "status": "built",
+      "sourceType": "web",
+      "updatedAt": "2026-11-28T09:14:02Z",
+      "openNotes": 0
+    },
+    {
       "slug": "kimchi-spam-fried-rice",
       "title": "Kimchi Spam Fried Rice 김치볶음밥",
       "summary": "Crisp-edged Spam, tangy kimchi and toasty rice in one pan, finished with sesame oil and a runny fried egg.",
@@ -226,13 +242,6 @@
     }
   ],
   "pending": [
-    {
-      "id": "20261125-215255-lzun",
-      "kind": "link",
-      "title": "Experimental Ma Po Tofu",
-      "url": "https://foodierandy.com/2026/11/17/mapo-tofu-and-rice/?fbclid=PAVERFWAV0N8FleHRuA2FlbQIxMABwZG9mAmZkaWQWUS4AOa843onyTW43_9OmIYWuQicgIXNydGMGYXBwX2lkDzEyNDAyNDU3NDI4NzQxNAABpwuRh_vSmS-I_DEEUDkl1S8Mwl-_jfu_YHexv6pLdKrFPtwxyUD9KkowBzhF_aem_EA7a1N6-eK_OCbv3tGuDFQ",
-      "createdAt": "2026-11-25T21:52:55Z"
-    },
     {
       "id": "20261125-215344-0153",
       "kind": "link",
