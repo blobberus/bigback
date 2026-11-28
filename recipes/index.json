@@ -209,6 +209,22 @@
       "openNotes": 0
     },
     {
+      "slug": "steak-and-peppercorn-sauce-pasta",
+      "title": "Steak and Peppercorn Sauce Pasta",
+      "summary": "Butter-basted steak sliced over pasta cooked in beef stock and tossed in a creamy black-pepper Parmesan sauce.",
+      "image": "media/steak-and-peppercorn-sauce-pasta/hero.jpg",
+      "time": {
+        "prep": 10,
+        "cook": 25,
+        "total": 50
+      },
+      "servings": 2,
+      "status": "built",
+      "sourceType": "web",
+      "updatedAt": "2026-11-28T09:14:58Z",
+      "openNotes": 0
+    },
+    {
       "slug": "tteokguk",
       "title": "Tteokguk 떡국 (Korean Rice Cake Soup)",
       "summary": "Korea's New Year soup: chewy rice cakes in a garlicky beef broth with egg ribbons, yellow egg strips and toasted gim.",
@@ -241,13 +257,5 @@
       "openNotes": 0
     }
   ],
-  "pending": [
-    {
-      "id": "20261125-215344-0153",
-      "kind": "link",
-      "title": "Peppercorn Pasta And Steak",
-      "url": "https://foodierandy.com/2026/11/17/steak-and-peppercorn-sauce-pasta/?fbclid=PAVERFWAV0OBtleHRuA2FlbQIxMABwZG9mAmZkaWQWUS4AOa843onyTW43_9OmIYWuQicgIXNydGMGYXBwX2lkDzEyNDAyNDU3NDI4NzQxNAABpwuRh_vSmS-I_DEEUDkl1S8Mwl-_jfu_YHexv6pLdKrFPtwxyUD9KkowBzhF_aem_EA7a1N6-eK_OCbv3tGuDFQ",
-      "createdAt": "2026-11-25T21:53:44Z"
-    }
-  ]
+  "pending": []
 }

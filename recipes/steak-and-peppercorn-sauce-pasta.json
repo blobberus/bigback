@@ -1,0 +1,306 @@
+{
+  "schemaVersion": 1,
+  "slug": "steak-and-peppercorn-sauce-pasta",
+  "title": "Steak and Peppercorn Sauce Pasta",
+  "summary": "Butter-basted steak sliced over pasta cooked in beef stock and tossed in a creamy black-pepper Parmesan sauce.",
+  "profile": "Rich and savory: beefy umami from pasta cooked in bouillon-seasoned water, cream and Parmesan for fat and salt, and a forward but not harsh heat from 1–2 teaspoons of freshly cracked black pepper, with thyme and garlic butter perfuming the steak. The steak should have a deep brown crust and a pink, juicy medium-rare center (125–130°F / 52–54°C at the pull), and the sauce should be glossy and just thick enough to cling to every strand without pooling or turning gluey. Makes 2 servings in about 50 minutes, including a 30-minute rest for the steak out of the fridge (about 25 minutes hands-on); serve straight from the pan, with a green salad if you like. Best eaten fresh; keeps 2–3 days refrigerated (store the steak separately), and the cream sauce doesn't freeze well. Reheat the pasta in a skillet over low heat with a splash of water, and warm the steak slices briefly on top or eat them cold.",
+  "status": "built",
+  "source": {
+    "type": "web",
+    "url": "https://foodierandy.com/2026/11/17/steak-and-peppercorn-sauce-pasta/",
+    "files": [],
+    "author": "Miranda Li (Foodie Randy)"
+  },
+  "image": "media/steak-and-peppercorn-sauce-pasta/hero.jpg",
+  "servings": 2,
+  "yield": null,
+  "time": {
+    "prep": 10,
+    "cook": 25,
+    "total": 50
+  },
+  "equipment": [
+    "medium saucepan",
+    "12-inch skillet",
+    "tongs",
+    "instant-read thermometer",
+    "cutting board"
+  ],
+  "ingredients": [
+    {
+      "id": "i1",
+      "section": "Steak",
+      "qty": 350,
+      "qtyMax": null,
+      "unit": "g",
+      "density": null,
+      "item": "steak",
+      "note": "a tender searing cut such as ribeye, strip or sirloin"
+    },
+    {
+      "id": "i2",
+      "section": "Steak",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "salt",
+      "note": "table salt; to taste, for the steak and the sauce"
+    },
+    {
+      "id": "i3",
+      "section": "Steak",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "ground black pepper",
+      "note": "for seasoning the steak"
+    },
+    {
+      "id": "i4",
+      "section": "Steak",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "olive oil",
+      "note": "or enough to coat the pan"
+    },
+    {
+      "id": "i5",
+      "section": "Steak",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tbsp",
+      "item": "butter",
+      "note": null
+    },
+    {
+      "id": "i6",
+      "section": "Steak",
+      "qty": 4,
+      "qtyMax": 5,
+      "unit": "sprig",
+      "item": "fresh thyme",
+      "note": null
+    },
+    {
+      "id": "i7",
+      "section": "Steak",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "clove",
+      "item": "garlic",
+      "note": "sliced, for basting"
+    },
+    {
+      "id": "i8",
+      "section": "Pasta",
+      "qty": 4,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "water",
+      "note": null
+    },
+    {
+      "id": "i9",
+      "section": "Pasta",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "tsp",
+      "item": "beef Better Than Bouillon",
+      "note": "or another beef stock concentrate"
+    },
+    {
+      "id": "i10",
+      "section": "Pasta",
+      "qty": 157,
+      "qtyMax": null,
+      "unit": "g",
+      "density": null,
+      "item": "dried pasta",
+      "note": null
+    },
+    {
+      "id": "i11",
+      "section": "Sauce",
+      "qty": 50,
+      "qtyMax": null,
+      "unit": "g",
+      "density": {
+        "g": 150,
+        "per": "cup"
+      },
+      "item": "onion",
+      "note": "finely diced"
+    },
+    {
+      "id": "i12",
+      "section": "Sauce",
+      "qty": 2,
+      "qtyMax": null,
+      "unit": "clove",
+      "item": "garlic",
+      "note": "minced, for the sauce"
+    },
+    {
+      "id": "i13",
+      "section": "Sauce",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "heavy cream",
+      "note": null
+    },
+    {
+      "id": "i14",
+      "section": "Sauce",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "reserved pasta water",
+      "note": "from the bouillon pot, plus a splash more as needed"
+    },
+    {
+      "id": "i15",
+      "section": "Sauce",
+      "qty": 0.5,
+      "qtyMax": null,
+      "unit": "cup",
+      "item": "Parmesan",
+      "note": "finely grated, or to taste"
+    },
+    {
+      "id": "i16",
+      "section": "Sauce",
+      "qty": 1,
+      "qtyMax": 2,
+      "unit": "tsp",
+      "item": "freshly cracked black pepper",
+      "note": "or more to taste"
+    },
+    {
+      "id": "i17",
+      "section": "To serve",
+      "qty": null,
+      "qtyMax": null,
+      "unit": null,
+      "item": "fresh parsley",
+      "note": "chopped, for garnish"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "section": "Steak",
+      "text": "Take the steak out of the fridge about 30 minutes before cooking. Pat it dry and season generously on both sides with salt and the ground black pepper.",
+      "timers": [
+        {
+          "label": "Temper",
+          "seconds": 1800
+        }
+      ],
+      "tip": "A dry, less-cold surface browns faster, so the crust forms before the center overcooks."
+    },
+    {
+      "id": "s2",
+      "section": "Pasta",
+      "text": "Meanwhile, bring the water to a boil in a medium saucepan and whisk in the Better Than Bouillon (with another concentrate, follow its package ratio for 4 cups). No extra salt needed.",
+      "timers": [],
+      "tip": "Cooking the pasta in beef stock seasons it from the inside and makes the reserved water a ready-made sauce base."
+    },
+    {
+      "id": "s3",
+      "section": "Pasta",
+      "text": "Cook the pasta until about 2 minutes shy of al dente (check the package time). Scoop out at least 1 cup of the cooking liquid, then drain.",
+      "timers": [],
+      "tip": "It finishes cooking in the sauce, so it absorbs flavor instead of going soft."
+    },
+    {
+      "id": "s4",
+      "section": "Steak",
+      "text": "Heat a 12-inch skillet over medium-high heat and add the olive oil. When it shimmers, sear the steak about 2 minutes per side for medium-rare, until deeply browned and it reads 125–130°F (52–54°C) in the thickest part (medium: pull at 135°F / 57°C).",
+      "timers": [
+        {
+          "label": "Per side",
+          "seconds": 120
+        }
+      ],
+      "tip": "Two minutes a side suits a ¾-inch steak; a 1-inch-plus steak needs 3–4 minutes per side, so trust the thermometer."
+    },
+    {
+      "id": "s5",
+      "section": "Steak",
+      "text": "In the final minute, lower the heat to medium and add the butter, thyme and sliced garlic. Tilt the pan and spoon the foaming butter over the steak until fragrant, about 1 minute.",
+      "timers": [
+        {
+          "label": "Baste",
+          "seconds": 60
+        }
+      ],
+      "tip": "Lowering the heat first keeps the butter browning, not burning."
+    },
+    {
+      "id": "s6",
+      "section": "Steak",
+      "text": "Move the steak, thyme and sliced garlic to a board and let the steak rest at least 5 minutes while you make the sauce. Keep the fat in the pan.",
+      "timers": [
+        {
+          "label": "Rest",
+          "seconds": 300
+        }
+      ],
+      "tip": "Resting lets the juices settle so they stay in the meat when you slice."
+    },
+    {
+      "id": "s7",
+      "section": "Sauce",
+      "text": "In the same pan over medium heat, sauté the onion and minced garlic until soft and fragrant, 2–3 minutes, scraping up the browned bits.",
+      "timers": [
+        {
+          "label": "Sauté",
+          "seconds": 120
+        }
+      ],
+      "tip": null
+    },
+    {
+      "id": "s8",
+      "section": "Sauce",
+      "text": "Pour in the heavy cream and the reserved pasta water. Stir in the Parmesan and the freshly cracked black pepper and simmer gently until slightly thickened and it coats a spoon, 2–3 minutes. Taste and add salt only if needed.",
+      "timers": [
+        {
+          "label": "Simmer",
+          "seconds": 120
+        }
+      ],
+      "tip": "The bouillon water and Parmesan are already salty, so season last."
+    },
+    {
+      "id": "s9",
+      "section": "Sauce",
+      "text": "Add the pasta and toss over medium heat until silky and glossy, 1–2 minutes, adding a splash more pasta water if it tightens.",
+      "timers": [
+        {
+          "label": "Toss",
+          "seconds": 60
+        }
+      ],
+      "tip": "The starch in the pasta water is what emulsifies the cream and cheese into a clinging sauce."
+    },
+    {
+      "id": "s10",
+      "section": "To serve",
+      "text": "Slice the steak against the grain and serve it over the pasta, with any resting juices poured on top and the parsley scattered over.",
+      "timers": [],
+      "tip": null
+    }
+  ],
+  "createdAt": "2026-11-28T09:14:58Z",
+  "updatedAt": "2026-11-28T09:14:58Z",
+  "changelog": [
+    {
+      "date": "2026-11-28",
+      "summary": "Built from foodierandy.com (schema.org recipe). Fixes: moved the 30-minute steak tempering to the start and counted it in the total time; added a medium-rare pull temperature, since the source gave only 2 minutes per side; added timers for the rest and the sauce simmer (source said only \"while you make the sauce\" / \"until slightly thickened\"); merged the two salt lines into one; dropped the gram/ml notes that wouldn't scale.",
+      "notes": []
+    }
+  ]
+}
