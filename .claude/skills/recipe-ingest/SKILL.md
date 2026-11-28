@@ -64,6 +64,10 @@ inventing a dish isn't.
   text or null ("one 9x13-inch pan", "24 cookies").
 - **time** minutes `{prep, cook, total}`; total = start to table incl. passive time
   (marinating, resting, chilling). Overnight steps: count them and say so in the summary.
+  Total is **not** prep + cook: walk the steps in order, add every required wait (a 15-min
+  season, a 1-hour stand, batches baked one after another), count steps that run "meanwhile"
+  once, and leave out optional/conditional ones ("if frozen", "optional chill"). It's the
+  same number the profile states ("in about 50 minutes"); `validate.py` warns when they differ.
 - **equipment**: what's actually needed, sized ("12-inch skillet", "9x13-inch baking dish").
 
 **Ingredients** — in order of use; `section` only when there are 2+ components ("Sauce",

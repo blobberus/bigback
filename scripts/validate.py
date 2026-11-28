@@ -42,6 +42,39 @@ def temp_issues(text):
         out.append(f'"{m.group(0)}" (no conversion)')
     return out
 
+
+# The profile's deliverables sentence states the start-to-table time: "in about 50 minutes",
+# "in about 1 hour 20 minutes", "in about 1¼ hours". time.total must agree with it.
+FRACTIONS = {"¼": 0.25, "½": 0.5, "¾": 0.75}
+PROFILE_TIME = re.compile(r"\bin (?:about|around|roughly|under|just under|just over) "
+                          r"(\d+|an?|one)([¼½¾])?\s*(hours?|hrs?|minutes?|mins?)\b"
+                          r"(?:,?\s*(?:and\s*)?(\d+)\s*(?:minutes?|mins?)\b)?")
+
+
+def profile_minutes(text):
+    """Start-to-table minutes the profile states, or None."""
+    m = PROFILE_TIME.search(text or "")
+    if not m:
+        return None
+    n = (int(m.group(1)) if m.group(1).isdigit() else 1) + FRACTIONS.get(m.group(2), 0)
+    return round(n * 60 if m.group(3).startswith("h") else n) + int(m.group(4) or 0)
+
+
+def time_issues(r):
+    """time.total that can't be right: shorter than prep + cook, or not what the profile says."""
+    t = r.get("time") or {}
+    total, prep, cook = t.get("total"), t.get("prep"), t.get("cook")
+    if not isinstance(total, (int, float)):
+        return []
+    out = []
+    if isinstance(prep, (int, float)) and isinstance(cook, (int, float)) and total < prep + cook:
+        out.append(f"time.total {total} is less than prep + cook ({prep + cook})")
+    stated = profile_minutes(r.get("profile"))
+    if stated is not None and abs(stated - total) > 5:
+        out.append(f"time.total is {total} min but the profile says about {stated} min")
+    return out
+
+
 errors, warnings = [], []
 err = lambda where, msg: errors.append(f"{where}: {msg}")
 warn = lambda where, msg: warnings.append(f"{where}: {msg}")
@@ -118,6 +151,9 @@ def check_recipe(p):
         for t in st.get("timers") or []:
             if not isinstance(t.get("seconds"), int) or t["seconds"] <= 0:
                 err(where, f"step {sid} timer seconds must be a positive integer")
+    for issue in time_issues(r):
+        warn(where, f"{issue}; total = start to table, including passive time (resting, marinating, "
+                    "chilling, batches that bake one after another)")
 
     texts = [("summary", r.get("summary")), ("profile", r.get("profile"))]
     texts += [(f"ingredient {i.get('id')} note", i.get("note")) for i in r.get("ingredients") or []]

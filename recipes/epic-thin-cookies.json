@@ -18,8 +18,8 @@
   "yield": "12 cookies",
   "time": {
     "prep": 45,
-    "cook": 10,
-    "total": 55
+    "cook": 20,
+    "total": 75
   },
   "equipment": [
     "kitchen scale",
@@ -227,11 +227,16 @@
     }
   ],
   "createdAt": "2026-11-23T06:05:19Z",
-  "updatedAt": "2026-11-23T23:15:58Z",
+  "updatedAt": "2026-11-28T09:20:10Z",
   "changelog": [
     {
       "date": "2026-11-23",
       "summary": "Built from a screenshot of the video's caption (ingredients for 12 cookies only). Method from the hint: 350°F (180°C) convection, 30-minute chill after mixing, pan slam halfway through 8–10 minutes. Added the whisking stages and their cues, scoop size and spacing, a no-convection setting, and cooling. Read '85–95 degrees' for the butter as °F; used the caption's own gram-to-spoon conversions for the salt and baking soda.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-28",
+      "summary": "Cook time 10 → 20 min and total 55 → 75 min: the two sheets bake one after the other, and the total now counts cooling.",
       "notes": []
     }
   ]

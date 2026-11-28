@@ -19,7 +19,7 @@
   "time": {
     "prep": 15,
     "cook": 45,
-    "total": 60
+    "total": 75
   },
   "equipment": [
     "food processor (or a sharp knife)",
@@ -197,7 +197,7 @@
     }
   ],
   "createdAt": "2026-11-14T19:30:00Z",
-  "updatedAt": "2026-11-23T21:30:00Z",
+  "updatedAt": "2026-11-28T09:20:10Z",
   "changelog": [
     {
       "date": "2026-11-14",
@@ -212,6 +212,11 @@
     {
       "date": "2026-11-23",
       "summary": "Red pepper flakes note reads \"up to 2 tsp\" (i4) so it scales with the servings.",
+      "notes": []
+    },
+    {
+      "date": "2026-11-28",
+      "summary": "Total time 60 → 75 min: it now counts the chimichurri's 1-hour stand, which runs while the steak roasts.",
       "notes": []
     }
   ]
